@@ -21,7 +21,7 @@ const navGroups = [
       { name: "القضايا", href: "/dashboard/cases", icon: Scale },
       { name: "أجندة الجلسات", href: "/dashboard/roll", icon: Calendar },
       { name: "التقويم", href: "/dashboard/calendar", icon: Calendar },
-      { name: "قلم المحضرين", href: "/dashboard/tasks", icon: ClipboardList },
+      { name: "الشغل الإداري", href: "/dashboard/tasks", icon: ClipboardList },
       { name: "التنفيذ القضائي", href: "/dashboard/enforcement", icon: Gavel },
       { name: "المالية والمصروفات", href: "/dashboard/finance", icon: Calculator },
       { name: "العقود والمستندات", href: "/dashboard/documents", icon: Library },

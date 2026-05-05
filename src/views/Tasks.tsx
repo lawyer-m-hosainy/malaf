@@ -56,8 +56,8 @@ export default function Tasks() {
     >
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-navy-900 dark:text-white">إدارة المهام</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">تنظيم وتوزيع العمل على فريق المكتب ومتابعة الإنجاز.</p>
+          <h1 className="text-2xl font-bold text-navy-900 dark:text-white">الشغل الإداري</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">متابعة المهام الإدارية التي ينفذها المحامون لخدمة القضايا.</p>
         </div>
         <Dialog open={addOpen} onOpenChange={setAddOpen}>
           <Button type="button" className="bg-primary-500 hover:bg-primary-600 text-white gap-2" onClick={() => setAddOpen(true)}>

@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: mohamy-pro-saudi
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: node server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: VITE_ENCRYPTION_KEY
+        sync: false
+      - key: NODE_ENV
+        value: production
+      - key: ALLOWED_ORIGINS
+        value: https://mohamy-pro-saudi.onrender.com

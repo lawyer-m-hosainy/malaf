@@ -1,0 +1,46 @@
+{
+  "entities": {
+    "Client": {
+      "title": "Client",
+      "description": "Saudi Client Identity Management",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string", "enum": ["فرد", "منشأة"] },
+        "name": { "type": "string" },
+        "nationalId": { "type": "string" },
+        "commercialRegistration": { "type": "string" },
+        "vatNumber": { "type": "string" },
+        "phone": { "type": "string" }
+      },
+      "required": ["id", "type", "name", "phone"]
+    },
+    "Case": {
+      "title": "Case",
+      "description": "KSA Procedural Terminology",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "court": { "type": "string" },
+        "plaintiff": { "type": "string" },
+        "defendant": { "type": "string" },
+        "memorandums": { "type": "array", "items": { "type": "string" } },
+        "powerOfAttorneyRef": { "type": "string" },
+        "status": { "type": "string", "enum": ["نشطة", "مغلقة", "تحت الدراسة"] },
+        "najizReferenceStatus": { "type": "string", "enum": ["مربوط بناجز", "غير مربوط"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "court", "plaintiff", "defendant", "status", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/clients/{clientId}": {
+      "schema": "Client",
+      "description": "Collection of clients"
+    },
+    "/cases/{caseId}": {
+      "schema": "Case",
+      "description": "Collection of cases"
+    }
+  }
+}

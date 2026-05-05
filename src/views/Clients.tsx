@@ -1,4 +1,5 @@
 import { motion } from "motion/react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -81,6 +82,7 @@ const ClientRow = React.memo(({ client, onEdit, onDelete }: { client: any, onEdi
 });
 
 export default function Clients() {
+  const navigate = useNavigate();
   const {
     currentClients,
     searchQuery,
@@ -421,7 +423,7 @@ export default function Clients() {
                 <div className="pt-6 mt-6 border-t border-slate-50 dark:border-white/5">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="font-bold text-lg text-navy-900 dark:text-white">إدارة التوكيلات</h3>
-                    <Button variant="outline" size="sm" className="dark:border-white/10 gap-1">
+                    <Button variant="outline" size="sm" className="dark:border-white/10 gap-1" onClick={() => navigate('/dashboard/poa')}>
                       <Plus size={14} /> إضافة توكيل
                     </Button>
                   </div>

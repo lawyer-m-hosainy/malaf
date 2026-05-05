@@ -81,7 +81,8 @@ export default function Login() {
       provider.setCustomParameters({ prompt: "select_account" });
       await signInWithPopup(auth, provider);
       toast.success("تم تسجيل الدخول بنجاح");
-      navigate("/dashboard");
+      const isFirstLogin = !localStorage.getItem('onboarding_completed');
+      navigate(isFirstLogin ? "/onboarding" : "/dashboard");
     } catch (error: any) {
       const message = getFirebaseAuthErrorMessage(error);
 
@@ -111,7 +112,8 @@ export default function Login() {
     try {
       await signInWithEmailAndPassword(auth, email.trim(), password);
       toast.success("تم تسجيل الدخول بنجاح");
-      navigate("/dashboard");
+      const isFirstLogin = !localStorage.getItem('onboarding_completed');
+      navigate(isFirstLogin ? "/onboarding" : "/dashboard");
     } catch (error: any) {
       const message = getFirebaseAuthErrorMessage(error);
       console.error("Email login failed:", error?.code);
@@ -159,7 +161,7 @@ export default function Login() {
       await updateProfile(credential.user, { displayName: name });
       toast.success("تم إنشاء الحساب وتسجيل الدخول بنجاح");
       setShowRegisterDialog(false);
-      navigate("/dashboard");
+      navigate("/onboarding");
     } catch (error: any) {
       const message = getFirebaseAuthErrorMessage(error, "register");
       console.error("Register failed:", error?.code);

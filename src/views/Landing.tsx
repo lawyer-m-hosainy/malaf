@@ -85,7 +85,7 @@ export default function Landing() {
       </section>
 
       {/* Stats Section */}
-      <section className="border-y border-slate-200 dark:border-white/5 bg-white dark:bg-navy-800/50">
+      <section id="about" className="border-y border-slate-200 dark:border-white/5 bg-white dark:bg-navy-800/50">
         <div className="container mx-auto px-6 py-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {[
@@ -261,7 +261,7 @@ export default function Landing() {
             <div>
               <h4 className="text-white font-bold mb-6">روابط سريعة</h4>
               <ul className="space-y-3 text-sm">
-                <li><a href="#" className="hover:text-primary-400 transition-colors">الرئيسية</a></li>
+                <li><a href="/" className="hover:text-primary-400 transition-colors">الرئيسية</a></li>
                 <li><a href="#services" className="hover:text-primary-400 transition-colors">خدماتنا</a></li>
                 <li><a href="#about" className="hover:text-primary-400 transition-colors">من نحن</a></li>
                 <li><a href="/client-portal" className="hover:text-primary-400 transition-colors">بوابة الموكلين</a></li>
@@ -271,10 +271,10 @@ export default function Landing() {
             <div>
               <h4 className="text-white font-bold mb-6">الخدمات</h4>
               <ul className="space-y-3 text-sm">
-                <li><a href="#" className="hover:text-primary-400 transition-colors">القضايا التجارية</a></li>
-                <li><a href="#" className="hover:text-primary-400 transition-colors">القضايا العمالية</a></li>
-                <li><a href="#" className="hover:text-primary-400 transition-colors">تأسيس الشركات</a></li>
-                <li><a href="#" className="hover:text-primary-400 transition-colors">صياغة العقود</a></li>
+                <li><a href="/login" className="hover:text-primary-400 transition-colors">القضايا التجارية</a></li>
+                <li><a href="/login" className="hover:text-primary-400 transition-colors">القضايا العمالية</a></li>
+                <li><a href="/login" className="hover:text-primary-400 transition-colors">تأسيس الشركات</a></li>
+                <li><a href="/login" className="hover:text-primary-400 transition-colors">صياغة العقود</a></li>
               </ul>
             </div>
             
@@ -300,8 +300,8 @@ export default function Landing() {
           <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500">
             <div>&copy; {new Date().getFullYear()} مكتب العدالة للمحاماة والاستشارات القانونية. جميع الحقوق محفوظة.</div>
             <div className="flex gap-6">
-              <a href="#" className="hover:text-white transition-colors">الشروط والأحكام</a>
-              <a href="#" className="hover:text-white transition-colors">سياسة الخصوصية</a>
+              <a href="#" style={{ pointerEvents: 'none', opacity: 0.4 }} className="hover:text-white transition-colors">الشروط والأحكام</a>
+              <a href="#" style={{ pointerEvents: 'none', opacity: 0.4 }} className="hover:text-white transition-colors">سياسة الخصوصية</a>
             </div>
           </div>
         </div>

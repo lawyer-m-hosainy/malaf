@@ -25,6 +25,7 @@ import {
 } from "./mockResponses";
 import { EGYPTIAN_LEGAL_TEMPLATES, AI_DISCLAIMER } from "./templates";
 import { generateLegalContent } from "./gemini";
+import { generateLegalContentGroq, getLegalAssistantResponseGroq } from "./groq";
 
 export interface DocumentContext {
   clientName?: string;
@@ -44,6 +45,15 @@ export async function getLegalAssistantResponse(
   userMessage: string,
   history: any[] = []
 ): Promise<string> {
+  // 1. Try Groq (User preferred)
+  try {
+    const groqResponse = await getLegalAssistantResponseGroq(userMessage, history);
+    if (groqResponse) return groqResponse;
+  } catch (e) {
+    console.warn("Groq failed, trying backend...");
+  }
+
+  // 2. Try Backend
   try {
     const result = await callAiApi("/api/ai/legal-assistant", { userMessage, history });
     return result || getMockAssistantResponse(userMessage);
@@ -62,13 +72,21 @@ export async function draftLegalDocument(
   if (!template) throw new Error("Template not found");
 
   try {
-    // 1. Generate AI content for facts/arguments
+    // 1. Generate AI content (Prefer Groq, then Gemini)
     let aiContent = "";
+    
     try {
-      aiContent = await generateLegalContent(template.name, facts);
-    } catch (e) {
-      console.warn("Gemini failed, using raw facts:", e);
-      aiContent = facts;
+      // Try Groq first
+      aiContent = await generateLegalContentGroq(template.name, facts);
+    } catch (groqError) {
+      console.warn("Groq failed, trying Gemini:", groqError);
+      try {
+        // Fallback to Gemini
+        aiContent = await generateLegalContent(template.name, facts);
+      } catch (geminiError) {
+        console.warn("Gemini failed, using raw facts:", geminiError);
+        aiContent = facts;
+      }
     }
 
     // 2. Auto-fill template

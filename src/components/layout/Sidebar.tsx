@@ -20,6 +20,7 @@ const navGroups = [
       { name: "التوكيلات", href: "/dashboard/poa", icon: FileSignature },
       { name: "القضايا", href: "/dashboard/cases", icon: Scale },
       { name: "أجندة الجلسات", href: "/dashboard/roll", icon: Calendar },
+      { name: "التقويم", href: "/dashboard/calendar", icon: Calendar },
       { name: "قلم المحضرين", href: "/dashboard/tasks", icon: ClipboardList },
       { name: "التنفيذ القضائي", href: "/dashboard/enforcement", icon: Gavel },
       { name: "المالية والمصروفات", href: "/dashboard/finance", icon: Calculator },
@@ -39,6 +40,7 @@ const navGroups = [
       { name: "المحلل الذكي", href: "/dashboard/ai-analyzer", icon: Sparkles },
       { name: "إحصائيات الأداء", href: "/dashboard/analytics", icon: BarChart3 },
       { name: "فريق العمل", href: "/dashboard/team", icon: Users2 },
+      { name: "المعرفة القانونية", href: "/dashboard/wiki", icon: BookOpen },
     ]
   },
   {
@@ -127,6 +129,22 @@ export function Sidebar() {
           <Settings size={18} />
           الإعدادات
         </NavLink>
+        {hasPermission('view_reports') && (
+          <NavLink 
+            to="/dashboard/audit-logs"
+            className={({ isActive }) =>
+              cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-md transition-colors text-sm font-medium mt-1",
+                isActive 
+                  ? "bg-primary-500 text-white shadow-sm" 
+                  : "text-slate-300 hover:bg-white/5 hover:text-white"
+              )
+            }
+          >
+            <History size={18} />
+            سجل العمليات
+          </NavLink>
+        )}
       </div>
     </aside>
     </>

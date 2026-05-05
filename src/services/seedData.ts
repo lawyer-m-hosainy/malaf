@@ -43,9 +43,45 @@ export const seedDemoData = async () => {
 
   // 3. Seed POAs
   const demoPOAs = [
-    { id: 'P1', clientId: 'C1', poaNumber: '1234', poaLetter: 'أ', poaYear: '2023', office: 'توثيق الأهرام', status: 'ساري', expiryDate: '2028-01-01' },
-    { id: 'P2', clientId: 'C2', poaNumber: '5678', poaLetter: 'ب', poaYear: '2024', office: 'توثيق عابدين', status: 'ساري', expiryDate: '2026-05-15' },
-    { id: 'P3', clientId: 'C5', poaNumber: '9012', poaLetter: 'ج', poaYear: '2024', office: 'توثيق الجيزة', status: 'ساري', expiryDate: '2024-05-30' }, // Expires VERY soon
+    { 
+      id: 'P1', 
+      clientId: 'C1', 
+      poaNumber: '1234', 
+      poaLetter: 'أ', 
+      poaYear: '2023', 
+      office: 'توثيق الأهرام', 
+      type: 'عام',
+      status: 'ساري', 
+      issueDate: '2023-01-01',
+      expiryDate: '2028-01-01',
+      cancellationRequested: false
+    },
+    { 
+      id: 'P2', 
+      clientId: 'C2', 
+      poaNumber: '5678', 
+      poaLetter: 'ب', 
+      poaYear: '2024', 
+      office: 'توثيق عابدين', 
+      type: 'خاص',
+      status: 'ساري', 
+      issueDate: '2024-05-15',
+      expiryDate: '2026-05-15',
+      cancellationRequested: false
+    },
+    { 
+      id: 'P3', 
+      clientId: 'C5', 
+      poaNumber: '9012', 
+      poaLetter: 'ج', 
+      poaYear: '2024', 
+      office: 'توثيق الجيزة', 
+      type: 'قضايا فقط',
+      status: 'ساري', 
+      issueDate: '2024-05-01',
+      expiryDate: '2024-05-30', // Expires VERY soon
+      cancellationRequested: false
+    },
     ...Array.from({ length: 17 }).map((_, i) => ({
       id: `P${i + 4}`,
       clientId: `C${i + 4}`,
@@ -53,8 +89,11 @@ export const seedDemoData = async () => {
       poaLetter: 'أ',
       poaYear: '2024',
       office: 'توثيق القاهرة',
-      status: 'ساري',
-      expiryDate: '2029-01-01'
+      type: 'عام' as any,
+      status: 'ساري' as any,
+      issueDate: '2024-01-01',
+      expiryDate: '2029-01-01',
+      cancellationRequested: false
     }))
   ];
   clientsStore.setPOAs(demoPOAs as any);
@@ -70,6 +109,8 @@ export const seedDemoData = async () => {
       status: 'متداولة', 
       plaintiff: 'شركة النيل للصناعات الغذائية', 
       defendant: 'شركة التوريدات العالمية',
+      powerOfAttorneyRef: '1234 / أ / 2023',
+      memorandums: [],
       currentTier: 'ابتدائي',
       firstInstanceNumber: '123',
       firstInstanceYear: '2024',
@@ -85,6 +126,8 @@ export const seedDemoData = async () => {
       status: 'متداولة', 
       plaintiff: 'النيابة العامة', 
       defendant: 'محمد أحمد عبد الرحمن',
+      powerOfAttorneyRef: '5678 / ب / 2024',
+      memorandums: [],
       currentTier: 'مستأنف',
       appealNumber: '456',
       appealYear: '2023',
@@ -102,6 +145,8 @@ export const seedDemoData = async () => {
       status: 'متداولة', 
       plaintiff: 'ليلى محمود كامل', 
       defendant: 'أحمد علي حسن',
+      powerOfAttorneyRef: '9012 / ج / 2024',
+      memorandums: [],
       currentTier: 'ابتدائي',
       firstInstanceNumber: '789',
       firstInstanceYear: '2024',
@@ -112,11 +157,13 @@ export const seedDemoData = async () => {
       id: `${1000 + i}-2024-مدني`,
       clientId: `C${(i % 30) + 1}`,
       title: `قضية تجريبية رقم ${i + 4}`,
-      court: i % 2 === 0 ? 'محكمة جنوب القاهرة' : 'محكمة شمال القاهرة',
+      court: i % 2 === 0 ? 'المحكمة الابتدائية' : 'محكمة جنوب القاهرة',
       type: 'مدني',
       status: 'متداولة',
       plaintiff: 'الموكل',
       defendant: 'الخصم',
+      powerOfAttorneyRef: `${1000 + i} / أ / 2024`,
+      memorandums: [],
       currentTier: 'ابتدائي',
       firstInstanceNumber: `${1000 + i}`,
       firstInstanceYear: '2024',

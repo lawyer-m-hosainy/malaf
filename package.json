@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --port=3000 --host=0.0.0.0",
+    "dev": "vite --port=3005 --host=0.0.0.0",
     "build": "vite build",
     "build:server": "tsc server.ts --esModuleInterop --target ES2022 --module NodeNext --moduleResolution NodeNext",
     "build:all": "npm run build && npm run build:server",

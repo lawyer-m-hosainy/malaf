@@ -215,7 +215,12 @@ export function Topbar() {
               </div>
             </ScrollArea>
             <div className="p-2 border-t border-slate-50 dark:border-white/5 text-center">
-              <button className="text-xs font-bold text-primary-600 hover:underline">عرض جميع الإشعارات</button>
+              <button 
+                className="text-xs font-bold text-primary-600 hover:underline"
+                onClick={() => console.warn('Notifications page not built yet')}
+              >
+                عرض جميع الإشعارات
+              </button>
             </div>
           </DropdownMenuContent>
         </DropdownMenu>

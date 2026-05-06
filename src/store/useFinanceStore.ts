@@ -26,6 +26,7 @@ interface FinanceState {
   toggleTimeEntryBilledStatus: (id: string) => void;
   setPricingModels: (models: PricingModel[]) => void;
   hasLoaded: boolean;
+  reset: () => void;
 }
 
 export const useFinanceStore = create<FinanceState>((set) => ({
@@ -110,6 +111,8 @@ export const useFinanceStore = create<FinanceState>((set) => ({
   trustAccounts: [],
   pricingModels: [],
   hasLoaded: false,
+
+  reset: () => set({ expenses: [], timeEntries: [], receivables: [], trustAccounts: [], pricingModels: [], hasLoaded: false }),
 
   setExpenses: (expenses) => set({ expenses }),
   addExpense: (expense) => set((state) => ({ expenses: [expense, ...state.expenses] })),

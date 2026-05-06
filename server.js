@@ -11,6 +11,7 @@ import admin from 'firebase-admin';
 import compression from 'compression';
 import { pinoHttp } from 'pino-http';
 import pino from 'pino';
+import crypto from 'crypto';
 // Load environment variables
 dotenv.config();
 // Initialize Logger
@@ -45,7 +46,7 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+            scriptSrc: ["'self'"],
             styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
             fontSrc: ["'self'", "https://fonts.gstatic.com"],
             imgSrc: ["'self'", "data:", "blob:", "https://firebasestorage.googleapis.com", "https://picsum.photos"],
@@ -91,8 +92,35 @@ app.get('/api/health', (req, res) => {
 });
 // AI Configuration
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const ai = GEMINI_API_KEY ? new GoogleGenAI({ apiKey: GEMINI_API_KEY }) : null;
 const systemInstruction = 'أنت مساعد قانوني مصري. الإجابة استرشادية ويجب مراجعتها من محامٍ مقيد بنقابة المحامين المصريين.';
+
+async function callGroq(prompt, sysInstruction) {
+    if (!GROQ_API_KEY) return null;
+    try {
+        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${GROQ_API_KEY}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                model: "llama-3.3-70b-versatile",
+                messages: [
+                    { role: "system", content: sysInstruction },
+                    { role: "user", content: prompt }
+                ]
+            })
+        });
+        if (!response.ok) return null;
+        const data = await response.json();
+        return data.choices?.[0]?.message?.content || null;
+    } catch (e) {
+        logger.error({ err: e }, "Groq call failed");
+        return null;
+    }
+}
 // AI Security Middleware
 const sanitizeInput = (text) => {
     if (!text)
@@ -138,8 +166,11 @@ const authMiddleware = async (req, res, next) => {
     try {
         const decodedToken = await admin.auth().verifyIdToken(idToken);
         req.user = decodedToken;
-        req.tenantId = decodedToken.tenantId || req.headers['x-tenant-id'] || 'default';
-        req.userRole = decodedToken.role || req.headers['x-user-role'];
+        if (!decodedToken.tenantId) {
+            return res.status(403).json({ error: 'المستخدم غير مرتبط بمساحة عمل (Tenant)' });
+        }
+        req.tenantId = decodedToken.tenantId;
+        req.userRole = decodedToken.role;
         next();
     }
     catch (error) {
@@ -160,8 +191,13 @@ const getMockAnalyzeResponse = () => `**التحليل القانوني:**\n1. *
 app.post('/api/ai/legal-assistant', aiRateLimiter, async (req, res) => {
     try {
         const userMessage = String(req.body.userMessage || '');
-        if (!ai) return res.status(200).json({ text: getMockAssistantResponse() });
         
+        // 1. Try Groq
+        const groqResponse = await callGroq(userMessage, systemInstruction);
+        if (groqResponse) return res.status(200).json({ text: groqResponse });
+        
+        // 2. Try Gemini
+        if (!ai) return res.status(200).json({ text: getMockAssistantResponse() });
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: userMessage,
@@ -179,9 +215,14 @@ app.post('/api/ai/draft', aiRateLimiter, async (req, res) => {
     try {
         const type = String(req.body.type || 'وثيقة قانونية');
         const facts = String(req.body.facts || '');
-        if (!ai) return res.status(200).json({ text: getMockDraftResponse(type, facts) });
-
         const prompt = `قم بصياغة ${type} احترافية بناءً على الوقائع التالية:\n${facts}`;
+        
+        // 1. Try Groq
+        const groqResponse = await callGroq(prompt, systemInstruction);
+        if (groqResponse) return res.status(200).json({ text: groqResponse });
+        
+        // 2. Try Gemini
+        if (!ai) return res.status(200).json({ text: getMockDraftResponse(type, facts) });
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: prompt,
@@ -199,10 +240,15 @@ app.post('/api/ai/draft', aiRateLimiter, async (req, res) => {
 
 app.post('/api/ai/analyze', aiRateLimiter, async (req, res) => {
     try {
-        if (!ai) return res.status(200).json({ text: getMockAnalyzeResponse() });
-
         const content = String(req.body.content || '');
         const prompt = `حلل النص القانوني التالي وفق القانون المصري وحدد الملخص والدفوع والمخاطر:\n${content}`;
+        
+        // 1. Try Groq
+        const groqResponse = await callGroq(prompt, systemInstruction);
+        if (groqResponse) return res.status(200).json({ text: groqResponse });
+        
+        // 2. Try Gemini
+        if (!ai) return res.status(200).json({ text: getMockAnalyzeResponse() });
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: prompt,
@@ -216,89 +262,56 @@ app.post('/api/ai/analyze', aiRateLimiter, async (req, res) => {
     }
 });
 
-// --- Server-side API Endpoints for Cases ---
-const db = admin.firestore();
+// --- Crypto Endpoints ---
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || crypto.randomBytes(32).toString('hex'); // Must be 32 bytes (256 bits)
+const IV_LENGTH = 16; // For AES, this is always 16
 
-// 1. POST /api/cases
-app.post('/api/cases', authMiddleware, async (req, res) => {
+app.post('/api/crypto/encrypt', authMiddleware, (req, res) => {
     try {
-        if (req.userRole === 'client') {
-            return res.status(403).json({ error: 'غير مصرح للعملاء بإنشاء قضايا' });
-        }
+        const text = req.body.text;
+        if (!text) return res.status(400).json({ error: 'Text is required' });
         
-        const caseData = req.body;
-        if (caseData.tenantId && caseData.tenantId !== req.tenantId) {
-            return res.status(403).json({ error: 'لا يمكن إنشاء قضية في مساحة عمل مختلفة' });
-        }
+        const key = Buffer.from(ENCRYPTION_KEY, 'hex');
+        if (key.length !== 32) return res.status(500).json({ error: 'Invalid key length' });
         
-        caseData.tenantId = req.tenantId;
-        caseData.createdAt = new Date().toISOString();
+        const iv = crypto.randomBytes(IV_LENGTH);
+        const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
+        let encrypted = cipher.update(text, 'utf8', 'hex');
+        encrypted += cipher.final('hex');
         
-        const docRef = await db.collection('cases').add(caseData);
-        return res.status(201).json({ id: docRef.id, ...caseData });
+        res.status(200).json({ result: iv.toString('hex') + ':' + encrypted });
     } catch (error) {
-        logger.error({ err: error }, "Create Case Error");
-        return res.status(500).json({ error: 'حدث خطأ أثناء إنشاء القضية' });
+        logger.error({ err: error }, "Encryption Error");
+        res.status(500).json({ error: 'Encryption failed' });
     }
 });
 
-// 2. PUT /api/cases/:id
-app.put('/api/cases/:id', authMiddleware, async (req, res) => {
+app.post('/api/crypto/decrypt', authMiddleware, (req, res) => {
     try {
-        if (req.userRole === 'client') {
-            return res.status(403).json({ error: 'غير مصرح للعملاء بتعديل القضايا' });
-        }
+        const text = req.body.text;
+        if (!text) return res.status(400).json({ error: 'Text is required' });
         
-        const caseId = req.params.id;
-        const caseRef = db.collection('cases').doc(caseId);
-        const caseDoc = await caseRef.get();
+        const textParts = text.split(':');
+        const ivHex = textParts.shift();
+        const encryptedText = textParts.join(':');
         
-        if (!caseDoc.exists) {
-            return res.status(404).json({ error: 'القضية غير موجودة' });
-        }
+        if (!ivHex || !encryptedText) return res.status(400).json({ error: 'Invalid encrypted text format' });
         
-        const existingCase = caseDoc.data();
-        if (existingCase.tenantId !== req.tenantId) {
-            return res.status(403).json({ error: 'غير مصرح لك بتعديل هذه القضية' });
-        }
+        const key = Buffer.from(ENCRYPTION_KEY, 'hex');
+        const iv = Buffer.from(ivHex, 'hex');
         
-        const updateData = req.body;
-        delete updateData.tenantId; // Prevent changing tenantId
+        const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
+        let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
+        decrypted += decipher.final('utf8');
         
-        await caseRef.update(updateData);
-        return res.status(200).json({ id: caseId, ...existingCase, ...updateData });
+        res.status(200).json({ result: decrypted });
     } catch (error) {
-        logger.error({ err: error }, "Update Case Error");
-        return res.status(500).json({ error: 'حدث خطأ أثناء تعديل القضية' });
+        logger.error({ err: error }, "Decryption Error");
+        res.status(200).json({ result: req.body.text }); // Fallback to original text if decryption fails (e.g. legacy data)
     }
 });
 
-// 3. DELETE /api/cases/:id
-app.delete('/api/cases/:id', authMiddleware, async (req, res) => {
-    try {
-        if (req.userRole === 'client') {
-            return res.status(403).json({ error: 'غير مصرح للعملاء بحذف القضايا' });
-        }
-        
-        const caseId = req.params.id;
-        const caseRef = db.collection('cases').doc(caseId);
-        const caseDoc = await caseRef.get();
-        
-        if (!caseDoc.exists) {
-            return res.status(404).json({ error: 'القضية غير موجودة' });
-        }
-        
-        if (caseDoc.data().tenantId !== req.tenantId) {
-            return res.status(403).json({ error: 'غير مصرح لك بحذف هذه القضية' });
-        }
-        
-        await caseRef.delete();
-        return res.status(200).json({ success: true, message: 'تم حذف القضية بنجاح' });
-    } catch (error) {
-        logger.error({ err: error }, "Delete Case Error");
-        return res.status(500).json({ error: 'حدث خطأ أثناء حذف القضية' });
-    }
-});
+// --- Firestore endpoints removed since we migrated to Supabase ---
 // Serve frontend static files
 const distPath = path.join(__dirname, 'dist');
 if (fs.existsSync(distPath)) {

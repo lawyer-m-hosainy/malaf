@@ -53,6 +53,8 @@ interface EnforcementState {
   
   /** الحصول على رقم الملف التالي */
   getNextFileNumber: () => string;
+  hasLoaded: boolean;
+  reset: () => void;
 }
 
 const MOCK_ENFORCEMENT_CASES: EnforcementCase[] = [
@@ -130,9 +132,11 @@ const MOCK_ENFORCEMENT_CASES: EnforcementCase[] = [
 ];
 
 export const useEnforcementStore = create<EnforcementState>((set, get) => ({
-  enforcementCases: MOCK_ENFORCEMENT_CASES,
+  enforcementCases: [],
+  hasLoaded: false,
 
-  setEnforcementCases: (enforcementCases) => set({ enforcementCases }),
+  reset: () => set({ enforcementCases: [], hasLoaded: false }),
+  setEnforcementCases: (enforcementCases) => set({ enforcementCases, hasLoaded: true }),
   
   addEnforcementCase: (newCase) => set((state) => ({ 
     enforcementCases: [newCase, ...state.enforcementCases] 

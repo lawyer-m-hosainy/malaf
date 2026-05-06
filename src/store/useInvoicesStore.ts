@@ -13,6 +13,8 @@ interface InvoicesState {
   updateInvoiceStatus: (id: string, status: Invoice['status']) => Promise<void>;
   removeInvoice: (id: string) => Promise<void>;
   hasLoaded: boolean;
+  setInvoices: (invoices: Invoice[]) => void;
+  reset: () => void;
 }
 
 const checkOverdueInvoices = (invoices: Invoice | Invoice[]) => {
@@ -35,6 +37,9 @@ export const useInvoicesStore = create<InvoicesState>((set, get) => ({
   isLoading: false,
   error: null,
   hasLoaded: false,
+
+  reset: () => set({ invoices: [], isLoading: false, error: null, hasLoaded: false }),
+  setInvoices: (invoices) => set({ invoices, hasLoaded: true }),
 
   loadInvoices: async () => {
     if (get().hasLoaded) return;

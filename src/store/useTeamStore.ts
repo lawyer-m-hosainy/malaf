@@ -13,6 +13,7 @@ interface TeamState {
   addTask: (task: Task) => void;
   updateTaskStatus: (id: string, status: 'pending' | 'completed') => void;
   hasLoaded: boolean;
+  reset: () => void;
 }
 
 const MOCK_TEAM_MEMBERS: TeamMember[] = [
@@ -55,9 +56,11 @@ const MOCK_TEAM_MEMBERS: TeamMember[] = [
 ];
 
 export const useTeamStore = create<TeamState>((set) => ({
-  teamMembers: MOCK_TEAM_MEMBERS,
+  teamMembers: [],
   tasks: [],
   hasLoaded: false,
+
+  reset: () => set({ teamMembers: [], tasks: [], hasLoaded: false }),
 
   setTeamMembers: (teamMembers) => set({ teamMembers, hasLoaded: true }),
   setTasks: (tasks) => set({ tasks, hasLoaded: true }),

@@ -19,6 +19,7 @@ interface CasesState {
   isLoading: boolean;
   hasLoadedSessions: boolean;
   loadSessions: () => Promise<void>;
+  reset: () => void;
 }
 
 const checkDeadlines = (deadlines: Deadline[]) => {
@@ -131,6 +132,8 @@ export const useCasesStore = create<CasesState>((set, get) => ({
   hasLoaded: false,
   isLoading: false,
   hasLoadedSessions: false,
+
+  reset: () => set({ cases: [], sessions: [], deadlines: [], hasLoaded: false, hasLoadedSessions: false, isLoading: false }),
 
   setCases: (cases) => set({ cases, hasLoaded: true }),
   addCase: (caseData) => set((state) => ({ cases: [caseData, ...state.cases] })),

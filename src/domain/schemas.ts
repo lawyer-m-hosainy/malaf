@@ -52,16 +52,17 @@ export const InvoiceSchema = z.object({
   stampDuty: z.number().nonnegative().optional(),
   total: z.number().positive()
 }).refine(data => {
-  // Egyptian legal services are VAT-exempt, so VAT should be 0
-  return data.vatAmount === 0;
+  // Validate 14% VAT
+  const expectedVat = data.subtotal * 0.14;
+  return Math.abs(data.vatAmount - expectedVat) < 0.01 || data.vatAmount === 0; // Allow 0 for exempt or 14%
 }, {
-  message: "الخدمات القانونية معفاة من ضريبة القيمة المضافة في مصر",
+  message: "ضريبة القيمة المضافة يجب أن تكون 14% من القيمة الأساسية أو 0 للمُعفاة",
   path: ['vatAmount']
 }).refine(data => {
-  const expectedTotal = data.subtotal + (data.stampDuty || 0);
+  const expectedTotal = data.subtotal + data.vatAmount + (data.stampDuty || 0);
   return Math.abs(data.total - expectedTotal) < 0.01;
 }, {
-  message: "المجموع الكلي غير مطابق لمجموع القيمة الأساسية مع رسوم الدمغة",
+  message: "المجموع الكلي غير مطابق لمجموع القيمة الأساسية والضريبة ورسوم الدمغة",
   path: ['total']
 });
 

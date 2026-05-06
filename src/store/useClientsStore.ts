@@ -63,6 +63,8 @@ interface ClientsState {
   addPOA: (poa: PowerOfAttorney) => void;
   updatePOA: (id: string, updatedData: Partial<PowerOfAttorney>) => void;
   hasLoaded: boolean;
+  /** مسح جميع بيانات الموكلين عند تسجيل الخروج */
+  reset: () => void;
 }
 
 const MOCK_CLIENTS: Client[] = [
@@ -91,8 +93,17 @@ const MOCK_CLIENTS: Client[] = [
   }
 ];
 
+const INITIAL_CLIENTS_STATE = {
+  clients: [] as Client[],
+  leads: [] as Lead[],
+  keyAccounts: [] as KeyAccount[],
+  proposals: [] as Proposal[],
+  poas: [] as PowerOfAttorney[],
+  hasLoaded: false,
+};
+
 export const useClientsStore = create<ClientsState>((set) => ({
-  clients: MOCK_CLIENTS,
+  clients: [],
   leads: [],
   keyAccounts: [],
   proposals: [],
@@ -112,6 +123,8 @@ export const useClientsStore = create<ClientsState>((set) => ({
   ],
 
   hasLoaded: false,
+
+  reset: () => set({ ...INITIAL_CLIENTS_STATE }),
 
   setClients: (clients) => set({ clients, hasLoaded: true }),
   addClient: (client) => set((state) => ({ clients: [client, ...state.clients] })),

@@ -7,8 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Scale, Loader2, Mail, Lock, Eye, EyeOff, FileText, Calendar, MessageSquare, LogOut, Clock, CheckCircle2 } from "lucide-react";
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
-import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
+import { supabase } from "@/lib/supabase";
+import { auth } from "@/lib/firebase";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/components/AuthProvider";
@@ -46,53 +46,66 @@ function ClientLoginForm({ onLogin }: { onLogin: (data: ClientData) => void }) {
     try {
       const cred = await signInWithEmailAndPassword(auth, email.trim(), password);
       
-      // Read user document from Firestore
-      const userDoc = await getDoc(doc(db, "users", cred.user.uid));
-      if (!userDoc.exists()) {
+      // Read profile from Supabase
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", cred.user.uid)
+        .single();
+
+      if (profileError || !profile) {
         await signOut(auth);
         toast.error("هذا الحساب غير مسجل في بوابة الموكلين. تواصل مع مكتبك القانوني.");
         return;
       }
 
-      const userData = userDoc.data();
-      if (userData.role !== "client") {
-        // Not a client — redirect them to main login
+      if (profile.role !== "client") {
         toast.info("هذا حساب موظف وليس موكل. سيتم تحويلك لصفحة الدخول الرئيسية.");
         return;
       }
 
-      const linkedClientId = userData.linkedClientId;
-      const tenantId = userData.tenantId;
+      const linkedClientId = profile.linked_client_id;
+      const orgId = profile.org_id;
 
       // Fetch client data
-      let clientName = userData.name || "الموكل";
+      let clientName = profile.full_name || "الموكل";
       let clientPhone = "";
       let clientType = "فرد";
-      
-      if (linkedClientId && tenantId) {
-        const clientDoc = await getDoc(doc(db, "clients", linkedClientId));
-        if (clientDoc.exists()) {
-          const clientData = clientDoc.data();
-          clientName = clientData.name || clientName;
-          clientPhone = clientData.phone || "";
-          clientType = clientData.type || "فرد";
+
+      if (linkedClientId && orgId) {
+        const { data: client, error: clientError } = await supabase
+          .from("clients")
+          .select("*")
+          .eq("id", linkedClientId)
+          .single();
+
+        if (client && !clientError) {
+          clientName = client.name || clientName;
+          clientPhone = client.phone || "";
+          clientType = client.type || "فرد";
         }
       }
 
       // Fetch cases linked to this client
       let cases: ClientCase[] = [];
-      if (linkedClientId && tenantId) {
+      if (linkedClientId && orgId) {
         try {
-          const casesQuery = query(
-            collection(db, "cases"),
-            where("tenantId", "==", tenantId),
-            where("clientId", "==", linkedClientId)
-          );
-          const casesSnapshot = await getDocs(casesQuery);
-          cases = casesSnapshot.docs.map((d) => ({
-            id: d.id,
-            ...(d.data() as Omit<ClientCase, "id">),
-          }));
+          const { data: clientCases, error: casesError } = await supabase
+            .from("cases")
+            .select("*")
+            .eq("org_id", orgId)
+            .eq("client_id", linkedClientId);
+
+          if (clientCases && !casesError) {
+            cases = clientCases.map((d: any) => ({
+              id: d.id,
+              court: d.court,
+              plaintiff: d.plaintiff,
+              defendant: d.defendant,
+              status: d.status,
+              createdAt: d.created_at,
+            }));
+          }
         } catch {
           // If query fails, still show portal with empty cases
         }

@@ -1,7 +1,7 @@
-import { auth, db, storage } from "@/lib/firebase";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { auth, storage } from "@/lib/firebase";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { getCurrentTenantId } from "@/lib/tenant";
+import { supabase } from "@/lib/supabase";
 import { logEvent } from "@/observability/logger";
 
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB demo-safe limit
@@ -35,20 +35,23 @@ function validateUpload(file: File) {
 
 async function writeUploadAudit(caseId: string, path: string, file: File) {
   try {
-    await addDoc(collection(db, "audit_logs"), {
-      tenantId: getCurrentTenantId(),
-      userId: auth.currentUser?.uid || "unknown",
+    const orgId = getCurrentTenantId();
+    await supabase.from("audit_logs").insert({
+      org_id: orgId,
+      user_id: auth.currentUser?.uid || null,
       action: "document_upload",
-      module: "cases",
-      details: `Uploaded file for case ${caseId}`,
-      fileName: sanitizeFileName(file.name),
-      fileSize: file.size,
-      fileType: file.type,
-      storagePath: path,
-      timestamp: serverTimestamp(),
+      entity_type: "cases",
+      entity_id: caseId,
+      details: {
+        info: `Uploaded file for case ${caseId}`,
+        fileName: sanitizeFileName(file.name),
+        fileSize: file.size,
+        fileType: file.type,
+        storagePath: path,
+      },
     });
   } catch {
-    // Non-blocking for UX; upload should not fail because audit write fails.
+    // Non-blocking
   }
 }
 

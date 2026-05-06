@@ -13,6 +13,7 @@ import {
   createUserWithEmailAndPassword,
   updateProfile,
   fetchSignInMethodsForEmail,
+  sendEmailVerification,
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { toast } from "sonner";
@@ -110,7 +111,13 @@ export default function Login() {
     }
     setIsEmailLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email.trim(), password);
+      const userCred = await signInWithEmailAndPassword(auth, email.trim(), password);
+      if (!userCred.user.emailVerified) {
+        toast.error("يرجى تفعيل حسابك من خلال الرابط المرسل إلى بريدك الإلكتروني أولاً.");
+        await auth.signOut();
+        setIsEmailLoading(false);
+        return;
+      }
       toast.success("تم تسجيل الدخول بنجاح");
       const isFirstLogin = !localStorage.getItem('onboarding_completed');
       navigate(isFirstLogin ? "/onboarding" : "/dashboard");
@@ -159,9 +166,10 @@ export default function Login() {
 
       const credential = await createUserWithEmailAndPassword(auth, regEmail, pwd);
       await updateProfile(credential.user, { displayName: name });
-      toast.success("تم إنشاء الحساب وتسجيل الدخول بنجاح");
+      await sendEmailVerification(credential.user);
+      toast.success("تم إنشاء الحساب بنجاح! يرجى مراجعة بريدك الإلكتروني لتفعيل الحساب.");
+      await auth.signOut();
       setShowRegisterDialog(false);
-      navigate("/onboarding");
     } catch (error: any) {
       const message = getFirebaseAuthErrorMessage(error, "register");
       console.error("Register failed:", error?.code);

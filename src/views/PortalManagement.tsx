@@ -9,9 +9,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Globe, LogIn, Plus, Users, Mail, Lock, Copy, CheckCircle2, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useClientsStore } from "@/store/useClientsStore";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { doc, setDoc, collection, getDocs, query, where, deleteDoc } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
+import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from "firebase/auth";
+import { supabase } from "@/lib/supabase";
+import { auth } from "@/lib/firebase";
 import { getCurrentTenantId } from "@/lib/tenant";
 
 interface PortalUser {
@@ -40,21 +40,22 @@ export default function PortalManagement() {
     async function loadPortalUsers() {
       setIsLoadingUsers(true);
       try {
-        const tenantId = getCurrentTenantId();
-        const q = query(
-          collection(db, "users"),
-          where("tenantId", "==", tenantId),
-          where("role", "==", "client")
-        );
-        const snapshot = await getDocs(q);
-        const users: PortalUser[] = snapshot.docs.map((d) => ({
-          id: d.id,
-          name: d.data().name || "موكل",
-          email: d.data().email || "",
-          linkedClientId: d.data().linkedClientId || "",
-          createdAt: d.data().createdAt || "",
-        }));
-        setPortalUsers(users);
+        const orgId = getCurrentTenantId();
+        const { data: users, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("org_id", orgId)
+          .eq("role", "client");
+
+        if (users && !error) {
+          setPortalUsers(users.map(u => ({
+            id: u.id,
+            name: u.full_name,
+            email: u.email,
+            linkedClientId: u.linked_client_id || "",
+            createdAt: u.created_at
+          })));
+        }
       } catch {
         // Firestore may not have rules deployed — use empty list for demo
       } finally {
@@ -94,18 +95,20 @@ export default function PortalManagement() {
       // Create Firebase Auth account
       const cred = await createUserWithEmailAndPassword(auth, clientEmail.trim(), clientPassword);
       await updateProfile(cred.user, { displayName: selectedClient?.name || "موكل" });
+      await sendEmailVerification(cred.user);
 
-      // Create user document in Firestore with role: 'client'
-      const tenantId = getCurrentTenantId();
-      await setDoc(doc(db, "users", cred.user.uid), {
+      // Create user document in Supabase profiles with role: 'client'
+      const orgId = getCurrentTenantId();
+      const { error: profileError } = await supabase.from("profiles").insert({
         id: cred.user.uid,
-        name: selectedClient?.name || "موكل",
+        full_name: selectedClient?.name || "موكل",
         email: clientEmail.trim(),
         role: "client",
-        tenantId,
-        linkedClientId: selectedClientId,
-        createdAt: new Date().toISOString(),
+        org_id: orgId,
+        linked_client_id: selectedClientId,
       });
+
+      if (profileError) throw profileError;
 
       const newUser: PortalUser = {
         id: cred.user.uid,
@@ -140,7 +143,8 @@ export default function PortalManagement() {
 
   const handleRemoveUser = async (userId: string) => {
     try {
-      await deleteDoc(doc(db, "users", userId));
+      const { error } = await supabase.from("profiles").delete().eq("id", userId);
+      if (error) throw error;
       setPortalUsers((prev) => prev.filter((u) => u.id !== userId));
       toast.success("تم حذف حساب الموكل من البوابة");
     } catch {

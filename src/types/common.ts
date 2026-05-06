@@ -5,6 +5,8 @@ export interface UserProfile {
   name: string;
   email: string;
   role: UserRole;
+  /** معرّف المكتب في Supabase (organizations.id) */
+  orgId?: string;
   avatar?: string;
 }
 
@@ -156,6 +158,35 @@ export interface EgyptAssessment {
   passingScore: number;
   userScore?: number;
   isPassed?: boolean;
+}
+
+export interface Subscription {
+  id: string;
+  org_id: string;
+  plan: 'free' | 'basic' | 'pro';
+  status: 'active' | 'expired' | 'canceled';
+  current_period_end: string;
+  created_at: string;
+}
+
+export interface AIDocument {
+  id: string;
+  org_id: string;
+  case_id?: string;
+  title: string;
+  content: string;
+  template_type: string;
+  created_at: string;
+}
+
+export interface TimelineEvent {
+  id: string;
+  org_id: string;
+  case_id?: string;
+  event_type: string;
+  description: string;
+  event_date: string;
+  created_at: string;
 }
 
 /** @deprecated Use EgyptAssessment instead */

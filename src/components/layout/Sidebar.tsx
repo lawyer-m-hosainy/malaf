@@ -37,6 +37,7 @@ const navGroups = [
       { name: "فحص تعارض المصالح", href: "/dashboard/conflict-check", icon: Shield },
       { name: "تتبع الوقت", href: "/dashboard/time-tracking", icon: Clock },
       { name: "التحصيل", href: "/dashboard/collections", icon: HandCoins },
+      { name: "واتساب بوت", href: "/dashboard/whatsapp", icon: MessageSquare },
       { name: "المحلل الذكي", href: "/dashboard/ai-analyzer", icon: Sparkles },
       { name: "إحصائيات الأداء", href: "/dashboard/analytics", icon: BarChart3 },
       { name: "فريق العمل", href: "/dashboard/team", icon: Users2 },

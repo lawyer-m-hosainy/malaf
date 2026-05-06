@@ -415,8 +415,30 @@ app.post('/api/crypto/batch-decrypt', authMiddleware, (req, res) => {
         res.status(200).json({ results: req.body.texts }); // Fallback to returning original array
     }
 });
-
 // --- Firestore endpoints removed since we migrated to Supabase ---
+
+// =================== WHATSAPP MODULE ===================
+import whatsappRouter from './routes/whatsapp.js';
+import { initScheduler } from './services/whatsapp/notificationScheduler.js';
+
+app.use('/api/whatsapp', whatsappRouter);
+
+// تشغيل مجدول الإشعارات (إذا كان Supabase مُعدّاً)
+if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    initScheduler(async (phone, message, orgId) => {
+        // يتم استدعاء هذه الدالة من المجدول لإرسال الرسائل
+        try {
+            const resp = await fetch(`http://localhost:${PORT}/api/whatsapp/send`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ orgId, phone, message }),
+            });
+            return resp.ok;
+        } catch { return false; }
+    });
+}
+// ========================================================
+
 // Serve frontend static files
 const distPath = path.join(__dirname, 'dist');
 if (fs.existsSync(distPath)) {

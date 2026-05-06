@@ -56,17 +56,12 @@ npm install
 \`\`\`
 
 **2. إعداد متغيرات البيئة:**
-قم بإنشاء ملف `.env.local` في الجذر، وأضف المفاتيح التالية (احصل عليها من Firebase / لوحة التحكم):
-\`\`\`env
-VITE_FIREBASE_API_KEY=your_api_key
-VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
-VITE_FIREBASE_PROJECT_ID=your_project_id
-VITE_FIREBASE_STORAGE_BUCKET=your_storage_bucket
-VITE_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
-VITE_FIREBASE_APP_ID=your_app_id
-VITE_ENCRYPTION_KEY=your_secret_encryption_key
-\`\`\`
+قم بإنشاء ملف .env.local في الجذر (انظر .env.example للتفاصيل)، وأضف مفاتيح Supabase كحد أدنى.
 
+> [!NOTE]
+> **لماذا مفاتيح Firebase آمنة؟** مفاتيح Firebase (مثل apiKey) مصممة لتكون عامة ليتمكن التطبيق من الاتصال بخدمات Firebase. الأمان الحقيقي يتم عبر قواعد الأمان (Security Rules). مع ذلك، يُفضل حفظها في ملف إعدادات أو .env لسهولة التغيير.
+> 
+> **أين مفتاح التشفير؟** تتم معالجة التشفير وفك التشفير من جهة الخادم (Server-side) عبر مسارات /api/crypto/*. المفتاح الخاص بالتشفير (ENCRYPTION_KEY) موجود في الخادم فقط ولا يتم كشفه في المتصفح إطلاقاً لضمان أقصى درجات الأمان.
 **3. تشغيل الواجهة الأمامية (Frontend):**
 \`\`\`bash
 npm run dev

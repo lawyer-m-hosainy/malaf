@@ -44,7 +44,7 @@ export default function Contracts() {
     const cat = category as "تجاري" | "عمالي" | "عقاري" | "أحوال شخصية";
     addContractTemplate({
       id: `TMPL-${Date.now()}`,
-      title: `نموذج ${cat} — ${new Date().toLocaleDateString("ar-SA")}`,
+      title: `نموذج ${cat} — ${new Date().toLocaleDateString("ar-EG")}`,
       description: prompt.slice(0, 200) || "نموذج محفوظ من صانع العقود",
       content: generatedContent,
       category: cat,

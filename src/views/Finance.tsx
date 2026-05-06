@@ -78,7 +78,7 @@ const MemoizedInvoiceRow = React.memo(({
               <div className="text-end space-y-1">
                 <h3 className="text-xl font-bold text-primary-600 dark:text-primary-400">فاتورة ضريبية</h3>
                 <p className="text-sm font-mono dark:text-slate-300">{inv.id}</p>
-                <p className="text-sm text-slate-500 dark:text-slate-400">{new Date(inv.date).toLocaleDateString('ar-SA')}</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">{new Date(inv.date).toLocaleDateString('ar-EG')}</p>
               </div>
             </div>
 

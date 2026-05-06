@@ -67,66 +67,8 @@ const checkSessions = (sessions: Session[]) => {
 };
 
 export const useCasesStore = create<CasesState>((set, get) => ({
-  cases: [
-    {
-      id: "C-1001",
-      clientId: "CL-001",
-      type: "تجاري",
-      status: "متداولة",
-      court: "المحكمة الاقتصادية",
-      plaintiff: "شركة الأفق",
-      defendant: "مؤسسة البناء",
-      memorandums: ["لائحة الادعاء", "مذكرة الرد"],
-      powerOfAttorneyRef: "POA-2024-001",
-      eLitigationStatus: "مربوط ببوابة التقاضي",
-      createdAt: "2024-01-15"
-    },
-    {
-      id: "C-1002",
-      clientId: "CL-002",
-      type: "عمالي",
-      status: "تحت الدراسة",
-      court: "الدائرة العمالية",
-      plaintiff: "أحمد محمد",
-      defendant: "شركة التقنية",
-      memorandums: [],
-      powerOfAttorneyRef: "POA-2024-002",
-      eLitigationStatus: "غير مربوط",
-      createdAt: "2024-03-10"
-    }
-  ],
-  sessions: [
-    {
-      id: "S-001",
-      caseId: "C-1001",
-      caseName: "شركة الأفق ضد مؤسسة البناء",
-      date: new Date().toISOString().split('T')[0],
-      time: "09:00",
-      court: "المحكمة الاقتصادية",
-      circuit: "الدائرة الثانية تجاري",
-      previousDecision: "تأجيل للإعلان",
-      postponementReason: "-",
-      nextSessionDate: "-",
-      responsibleLawyer: "أستاذ/ خالد محمود",
-      notes: "إعلان الخصم بالصحيفة",
-      status: "قادمة"
-    },
-    {
-      id: "S-002",
-      caseId: "C-1002",
-      caseName: "أحمد محمد ضد شركة التقنية",
-      date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
-      time: "10:30",
-      court: "الدائرة العمالية",
-      circuit: "الدائرة العمالية الأولى",
-      previousDecision: "التأجيل للرد التعقيبي",
-      postponementReason: "حضور محامي الخصم وطلب أجل للرد",
-      nextSessionDate: "-",
-      responsibleLawyer: "أستاذة/ منى سعيد",
-      notes: "تقديم حافظة مستندات",
-      status: "قادمة"
-    }
-  ],
+  cases: [],
+  sessions: [],
   deadlines: [],
 
   hasLoaded: false,

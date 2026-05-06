@@ -358,7 +358,7 @@ function ClientDashboard({ data, onLogout }: { data: ClientData; onLogout: () =>
                             </span>
                             <span className="flex items-center gap-1">
                               <Calendar size={12} />
-                              {new Date(c.createdAt).toLocaleDateString("ar-SA")}
+                              {new Date(c.createdAt).toLocaleDateString("ar-EG")}
                             </span>
                           </div>
                         </div>

@@ -12,7 +12,7 @@ import { useTeamStore } from "@/store/useTeamStore";
 import { useInvoicesStore } from "@/store/useInvoicesStore";
 import { useFinanceStore } from "@/store/useFinanceStore";
 import { useEnforcementStore } from "@/store/useEnforcementStore";
-import { mockTasks, mockTeamMembers } from "@/mocks/data";
+
 import { getCurrentTenantId } from "@/lib/tenant";
 import { checkAppHealth } from "@/observability/health";
 import { logEvent } from "@/observability/logger";

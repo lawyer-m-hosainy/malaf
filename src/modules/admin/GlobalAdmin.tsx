@@ -147,7 +147,7 @@ export default function GlobalAdmin() {
               <TableBody>
                 {mockAuditLogs.map(log => (
                   <TableRow key={log.id} className="hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors">
-                    <TableCell className="font-mono text-xs dark:text-slate-300">{new Date(log.timestamp).toLocaleString('ar-SA')}</TableCell>
+                    <TableCell className="font-mono text-xs dark:text-slate-300">{new Date(log.timestamp).toLocaleString('ar-EG')}</TableCell>
                     <TableCell>
                       <Badge className={cn(
                         "font-bold text-[10px]",

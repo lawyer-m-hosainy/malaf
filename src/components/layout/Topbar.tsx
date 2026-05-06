@@ -206,7 +206,7 @@ export function Topbar() {
                             {n.title}
                           </p>
                           <p className="text-xs text-slate-500 mt-0.5">{n.message}</p>
-                          <p className="text-[10px] text-slate-400 mt-1">{new Date(n.createdAt).toLocaleTimeString('ar-SA')}</p>
+                          <p className="text-[10px] text-slate-400 mt-1">{new Date(n.createdAt).toLocaleTimeString('ar-EG')}</p>
                         </div>
                       </div>
                     </div>

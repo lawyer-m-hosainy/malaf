@@ -64,7 +64,7 @@ export default function ConflictCheck() {
       "----------------------------------------",
       `الجهة المفحوصة: ${currentResult.query}`,
       `حالة الفحص: ${currentResult.status === "Clear" ? "لا يوجد تعارض" : "تم رصد تعارض محتمل"}`,
-      `تاريخ الفحص: ${new Date(currentResult.checkedAt).toLocaleString("ar-SA")}`,
+      `تاريخ الفحص: ${new Date(currentResult.checkedAt).toLocaleString("ar-EG")}`,
       `عدد الارتباطات المكتشفة: ${currentResult.matches.length}`,
       `المُصدر: ${currentUser?.name || "مستخدم النظام"}`,
       "----------------------------------------",
@@ -203,7 +203,7 @@ export default function ConflictCheck() {
                   <h2 className="text-2xl font-bold mb-1">
                     {currentResult.status === 'Clear' ? 'النتيجة: لا يوجد تعارض' : 'تنبيه: تم رصد تعارض محتمل'}
                   </h2>
-                  <p className="text-slate-500 dark:text-white/60">لفحص: <span className="font-bold text-navy-900 dark:text-white">"{currentResult.query}"</span> • بتاريخ {new Date(currentResult.checkedAt).toLocaleDateString('ar-SA')}</p>
+                  <p className="text-slate-500 dark:text-white/60">لفحص: <span className="font-bold text-navy-900 dark:text-white">"{currentResult.query}"</span> • بتاريخ {new Date(currentResult.checkedAt).toLocaleDateString('ar-EG')}</p>
                 </div>
               </div>
               <div className="flex gap-3">
@@ -335,7 +335,7 @@ export default function ConflictCheck() {
                              <h5 className="text-xs font-bold truncate pr-2">{record.query}</h5>
                              {getStatusBadge(record.status)}
                            </div>
-                           <p className="text-[10px] text-slate-400">{new Date(record.checkedAt).toLocaleString('ar-SA')}</p>
+                           <p className="text-[10px] text-slate-400">{new Date(record.checkedAt).toLocaleString('ar-EG')}</p>
                         </div>
                       ))}
                     </div>

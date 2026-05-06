@@ -22,25 +22,41 @@ export interface PowerOfAttorney {
 
 const checkPOAExpiry = (poas: PowerOfAttorney | PowerOfAttorney[]) => {
   const poaList = Array.isArray(poas) ? poas : [poas];
-  const thirtyDaysFromNow = new Date();
-  thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+  const now = new Date();
+  const threeDaysFromNow = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+  const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
   
-  const expiringSoon = poaList.filter(p => 
+  const activePOAs = poaList.filter(p => 
     p.status === 'ساري' && 
     p.expiryDate && 
-    new Date(p.expiryDate) <= thirtyDaysFromNow && 
-    new Date(p.expiryDate) >= new Date()
+    new Date(p.expiryDate) >= now
   );
 
-  if (expiringSoon.length > 0) {
-    expiringSoon.forEach(p => {
+  activePOAs.forEach(p => {
+    const expiryDate = new Date(p.expiryDate!);
+    const label = `التوكيل رقم ${p.poaNumber} لسنة ${p.poaYear}`;
+    
+    if (expiryDate <= threeDaysFromNow) {
       useNotificationsStore.getState().addNotification({
-        title: `تنبيه: توكيل ينتهي قريباً`,
-        message: `التوكيل رقم ${p.poaNumber} لسنة ${p.poaYear} ينتهي في ${p.expiryDate}`,
+        title: `🔴 عاجل: توكيل ينتهي خلال 3 أيام`,
+        message: `${label} ينتهي في ${p.expiryDate} — يجب التجديد فوراً`,
+        type: 'error'
+      });
+    } else if (expiryDate <= sevenDaysFromNow) {
+      useNotificationsStore.getState().addNotification({
+        title: `🟠 تنبيه: توكيل ينتهي خلال 7 أيام`,
+        message: `${label} ينتهي في ${p.expiryDate} — يُرجى المبادرة بالتجديد`,
         type: 'warning'
       });
-    });
-  }
+    } else if (expiryDate <= thirtyDaysFromNow) {
+      useNotificationsStore.getState().addNotification({
+        title: `تنبيه: توكيل ينتهي قريباً`,
+        message: `${label} ينتهي في ${p.expiryDate}`,
+        type: 'warning'
+      });
+    }
+  });
 };
 interface ClientsState {
   clients: Client[];
@@ -113,20 +129,7 @@ export const useClientsStore = create<ClientsState>((set) => ({
   leads: [],
   keyAccounts: [],
   proposals: [],
-  poas: [
-    {
-      id: "POA-1",
-      clientId: "CL-101",
-      poaNumber: "1542",
-      poaLetter: "ب",
-      poaYear: "2023",
-      office: "الشهر العقاري",
-      type: "قضايا فقط",
-      issueDate: "2023-05-15",
-      status: "ساري",
-      cancellationRequested: false
-    }
-  ],
+  poas: [],
 
   hasLoaded: false,
   currentPage: 0,

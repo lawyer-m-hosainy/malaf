@@ -310,6 +310,11 @@ RETURNS BOOLEAN AS $$
   SELECT get_user_role() = 'super_admin';
 $$ LANGUAGE SQL STABLE SECURITY DEFINER;
 
+CREATE OR REPLACE FUNCTION get_user_linked_client_id()
+RETURNS UUID AS $$
+  SELECT linked_client_id FROM profiles WHERE id = auth.uid() LIMIT 1;
+$$ LANGUAGE SQL STABLE SECURITY DEFINER;
+
 -- ═══════════════════════════════════════════════════════
 -- RLS Policies — Multi-Tenant Isolation
 -- ═══════════════════════════════════════════════════════
@@ -330,24 +335,39 @@ CREATE POLICY "clients_update" ON clients FOR UPDATE USING (org_id = get_user_or
 CREATE POLICY "clients_delete" ON clients FOR DELETE USING (org_id = get_user_org_id());
 
 -- Cases (with soft delete check)
-CREATE POLICY "cases_select" ON cases FOR SELECT USING ((org_id = get_user_org_id() OR is_super_admin()) AND deleted_at IS NULL);
-CREATE POLICY "cases_insert" ON cases FOR INSERT WITH CHECK (org_id = get_user_org_id());
-CREATE POLICY "cases_update" ON cases FOR UPDATE USING (org_id = get_user_org_id() AND deleted_at IS NULL);
-CREATE POLICY "cases_delete" ON cases FOR DELETE USING (org_id = get_user_org_id());
+CREATE POLICY "cases_select" ON cases FOR SELECT USING (
+  deleted_at IS NULL AND (
+    is_super_admin() 
+    OR (get_user_role() != 'client' AND org_id = get_user_org_id())
+    OR (get_user_role() = 'client' AND client_id = get_user_linked_client_id())
+  )
+);
+CREATE POLICY "cases_insert" ON cases FOR INSERT WITH CHECK (get_user_role() != 'client' AND org_id = get_user_org_id());
+CREATE POLICY "cases_update" ON cases FOR UPDATE USING (get_user_role() != 'client' AND org_id = get_user_org_id() AND deleted_at IS NULL);
+CREATE POLICY "cases_delete" ON cases FOR DELETE USING (get_user_role() != 'client' AND org_id = get_user_org_id());
 
 -- Sessions: accessible via case's org
 CREATE POLICY "sessions_select" ON sessions FOR SELECT USING (
-  (EXISTS (SELECT 1 FROM cases WHERE cases.id = sessions.case_id AND cases.org_id = get_user_org_id()) OR is_super_admin())
-  AND deleted_at IS NULL
+  deleted_at IS NULL AND (
+    is_super_admin()
+    OR (
+      get_user_role() != 'client' 
+      AND EXISTS (SELECT 1 FROM cases WHERE cases.id = sessions.case_id AND cases.org_id = get_user_org_id())
+    )
+    OR (
+      get_user_role() = 'client' 
+      AND EXISTS (SELECT 1 FROM cases WHERE cases.id = sessions.case_id AND cases.client_id = get_user_linked_client_id())
+    )
+  )
 );
 CREATE POLICY "sessions_insert" ON sessions FOR INSERT WITH CHECK (
-  EXISTS (SELECT 1 FROM cases WHERE cases.id = sessions.case_id AND cases.org_id = get_user_org_id())
+  get_user_role() != 'client' AND EXISTS (SELECT 1 FROM cases WHERE cases.id = sessions.case_id AND cases.org_id = get_user_org_id())
 );
 CREATE POLICY "sessions_update" ON sessions FOR UPDATE USING (
-  EXISTS (SELECT 1 FROM cases WHERE cases.id = sessions.case_id AND cases.org_id = get_user_org_id())
+  get_user_role() != 'client' AND EXISTS (SELECT 1 FROM cases WHERE cases.id = sessions.case_id AND cases.org_id = get_user_org_id())
 );
 CREATE POLICY "sessions_delete" ON sessions FOR DELETE USING (
-  EXISTS (SELECT 1 FROM cases WHERE cases.id = sessions.case_id AND cases.org_id = get_user_org_id())
+  get_user_role() != 'client' AND EXISTS (SELECT 1 FROM cases WHERE cases.id = sessions.case_id AND cases.org_id = get_user_org_id())
 );
 
 -- Invoices
@@ -365,28 +385,33 @@ CREATE INDEX IF NOT EXISTS idx_invoices_org_status_due ON invoices(org_id, statu
 CREATE INDEX IF NOT EXISTS idx_audit_logs_org_created ON audit_logs(org_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_cases_org_status ON cases(org_id, status);
 CREATE INDEX IF NOT EXISTS idx_clients_org_name ON clients(org_id, name);
-);
 
 -- Documents
 CREATE POLICY "documents_select" ON documents FOR SELECT USING (
-  (EXISTS (SELECT 1 FROM cases WHERE cases.id = documents.case_id AND cases.org_id = get_user_org_id()) OR is_super_admin())
-  AND deleted_at IS NULL
+  deleted_at IS NULL AND (
+    is_super_admin()
+    OR (
+      get_user_role() != 'client' 
+      AND EXISTS (SELECT 1 FROM cases WHERE cases.id = documents.case_id AND cases.org_id = get_user_org_id())
+    )
+    OR (
+      get_user_role() = 'client' 
+      AND documents.is_shared = true
+      AND EXISTS (SELECT 1 FROM cases WHERE cases.id = documents.case_id AND cases.client_id = get_user_linked_client_id())
+    )
+  )
 );
 CREATE POLICY "documents_insert" ON documents FOR INSERT WITH CHECK (
-  EXISTS (SELECT 1 FROM cases WHERE cases.id = documents.case_id AND cases.org_id = get_user_org_id())
+  get_user_role() != 'client' AND EXISTS (SELECT 1 FROM cases WHERE cases.id = documents.case_id AND cases.org_id = get_user_org_id())
 );
 CREATE POLICY "documents_update" ON documents FOR UPDATE USING (
-  EXISTS (SELECT 1 FROM cases WHERE cases.id = documents.case_id AND cases.org_id = get_user_org_id())
+  get_user_role() != 'client' AND EXISTS (SELECT 1 FROM cases WHERE cases.id = documents.case_id AND cases.org_id = get_user_org_id())
 );
 CREATE POLICY "documents_delete" ON documents FOR DELETE USING (
-  org_id = get_user_org_id()
+  get_user_role() != 'client' AND org_id = get_user_org_id()
 );
 
--- Invoices (with soft delete check)
-CREATE POLICY "invoices_select" ON invoices FOR SELECT USING ((org_id = get_user_org_id() OR is_super_admin()) AND deleted_at IS NULL);
-CREATE POLICY "invoices_insert" ON invoices FOR INSERT WITH CHECK (org_id = get_user_org_id());
-CREATE POLICY "invoices_update" ON invoices FOR UPDATE USING (org_id = get_user_org_id() AND deleted_at IS NULL);
-CREATE POLICY "invoices_delete" ON invoices FOR DELETE USING (org_id = get_user_org_id());
+-- (Invoices RLS defined above — duplicate block removed)
 
 -- POAs
 CREATE POLICY "poas_select" ON poas FOR SELECT USING (
@@ -404,9 +429,14 @@ CREATE POLICY "poas_delete" ON poas FOR DELETE USING (
 );
 
 -- Tasks
-CREATE POLICY "tasks_select" ON tasks FOR SELECT USING ((org_id = get_user_org_id() OR is_super_admin()) AND deleted_at IS NULL);
-CREATE POLICY "tasks_insert" ON tasks FOR INSERT WITH CHECK (org_id = get_user_org_id());
-CREATE POLICY "tasks_update" ON tasks FOR UPDATE USING (org_id = get_user_org_id());
+CREATE POLICY "tasks_select" ON tasks FOR SELECT USING (
+  deleted_at IS NULL AND (
+    is_super_admin() 
+    OR (get_user_role() != 'client' AND org_id = get_user_org_id())
+  )
+);
+CREATE POLICY "tasks_insert" ON tasks FOR INSERT WITH CHECK (get_user_role() != 'client' AND org_id = get_user_org_id());
+CREATE POLICY "tasks_update" ON tasks FOR UPDATE USING (get_user_role() != 'client' AND org_id = get_user_org_id());
 CREATE POLICY "tasks_delete" ON tasks FOR DELETE USING (is_super_admin());
 
 -- Expenses
@@ -454,7 +484,10 @@ CREATE POLICY "notif_insert" ON notifications FOR INSERT WITH CHECK (true); -- s
 CREATE POLICY "notif_update" ON notifications FOR UPDATE USING (user_id = auth.uid()); -- user marks own as read
 
 -- Counters (org-scoped via type prefix)
-CREATE POLICY "counters_all" ON counters FOR ALL USING (true); -- shared counters
+CREATE POLICY "counters_all" ON counters FOR ALL USING (
+  type LIKE '%' || get_user_org_id()::text 
+  OR is_super_admin()
+);
 
 -- Subscriptions
 CREATE POLICY "subscriptions_select" ON subscriptions FOR SELECT USING (org_id = get_user_org_id() OR is_super_admin());
@@ -524,4 +557,104 @@ CREATE TRIGGER update_notifications_modtime BEFORE UPDATE ON notifications FOR E
 CREATE TRIGGER update_subscriptions_modtime BEFORE UPDATE ON subscriptions FOR EACH ROW EXECUTE FUNCTION update_modified_column();
 CREATE TRIGGER update_ai_documents_modtime BEFORE UPDATE ON ai_documents FOR EACH ROW EXECUTE FUNCTION update_modified_column();
 CREATE TRIGGER update_timeline_events_modtime BEFORE UPDATE ON timeline_events FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
+-- 23. Calendar Events Table
+CREATE TABLE calendar_events (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  org_id UUID REFERENCES organizations(id),
+  title TEXT NOT NULL,
+  start_date TIMESTAMPTZ NOT NULL,
+  end_date TIMESTAMPTZ,
+  type TEXT,
+  case_id UUID REFERENCES cases(id),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  deleted_at TIMESTAMPTZ
+);
+
+ALTER TABLE calendar_events ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "calendar_select" ON calendar_events FOR SELECT USING ((org_id = get_user_org_id() OR is_super_admin()) AND deleted_at IS NULL);
+CREATE POLICY "calendar_insert" ON calendar_events FOR INSERT WITH CHECK (org_id = get_user_org_id());
+CREATE POLICY "calendar_update" ON calendar_events FOR UPDATE USING (org_id = get_user_org_id() AND deleted_at IS NULL);
+CREATE POLICY "calendar_delete" ON calendar_events FOR DELETE USING (org_id = get_user_org_id());
+
+CREATE INDEX idx_calendar_events_org ON calendar_events(org_id);
+CREATE TRIGGER update_calendar_events_modtime BEFORE UPDATE ON calendar_events FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
+-- ═══════════════════════════════════════════════════════
+-- R4 Migration: Missing columns (additive — safe)
+-- ═══════════════════════════════════════════════════════
+
+-- documents.is_shared — controls client portal visibility
+ALTER TABLE documents ADD COLUMN IF NOT EXISTS is_shared BOOLEAN DEFAULT FALSE;
+
+-- invoices — missing fields for ETA compliance
+ALTER TABLE invoices ADD COLUMN IF NOT EXISTS vat_amount DECIMAL(12, 2) DEFAULT 0;
+ALTER TABLE invoices ADD COLUMN IF NOT EXISTS invoice_number TEXT;
+
+-- Missing index for documents direct queries
+CREATE INDEX IF NOT EXISTS idx_documents_org ON documents(org_id);
+-- Missing index for calendar events date range queries
+CREATE INDEX IF NOT EXISTS idx_calendar_events_date ON calendar_events(org_id, start_date);
+
+-- ═══════════════════════════════════════════════════════
+-- 24. Case Notes Table (lawyer private notes vs shared)
+-- ═══════════════════════════════════════════════════════
+CREATE TABLE case_notes (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  org_id UUID REFERENCES organizations(id),
+  case_id UUID REFERENCES cases(id) ON DELETE CASCADE,
+  author_id UUID REFERENCES profiles(id),
+  content TEXT NOT NULL,
+  is_private BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  deleted_at TIMESTAMPTZ
+);
+
+ALTER TABLE case_notes ENABLE ROW LEVEL SECURITY;
+
+-- Lawyers see all notes in their org; clients see only non-private notes on their cases
+CREATE POLICY "case_notes_select" ON case_notes FOR SELECT USING (
+  deleted_at IS NULL AND (
+    is_super_admin()
+    OR (get_user_role() != 'client' AND org_id = get_user_org_id())
+    OR (get_user_role() = 'client' AND is_private = false
+        AND EXISTS (SELECT 1 FROM cases WHERE cases.id = case_notes.case_id AND cases.client_id = get_user_linked_client_id()))
+  )
+);
+CREATE POLICY "case_notes_insert" ON case_notes FOR INSERT WITH CHECK (get_user_role() != 'client' AND org_id = get_user_org_id());
+CREATE POLICY "case_notes_update" ON case_notes FOR UPDATE USING (get_user_role() != 'client' AND org_id = get_user_org_id() AND deleted_at IS NULL);
+CREATE POLICY "case_notes_delete" ON case_notes FOR DELETE USING (get_user_role() != 'client' AND org_id = get_user_org_id());
+
+CREATE INDEX idx_case_notes_case ON case_notes(case_id);
+CREATE INDEX idx_case_notes_org ON case_notes(org_id);
+CREATE TRIGGER update_case_notes_modtime BEFORE UPDATE ON case_notes FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
+-- ═══════════════════════════════════════════════════════
+-- 25. Payments Table (records partial/full payments on invoices)
+-- ═══════════════════════════════════════════════════════
+CREATE TABLE payments (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  org_id UUID REFERENCES organizations(id),
+  invoice_id UUID REFERENCES invoices(id) ON DELETE CASCADE,
+  amount DECIMAL(12, 2) NOT NULL,
+  method TEXT,
+  date DATE DEFAULT CURRENT_DATE,
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE payments ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "payments_select" ON payments FOR SELECT USING (org_id = get_user_org_id() OR is_super_admin());
+CREATE POLICY "payments_insert" ON payments FOR INSERT WITH CHECK (org_id = get_user_org_id());
+CREATE POLICY "payments_update" ON payments FOR UPDATE USING (org_id = get_user_org_id());
+CREATE POLICY "payments_delete" ON payments FOR DELETE USING (org_id = get_user_org_id());
+
+CREATE INDEX idx_payments_invoice ON payments(invoice_id);
+CREATE INDEX idx_payments_org ON payments(org_id);
+CREATE TRIGGER update_payments_modtime BEFORE UPDATE ON payments FOR EACH ROW EXECUTE FUNCTION update_modified_column();
 

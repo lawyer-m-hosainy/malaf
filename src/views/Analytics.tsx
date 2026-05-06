@@ -2,6 +2,7 @@ import { motion } from "motion/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useEffect } from "react";
 import { TrendingUp, TrendingDown, Scale, Users, FileText, PieChart as PieChartIcon, BarChart3, LineChart as LineChartIcon, Calendar as CalendarIcon, DollarSign, Download, Loader2, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { 
@@ -10,10 +11,6 @@ import {
 } from 'recharts';
 import { toast } from "sonner";
 import { useAnalyticsStore } from '@/store/useAnalyticsStore';
-import { useClientsStore } from '@/store/useClientsStore';
-import { useFinanceStore } from '@/store/useFinanceStore';
-import { useTeamStore } from '@/store/useTeamStore';
-import { useCasesStore } from '@/store/useCasesStore';
 
 const revenueData = [
   { name: 'يناير', revenue: 45000, expenses: 12000, profit: 33000 },
@@ -38,12 +35,13 @@ const workloadData = [
 ];
 
 export default function Analytics() {
-  const cases = useCasesStore((state) => state.cases);
-  const clients = useClientsStore((state) => state.clients);
-  const expenses = useFinanceStore((state) => state.expenses);
-  const teamMembers = useTeamStore((state) => state.teamMembers);
-  const getFinancialSummary = useAnalyticsStore((state: any) => state.getFinancialSummary);
-  const financial = getFinancialSummary();
+  const financial = useAnalyticsStore((state) => state.financialSummary);
+  const isLoading = useAnalyticsStore((state) => state.isLoading);
+  const fetchAnalyticsData = useAnalyticsStore((state) => state.fetchAnalyticsData);
+  
+  useEffect(() => {
+    fetchAnalyticsData();
+  }, [fetchAnalyticsData]);
   const [isGenerating, setIsGenerating] = useState(false);
 
   const handleGenerateReport = () => {

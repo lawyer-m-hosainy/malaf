@@ -1,66 +1,79 @@
 import { create } from 'zustand';
 import { ConflictCheckRecord } from '../types';
-import { useFinanceStore } from './useFinanceStore';
 import { useTeamStore } from './useTeamStore';
-import { useCasesStore } from './useCasesStore';
 import { useClientsStore } from './useClientsStore';
-import { useComplianceStore } from './useComplianceStore';
+import { useCasesStore } from './useCasesStore';
 import { useAuthStore } from './useAuthStore';
+import { supabase } from '@/lib/supabase';
+import { getCurrentTenantId } from '@/lib/tenant';
 
 interface AnalyticsState {
-  getFinancialSummary: () => { totalRevenue: number; totalVat: number; collectionRate: number; projectedRevenue: number; totalCollected: number; totalExpenses: number; };
+  financialSummary: { totalRevenue: number; totalVat: number; collectionRate: number; projectedRevenue: number; totalCollected: number; totalExpenses: number; };
+  practiceAreaStats: { area: string; count: number; value: number }[];
+  isLoading: boolean;
+  fetchAnalyticsData: () => Promise<void>;
   getAttorneyPerformance: () => { name: string; cases: number; winningRate: number; billableHours: number }[];
-  getPracticeAreaStats: () => { area: string; count: number; value: number }[];
   executeConflictCheck: (query: string) => ConflictCheckRecord;
 }
 
+const INITIAL_FINANCIAL = { totalRevenue: 0, totalVat: 0, collectionRate: 0, projectedRevenue: 0, totalCollected: 0, totalExpenses: 0 };
+
 export const useAnalyticsStore = create<AnalyticsState>((set) => ({
-  getFinancialSummary: () => {
-    const receivables = useFinanceStore.getState().receivables || [];
-    const expenses = useFinanceStore.getState().expenses || [];
-    const totalRevenue = receivables.reduce((sum, r) => sum + r.totalAmount, 0);
-    const totalCollected = receivables.reduce((sum, r) => sum + r.collectedAmount, 0);
-    const totalVat = Math.round(totalRevenue * 0.14); // 14% VAT
-    const collectionRate = totalRevenue > 0 ? (totalCollected / totalRevenue) * 100 : 0;
-    const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
+  financialSummary: INITIAL_FINANCIAL,
+  practiceAreaStats: [],
+  isLoading: false,
+
+  fetchAnalyticsData: async () => {
+    const orgId = getCurrentTenantId();
+    if (!orgId) return;
     
-    return {
-      totalRevenue,
-      totalVat,
-      collectionRate: Math.round(collectionRate),
-      projectedRevenue: Math.round(totalRevenue * 1.2),
-      totalCollected,
-      totalExpenses
-    };
-  },
-  getAttorneyPerformance: () => {
-    const team = useTeamStore.getState().teamMembers || [];
-    const timeEntries = useFinanceStore.getState().timeEntries || [];
+    set({ isLoading: true });
     
-    return team.filter(m => m.role.includes('محامي')).map(m => {
-      const billableHours = Math.round(
-        timeEntries.filter(t => t.lawyerId === m.id).reduce((sum, t) => sum + t.duration, 0) / 60
-      );
-      return {
-        name: m.name,
-        cases: m.activeCases,
-        winningRate: m.completedTasks > 0 ? Math.round((m.completedTasks / (m.completedTasks + m.pendingTasks)) * 100) : 0,
-        billableHours
-      };
-    });
-  },
-  getPracticeAreaStats: () => {
-    const cases = useCasesStore.getState().cases || [];
-    const areas: Record<string, number> = {};
-    cases.forEach(c => {
-      areas[c.type] = (areas[c.type] || 0) + 1;
-    });
-    
-    return Object.entries(areas).map(([area, count]) => ({
-      area,
-      count,
-      value: count * 50000 // Mock value per area
-    }));
+    try {
+      const [invoicesRes, expensesRes, casesRes] = await Promise.all([
+        supabase.from('invoices').select('amount, status').eq('org_id', orgId).is('deleted_at', null),
+        supabase.from('expenses').select('amount').eq('org_id', orgId).is('deleted_at', null),
+        supabase.from('cases').select('type').eq('org_id', orgId).is('deleted_at', null)
+      ]);
+      
+      const invoices = invoicesRes.data || [];
+      const expenses = expensesRes.data || [];
+      const cases = casesRes.data || [];
+      
+      const totalRevenue = invoices.reduce((sum, r) => sum + Number(r.amount), 0);
+      const totalCollected = invoices.filter(r => r.status === 'paid').reduce((sum, r) => sum + Number(r.amount), 0);
+      const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.amount), 0);
+      const totalVat = Math.round(totalRevenue * 0.14);
+      const collectionRate = totalRevenue > 0 ? (totalCollected / totalRevenue) * 100 : 0;
+      
+      const areas: Record<string, number> = {};
+      cases.forEach(c => {
+        const t = c.type || 'أخرى';
+        areas[t] = (areas[t] || 0) + 1;
+      });
+      
+      const practiceAreaStats = Object.entries(areas).map(([area, count]) => ({
+        area,
+        count,
+        value: count * 50000
+      }));
+      
+      set({
+        financialSummary: {
+          totalRevenue,
+          totalVat,
+          collectionRate: Math.round(collectionRate),
+          projectedRevenue: Math.round(totalRevenue * 1.2),
+          totalCollected,
+          totalExpenses
+        },
+        practiceAreaStats,
+        isLoading: false
+      });
+    } catch (error) {
+      console.error(error);
+      set({ isLoading: false });
+    }
   },
   executeConflictCheck: (query) => {
     const clientsState = useClientsStore.getState();

@@ -1,6 +1,4 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { User, onAuthStateChanged } from "firebase/auth";
-import { auth } from "@/lib/firebase";
 import { supabase } from "@/lib/supabase";
 import { Loader2 } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -45,7 +43,7 @@ function resetAllStores() {
 }
 
 interface AuthContextType {
-  user: User | null;
+  user: any | null;
   loading: boolean;
 }
 
@@ -58,106 +56,125 @@ const DEFAULT_ROLE: UserRole = "محامي";
  * Firebase Auth يبقى للمصادقة فقط — Supabase للبيانات.
  */
 async function resolveUserProfile(
-  user: User
+  user: any
 ): Promise<{ role: UserRole; orgId: string } | null> {
   try {
-    // محاولة قراءة الملف الشخصي من Supabase
+    // 1. Fetch profile from Supabase
     const { data: profile, error } = await supabase
       .from("profiles")
       .select("role, org_id")
-      .eq("id", user.uid)
+      .eq("id", user.id)
       .limit(1)
       .single();
 
     if (profile && !error) {
+      // Keep raw_user_meta_data updated with org_id for RLS policies
+      if (user.user_metadata?.org_id !== profile.org_id) {
+        await supabase.auth.updateUser({
+          data: { org_id: profile.org_id, role: profile.role }
+        });
+      }
+      
       return {
         role: (profile.role as UserRole) || DEFAULT_ROLE,
         orgId: profile.org_id || "",
       };
     }
 
-    // الملف غير موجود — إنشاؤه مع مكتب افتراضي
-    // 1. إنشاء مكتب (organization) افتراضي أولاً
+    // 2. No profile exists — Create default organization
     const { data: org, error: orgError } = await supabase
       .from("organizations")
       .insert({
-        name: user.displayName || "مكتب المحاماة",
-        slug: `office-${user.uid.slice(0, 8)}`,
+        name: user.user_metadata?.full_name || "مكتب المحاماة",
+        slug: `office-${user.id.slice(0, 8)}`,
         plan: "free",
       })
       .select("id")
       .single();
 
     if (orgError || !org) {
-      console.error("فشل إنشاء المكتب:", orgError);
+      console.error("Failed to create organization:", orgError);
       return null;
     }
 
-    // 2. إنشاء الملف الشخصي مربوطاً بالمكتب
+    // 3. Create profile linked to the new organization
     const { error: profileError } = await supabase.from("profiles").insert({
-      id: user.uid,
+      id: user.id,
       org_id: org.id,
-      full_name: user.displayName || "المستخدم",
+      full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || "المستخدم",
       email: user.email || "",
       role: DEFAULT_ROLE,
     });
 
     if (profileError) {
-      console.error("فشل إنشاء الملف الشخصي:", profileError);
+      console.error("Failed to create profile:", profileError);
       return null;
     }
+    
+    // 4. Set org_id in Supabase Auth user metadata so get_user_org_id() SQL function works
+    await supabase.auth.updateUser({
+      data: { org_id: org.id, role: DEFAULT_ROLE }
+    });
 
     return { role: DEFAULT_ROLE, orgId: org.id };
   } catch (error) {
-    console.error("خطأ في تحميل ملف المستخدم:", error);
+    console.error("Error loading user profile:", error);
     return null;
   }
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        // BUG-017: تحقق من تفعيل البريد الإلكتروني في بيئة الإنتاج (اختياري - مفعل للعرض)
-        if (process.env.NODE_ENV === 'production' && !firebaseUser.emailVerified) {
-          // toast.warn("يرجى تفعيل بريدك الإلكتروني للوصول لكامل المميزات.");
-        }
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      handleAuthChange(session?.user || null);
+    };
+    
+    checkUser();
 
-        const profile = await resolveUserProfile(firebaseUser);
-        if (!profile) {
-          toast.error("تعذر تحميل ملف المستخدم. يرجى إعادة تسجيل الدخول.");
-          auth.signOut();
-          setTenantIdCache(null);
-          useAuthStore.getState().setCurrentUser(null);
-          setUser(null);
-          setLoading(false);
-          return;
-        }
-
-        const { role, orgId } = profile;
-        // تخزين orgId مؤقتاً بديلاً عن tenantId
-        setTenantIdCache(orgId);
-        useAuthStore.getState().setCurrentUser({
-          id: firebaseUser.uid,
-          name: firebaseUser.displayName || "المستخدم",
-          email: firebaseUser.email || "",
-          role,
-          orgId,
-          avatar: firebaseUser.photoURL || undefined,
-        });
-        setUser(firebaseUser);
-      } else {
-        setUser(null);
-        resetAllStores(); // ✅ مسح جميع البيانات — منع تسرب بيانات مكتب لآخر
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        handleAuthChange(session?.user || null);
       }
-      setLoading(false);
-    });
+    );
 
-    return () => unsubscribe();
+    return () => subscription.unsubscribe();
   }, []);
+
+  const handleAuthChange = async (supabaseUser: any) => {
+    if (supabaseUser) {
+      const profile = await resolveUserProfile(supabaseUser);
+      if (!profile) {
+        toast.error("تعذر تحميل ملف المستخدم. يرجى إعادة تسجيل الدخول.");
+        await supabase.auth.signOut();
+        setTenantIdCache(null);
+        useAuthStore.getState().setCurrentUser(null);
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
+      const { role, orgId } = profile;
+      setTenantIdCache(orgId);
+      
+      useAuthStore.getState().setCurrentUser({
+        id: supabaseUser.id,
+        name: supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || "المستخدم",
+        email: supabaseUser.email || "",
+        role,
+        orgId,
+        avatar: supabaseUser.user_metadata?.avatar_url || undefined,
+      });
+      setUser(supabaseUser);
+    } else {
+      setUser(null);
+      resetAllStores(); // Clear all data
+    }
+    setLoading(false);
+  };
 
   if (loading) {
     return (

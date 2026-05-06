@@ -30,84 +30,9 @@ interface FinanceState {
 }
 
 export const useFinanceStore = create<FinanceState>((set) => ({
-  expenses: [
-    {
-      id: "EXP-001",
-      clientId: "C-177617",
-      clientName: "شركة العزم للمقاولات",
-      caseId: "C-152468",
-      caseName: "دعوى مطالبة مالية",
-      category: "رسوم قضائية",
-      amount: 450,
-      date: new Date().toISOString().split('T')[0],
-      status: "مخصوم من الأمانة",
-      description: "رسوم قيد دعوى ابتدائية"
-    },
-    {
-      id: "EXP-002",
-      clientId: "C-334411",
-      clientName: "أحمد عبدالله العقاري",
-      category: "دمغة محاماة",
-      amount: 150,
-      date: new Date(Date.now() - 86400000).toISOString().split('T')[0],
-      status: "تم السداد",
-      description: "دمغة محاماة ونقابة"
-    }
-  ],
+  expenses: [],
   timeEntries: [],
-  receivables: [
-    {
-      id: "REC-99120",
-      clientId: "C-177617",
-      clientName: "شركة العزم للمقاولات",
-      caseId: "C-152468",
-      totalAmount: 25000,
-      collectedAmount: 0,
-      outstandingAmount: 25000,
-      dueDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-      createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
-      status: "متأخر",
-      isReconciled: false,
-      actions: []
-    },
-    {
-      id: "REC-44321",
-      clientId: "C-334411",
-      clientName: "أحمد عبدالله العقاري",
-      caseId: "C-998822",
-      totalAmount: 200000,
-      collectedAmount: 80000,
-      outstandingAmount: 120000,
-      dueDate: new Date(Date.now() - 65 * 24 * 60 * 60 * 1000).toISOString(),
-      createdAt: new Date(Date.now() - 100 * 24 * 60 * 60 * 1000).toISOString(),
-      status: "متأخر",
-      isReconciled: false,
-      actions: [
-        {
-          id: "CA-1",
-          receivableId: "REC-44321",
-          type: "إنذار رسمي",
-          createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-          createdBy: "النظام",
-          notes: "تم إرسال إنذار قانوني نهائي قبل الرفع لمحكمة التنفيذ"
-        }
-      ]
-    },
-    {
-      id: "REC-11223",
-      clientId: "C-556677",
-      clientName: "مؤسسة الرواد المحدودة",
-      caseId: "C-112233",
-      totalAmount: 15000,
-      collectedAmount: 0,
-      outstandingAmount: 15000,
-      dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
-      createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-      status: "مفتوح",
-      isReconciled: false,
-      actions: []
-    }
-  ],
+  receivables: [],
   trustAccounts: [],
   pricingModels: [],
   hasLoaded: false,

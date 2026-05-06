@@ -11,8 +11,8 @@ describe('Conflict Check Integration', () => {
     
     useClientsStore.setState({
       clients: [
-        { id: 'C1', type: 'منشأة', name: 'شركة ألف', phone: '+966500000000', subsidiaries: ['شركة تابعة ألف'] },
-        { id: 'C2', type: 'فرد', name: 'محمد عبدالله', phone: '+966511111111' }
+        { id: 'C1', type: 'منشأة', name: 'شركة ألف', phone: '+201000000000', subsidiaries: ['شركة تابعة ألف'] },
+        { id: 'C2', type: 'فرد', name: 'محمد عبدالله', phone: '+201111111111' }
       ] as any[]
     });
 

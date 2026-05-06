@@ -51,58 +51,29 @@ export interface CriminalCase {
 
 interface CriminalState {
   criminalCases: CriminalCase[];
+  setCriminalCases: (cases: CriminalCase[]) => void;
+  addCriminalCase: (criminalCase: CriminalCase) => void;
+  updateCriminalCase: (id: string, data: Partial<CriminalCase>) => void;
+  deleteCriminalCase: (id: string) => void;
+  reset: () => void;
 }
 
 export const useCriminalStore = create<CriminalState>((set) => ({
-  criminalCases: [
-    {
-      id: "CRIM-001",
-      caseType: "جنحة",
-      currentStage: 2,
-      policeReport: {
-        reportNumber: "4502 إداري",
-        policeStation: "قسم الدقي",
-        date: "2026-04-10",
-        incidentType: "مشاجرة وضرب",
-        accused: "أحمد سيد محمود",
-        victim: "محمود علي إبراهيم",
-      },
-      prosecution: {
-        prosecutionNumber: "220 حصر",
-        prosecutionOffice: "نيابة الدقي الجزئية",
-        investigator: "وكيل النيابة / عمر خالد",
-        transferDate: "2026-04-11",
-        decision: "قيد التحقيق"
-      }
-    },
-    {
-      id: "CRIM-002",
-      caseType: "جناية",
-      currentStage: 4,
-      policeReport: {
-        reportNumber: "1120 جنايات",
-        policeStation: "قسم العجوزة",
-        date: "2026-01-05",
-        incidentType: "اختلاس أموال عامة",
-        accused: "سمير جلال عبدالعزيز",
-        victim: "شركة النيل للأدوية",
-      },
-      prosecution: {
-        prosecutionNumber: "55 حصر أموال عامة",
-        prosecutionOffice: "نيابة الأموال العامة العليا",
-        investigator: "رئيس النيابة / طارق سعد",
-        transferDate: "2026-01-10",
-        decision: "إحالة للمحكمة"
-      },
-      courtRegistration: {
-        caseNumber: "154/2026 جنايات العجوزة",
-        court: "محكمة جنايات الجيزة",
-        circuit: "الدائرة 5 جنايات",
-        officialCharge: "اختلاس أموال عامة والإضرار العمدي"
-      },
-      trial: {
-        notes: "تم التأجيل لسماع الشهود ومناقشة تقرير لجنة الخبراء."
-      }
-    }
-  ]
+  criminalCases: [],
+
+  reset: () => set({ criminalCases: [] }),
+
+  setCriminalCases: (criminalCases) => set({ criminalCases }),
+  
+  addCriminalCase: (criminalCase) => set((state) => ({
+    criminalCases: [criminalCase, ...state.criminalCases]
+  })),
+
+  updateCriminalCase: (id, data) => set((state) => ({
+    criminalCases: state.criminalCases.map(c => c.id === id ? { ...c, ...data } : c)
+  })),
+
+  deleteCriminalCase: (id) => set((state) => ({
+    criminalCases: state.criminalCases.filter(c => c.id !== id)
+  })),
 }));

@@ -72,6 +72,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitest/coverage-v8": "^4.1.4",
     "autoprefixer": "^10.4.21",
+    "firebase-admin": "^13.8.0",
     "jsdom": "^29.0.2",
     "tailwindcss": "^4.1.14",
     "ts-node": "^10.9.2",

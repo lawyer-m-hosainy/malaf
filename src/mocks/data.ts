@@ -1,26 +1,9 @@
 import { 
-  Client, Case, EgyptCourtType, Session, UserProfile, Notification, Task, OfficeSettings, Expense, TeamMember,
+  Client, Case, Session, UserProfile, Notification, Task, OfficeSettings, Expense, TeamMember,
   ComplianceRecord, LegalPrecedent, ContractTemplate, IPRecord, TimeEntry, Deadline, EnforcementCase, AdvisoryRequest,
   RiskRegister, Control, ComplianceIssue, RegulatoryObligation, ReceivableAccount, ContractRequest, IPFiling, IPRenewal, IPOpposition, IPEnforcementAction,
   SpecializedTrack, KeyAccount, Proposal, PricingModel, QAReview, KnowledgeAsset, TrainingPathway, EgyptAssessment, ConflictCheckRecord
 } from "../types";
-
-const courtTypes: EgyptCourtType[] = [
-  'محكمة النقض',
-  'محكمة الاستئناف',
-  'المحكمة الابتدائية',
-  'المحكمة الجنائية الابتدائية',
-  'المحكمة الاقتصادية',
-  'الدائرة العمالية',
-  'محاكم الأسرة',
-  'مجلس الدولة',
-  'محكمة القضاء الإداري',
-  'المحكمة الإدارية العليا',
-  'المحكمة الدستورية العليا',
-  'محكمة أمن الدولة العليا',
-  'محكمة الطفل',
-  'محكمة الجنايات'
-];
 
 export const mockUser: UserProfile = {
   id: 'U-001',
@@ -141,9 +124,9 @@ export const mockSessions: Session[] = [
 ];
 
 export const mockExpenses: Expense[] = [
-  { id: 'EXP-001', caseId: 'C-1001', caseName: 'النيل للتجارة ضد بيراميدز', category: 'رسوم قضائية', amount: 2500, date: '2024-03-15', status: 'تم السداد', description: 'رسوم قيد الدعوى في المحكمة الاقتصادية' },
-  { id: 'EXP-002', caseId: 'C-1005', caseName: 'النيابة العامة ضد محمد السيد', category: 'أتعاب خبراء', amount: 5000, date: '2024-03-20', status: 'معلق', description: 'أتعاب خبير تقني لتقييم الأضرار' },
-  { id: 'EXP-003', caseId: 'C-1001', caseName: 'النيل للتجارة ضد بيراميدز', category: 'تنقلات', amount: 350, date: '2024-03-22', status: 'مسترد من العميل', description: 'تكاليف الانتقال لحضور جلسة في الإسكندرية' },
+  { id: 'EXP-001', clientId: '1', caseId: 'C-1001', caseName: 'النيل للتجارة ضد بيراميدز', category: 'رسوم قضائية', amount: 2500, date: '2024-03-15', status: 'تم السداد', description: 'رسوم قيد الدعوى في المحكمة الاقتصادية' },
+  { id: 'EXP-002', clientId: '10', caseId: 'C-1005', caseName: 'النيابة العامة ضد محمد السيد', category: 'أمانة خبير', amount: 5000, date: '2024-03-20', status: 'معلق', description: 'أتعاب خبير تقني لتقييم الأضرار' },
+  { id: 'EXP-003', clientId: '1', caseId: 'C-1001', caseName: 'النيل للتجارة ضد بيراميدز', category: 'مصروفات انتقال', amount: 350, date: '2024-03-22', status: 'تم السداد', description: 'تكاليف الانتقال لحضور جلسة في الإسكندرية' },
 ];
 
 export const mockTeamMembers: TeamMember[] = [
@@ -201,8 +184,8 @@ export const mockContracts: ContractTemplate[] = [
 ];
 
 export const mockIP: IPRecord[] = [
-  { id: 'IP-1', title: 'شعار شركة الراجحي', type: 'علامة تجارية', owner: 'شركة الراجحي العقارية', registrationNumber: '123456', expiryDate: '2030-01-01', status: 'مسجلة' },
-  { id: 'IP-2', title: 'نظام إدارة قانوني', type: 'حق مؤلف', owner: 'د. عبدالمحسن القحطاني', registrationNumber: '789012', expiryDate: '2028-05-20', status: 'تحت الفحص' },
+  { id: 'IP-1', title: 'شعار شركة النيل', type: 'علامة تجارية', owner: 'شركة النيل للصناعات الغذائية', registrationNumber: '123456', expiryDate: '2030-01-01', status: 'مسجلة' },
+  { id: 'IP-2', title: 'نظام إدارة قانوني', type: 'حق مؤلف', owner: 'د. أحمد حسني المحامي', registrationNumber: '789012', expiryDate: '2028-05-20', status: 'تحت الفحص' },
 ];
 
 export const mockTimeEntries: TimeEntry[] = [
@@ -228,24 +211,18 @@ export const mockEnforcementCases: EnforcementCase[] = [
     debtorName: "شركة بيراميدز للمقاولات",
     amountClaimed: 185000,
     amountCollected: 50000,
-    status: "محصل جزئي",
+    status: "مفتوح",
     stageDeadline: "2026-04-18",
     createdAt: "2026-03-10",
     executionType: "حكم قضائي",
+    currentStep: 1,
     judgmentNumber: "1234/2026",
     judgmentDate: "2026-03-01",
     judgmentCourt: "المحكمة الاقتصادية بالقاهرة",
-    executionJudge: "قاضي التنفيذ بمحكمة شمال القاهرة",
     actions: [
       { id: "EA-1", enforcementCaseId: "E-1001", title: "تقديم طلب تنفيذ جبري", date: "2026-03-10", performedBy: "U-001", type: "إجراء قانوني" },
       { id: "EA-2", enforcementCaseId: "E-1001", title: "إصدار أمر تنفيذ", date: "2026-03-15", performedBy: "U-001", type: "إجراء قانوني" },
       { id: "EA-3", enforcementCaseId: "E-1001", title: "تحصيل دفعة أولى", notes: "تم تحصيل دفعة 50,000 ج.م", date: "2026-03-25", performedBy: "U-002", type: "تحصيل" },
-    ],
-    orders: [
-      { id: "EO-1", enforcementCaseId: "E-1001", type: "أمر تنفيذ", issuedAt: "2026-03-15", referenceNumber: "TNF-2026-991", status: "منفذ" },
-    ],
-    assets: [
-      { id: "AS-1", enforcementCaseId: "E-1001", type: "حساب بنكي", description: "حساب تشغيلي رئيسي", estimatedValue: 120000, isFrozen: true },
     ],
   },
 ];
@@ -255,7 +232,7 @@ export const mockAdvisoryRequests: AdvisoryRequest[] = [
     id: "AR-1001",
     tenantId: "demo-tenant",
     title: "الرأي القانوني حول بند جزائي في عقد توريد",
-    clientName: "شركة الراجحي العقارية",
+    clientName: "شركة النيل للتجارة والتوريدات",
     requestedBy: "مدير الشؤون القانونية",
     assignedTo: "U-002",
     status: "قيد المراجعة",

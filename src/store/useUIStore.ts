@@ -11,9 +11,11 @@ interface UIState {
   auditLogs: AuditLog[];
   eSignatures: ESignatureRequest[];
   isSidebarOpen: boolean;
+  isAiFallback: boolean;
 
   toggleSidebar: () => void;
   closeSidebar: () => void;
+  setAiFallback: (isFallback: boolean) => void;
 
   setOfficeSettings: (settings: OfficeSettings) => void;
   setNotifications: (notifications: Notification[]) => void;
@@ -24,11 +26,11 @@ interface UIState {
   addAuditLog: (log: AuditLog) => void;
   setESignatures: (requests: ESignatureRequest[]) => void;
   addESignature: (request: ESignatureRequest) => void;
+  /** تسجيل الخروج: إعادة ضبط إعدادات الواجهة */
+  reset: () => void;
 }
 
-export const useUIStore = create<UIState>()(
-  persist(
-    (set) => ({
+const initialState = {
   officeSettings: {
     name: "",
     vatNumber: "",
@@ -71,9 +73,17 @@ export const useUIStore = create<UIState>()(
   auditLogs: [],
   eSignatures: [],
   isSidebarOpen: false,
+  isAiFallback: false,
+};
+
+export const useUIStore = create<UIState>()(
+  persist(
+    (set) => ({
+  ...initialState,
 
   toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
   closeSidebar: () => set({ isSidebarOpen: false }),
+  setAiFallback: (isAiFallback) => set({ isAiFallback }),
 
   setOfficeSettings: (officeSettings) => set({ officeSettings }),
   setNotifications: (notifications) => set({ notifications }),
@@ -86,10 +96,15 @@ export const useUIStore = create<UIState>()(
   addAuditLog: (log) => set((state) => ({ auditLogs: [log, ...state.auditLogs] })),
   setESignatures: (eSignatures) => set({ eSignatures }),
   addESignature: (request) => set((state) => ({ eSignatures: [request, ...state.eSignatures] })),
+  reset: () => set({ ...initialState }),
     }),
     {
       name: 'malaf-ui-storage',
-      partialize: (state) => ({ officeSettings: state.officeSettings }),
+      partialize: (state) => ({ 
+        officeSettings: state.officeSettings,
+        isSidebarOpen: state.isSidebarOpen,
+        isAiFallback: state.isAiFallback
+      }),
     }
   )
 );

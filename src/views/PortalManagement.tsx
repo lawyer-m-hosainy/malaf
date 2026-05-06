@@ -43,9 +43,10 @@ export default function PortalManagement() {
         const orgId = getCurrentTenantId();
         const { data: users, error } = await supabase
           .from("profiles")
-          .select("*")
+          .select("id, full_name, email, linked_client_id, created_at")
           .eq("org_id", orgId)
-          .eq("role", "client");
+          .eq("role", "client")
+          .limit(50);
 
         if (users && !error) {
           setPortalUsers(users.map(u => ({

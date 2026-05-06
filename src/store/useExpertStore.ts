@@ -33,33 +33,12 @@ interface ExpertState {
   setMissions: (missions: ExpertMission[]) => void;
   addMission: (mission: ExpertMission) => void;
   updateMission: (id: string, data: Partial<ExpertMission>) => void;
+  reset: () => void;
 }
 
 export const useExpertStore = create<ExpertState>((set) => ({
-  missions: [
-    {
-      id: "EXP-88112",
-      caseId: "C-1001",
-      caseName: "شركة الأفق ضد مؤسسة البناء",
-      expertType: "حسابي",
-      expertName: "مكتب الخبراء بشمال القاهرة - خبير/ سعيد الجمال",
-      missionNumber: "450/2026",
-      assignmentDate: "2026-04-10",
-      depositAmount: 5000,
-      depositDate: "2026-04-15",
-      reportReceived: false,
-      objectionFiled: false,
-      status: "جارية",
-      sessions: [
-        {
-          id: "S-1",
-          date: "2026-04-20",
-          result: "حضور ممثل الشركة لتقديم المستندات المطلوبة",
-          nextSession: "2026-05-10"
-        }
-      ]
-    }
-  ],
+  missions: [],
+  reset: () => set({ missions: [] }),
   setMissions: (missions) => set({ missions }),
   addMission: (mission) => set((state) => ({ missions: [mission, ...state.missions] })),
   updateMission: (id, data) => set((state) => ({

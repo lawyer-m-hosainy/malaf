@@ -211,12 +211,12 @@ function ClientLoginForm({ onLogin }: { onLogin: (data: ClientData) => void }) {
                 toast.success("تم تسجيل الدخول (وضع العرض للمستثمرين)");
                 onLogin({
                   name: "شركة الأفق للتطوير العقاري",
-                  phone: "+966501234567",
+                  phone: "+201012345678",
                   type: "منشأة",
                   cases: [
                     {
                       id: "C-1001",
-                      court: "المحكمة التجارية",
+                      court: "المحكمة الاقتصادية",
                       plaintiff: "شركة الأفق",
                       defendant: "مؤسسة البناء",
                       status: "نشطة",
@@ -224,7 +224,7 @@ function ClientLoginForm({ onLogin }: { onLogin: (data: ClientData) => void }) {
                     },
                     {
                       id: "C-1004",
-                      court: "الاستئناف",
+                      court: "محكمة الاستئناف",
                       plaintiff: "شركة الأفق",
                       defendant: "شركة التقنية المحدودة",
                       status: "تحت الدراسة",

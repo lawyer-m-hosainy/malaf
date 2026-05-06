@@ -47,54 +47,12 @@ interface ComplianceState {
   toggleSpecializedChecklist: (trackId: string, checklistId: string) => void;
   updateSpecializedTrackStatus: (trackId: string, status: SpecializedTrack['status']) => void;
   updateTrainingModuleStatus: (pathwayId: string, moduleId: string, status: TrainingPathway['modules'][number]['status']) => void;
+  reset: () => void;
 }
 
-const MOCK_PRECEDENTS: LegalPrecedent[] = [
-  {
-    id: "LP-101",
-    title: "حكم نقض في دعوى عمالية (مكافأة نهاية الخدمة)",
-    category: "عمالي",
-    summary: "مبدأ قضائي يقرر أن مكافأة نهاية الخدمة تُحسب بناءً على آخر أجر فعلي استلمه العامل شاملاً البدلات الثابتة.",
-    tags: ["عمالي", "مكافأة", "مبادئ قضائية"],
-    date: "2023-11-05"
-  },
-  {
-    id: "LP-102",
-    title: "مذكرة دفاع في دعوى مطالبة مالية (عقد مقاولة)",
-    category: "تجاري",
-    summary: "مذكرة نموذجية للرد على مطالبة المقاول وتوضيح الدفوع المتعلقة بالتأخير في التسليم والعيوب الهندسية.",
-    tags: ["تجاري", "مقاولات", "مذكرة دفاع"],
-    date: "2024-01-20"
-  }
-];
+const MOCK_PRECEDENTS: LegalPrecedent[] = [];
 
-const MOCK_QA_REVIEWS: QAReview[] = [
-  {
-    id: "QA-99120",
-    caseId: "C-1001",
-    reviewerId: "U-001",
-    status: "Pending",
-    checklist: [
-      { id: "QA-CH-1", requirement: "التحقق من صحة بيانات الوكالة في الشهر العقاري", isMet: true },
-      { id: "QA-CH-2", requirement: "مراجعة المذكرة لغوياً وقانونياً", isMet: false, comment: "يوجد خطأ إملائي في الصفحة الثانية" },
-      { id: "QA-CH-3", requirement: "التأكد من إرفاق كافة المستندات الثبوتية", isMet: false },
-    ],
-    overallComment: "بانتظار استكمال النواقص قبل الاعتماد النهائي للإيداع"
-  },
-  {
-    id: "QA-88221",
-    caseId: "C-1002",
-    reviewerId: "U-001",
-    status: "Approved",
-    checklist: [
-      { id: "QA-CH-1", requirement: "التحقق من صحة بيانات الوكالة في الشهر العقاري", isMet: true },
-      { id: "QA-CH-2", requirement: "مراجعة المذكرة لغوياً وقانونياً", isMet: true },
-      { id: "QA-CH-3", requirement: "التأكد من إرفاق كافة المستندات الثبوتية", isMet: true },
-    ],
-    overallComment: "المذكرة جاهزة ومكتملة من الناحية المهنية",
-    completedAt: new Date().toISOString()
-  }
-];
+const MOCK_QA_REVIEWS: QAReview[] = [];
 
 export const useComplianceStore = create<ComplianceState>((set) => ({
   riskRegisters: [],
@@ -102,6 +60,34 @@ export const useComplianceStore = create<ComplianceState>((set) => ({
   complianceIssues: [],
   regulatoryObligations: [],
   compliance: [],
+  precedents: [],
+  qaReviews: [],
+  conflictHistory: [],
+  knowledgeAssets: [],
+  specializedTracks: [],
+  trainingPathways: [],
+  assessments: [],
+
+  reset: () => set({
+    riskRegisters: [],
+    controls: [],
+    complianceIssues: [],
+    regulatoryObligations: [],
+    compliance: [],
+    precedents: [],
+    qaReviews: [],
+    conflictHistory: [],
+    knowledgeAssets: [],
+    specializedTracks: [],
+    trainingPathways: [],
+    assessments: [],
+  }),
+
+  setRiskRegisters: (riskRegisters) => set({ riskRegisters }),
+  setControls: (controls) => set({ controls }),
+  setComplianceIssues: (complianceIssues) => set({ complianceIssues }),
+  setRegulatoryObligations: (regulatoryObligations) => set({ regulatoryObligations }),
+  setCompliance: (compliance) => set({ compliance }),
   precedents: MOCK_PRECEDENTS,
   qaReviews: MOCK_QA_REVIEWS,
   conflictHistory: [],

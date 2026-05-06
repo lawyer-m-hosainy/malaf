@@ -5,10 +5,16 @@
 
 import { auth } from "@/lib/firebase";
 
+export interface ApiResponse {
+  text: string;
+  provider?: string;
+  isFallback?: boolean;
+}
+
 export async function callAiApi<T extends Record<string, unknown>>(
   path: string,
   payload: T
-): Promise<string> {
+): Promise<ApiResponse> {
   const currentUser = auth.currentUser;
 
   if (!currentUser) {
@@ -31,5 +37,9 @@ export async function callAiApi<T extends Record<string, unknown>>(
   }
 
   const data = await response.json();
-  return data.text || "";
+  return {
+    text: data.text || "",
+    provider: data.provider,
+    isFallback: data.isFallback
+  };
 }

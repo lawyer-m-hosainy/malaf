@@ -73,7 +73,7 @@ export function Sidebar() {
 
       <aside className={cn(
         "bg-navy-900 dark:bg-black text-white flex flex-col h-[100dvh] fixed lg:sticky top-0 z-50 shadow-xl transition-transform duration-300 w-64 border-e border-navy-900/20 dark:border-white/10",
-        isSidebarOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0" 
+        isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0" 
       )}>
       <div className="p-6 flex items-center gap-3 border-b border-white/10">
         <div className="w-8 h-8 rounded bg-accent-500 flex items-center justify-center text-navy-900 font-bold">

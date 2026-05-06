@@ -70,18 +70,21 @@ CREATE TABLE sessions (
   court_room TEXT,
   notes TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  deleted_at TIMESTAMPTZ
 );
 
 -- 7. Documents Table
 CREATE TABLE documents (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  org_id UUID REFERENCES organizations(id),
   case_id UUID REFERENCES cases(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   file_url TEXT NOT NULL,
   category TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  deleted_at TIMESTAMPTZ
 );
 
 -- 8. Invoices Table
@@ -100,13 +103,17 @@ CREATE TABLE invoices (
 -- 9. POAs Table (Power of Attorney)
 CREATE TABLE poas (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  org_id UUID REFERENCES organizations(id),
   client_id UUID REFERENCES clients(id) ON DELETE CASCADE,
   number TEXT NOT NULL,
   year TEXT NOT NULL,
   office TEXT,
+  type TEXT,
+  status TEXT DEFAULT 'active',
   expiry_date DATE,
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  deleted_at TIMESTAMPTZ
 );
 
 -- 10. Tasks Table
@@ -120,7 +127,8 @@ CREATE TABLE tasks (
   assigned_to UUID REFERENCES profiles(id),
   due_date TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  deleted_at TIMESTAMPTZ
 );
 
 -- 11. Expenses Table
@@ -133,7 +141,8 @@ CREATE TABLE expenses (
   description TEXT,
   date DATE DEFAULT CURRENT_DATE,
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  deleted_at TIMESTAMPTZ
 );
 
 -- 12. Trust Accounts (الأمانات)
@@ -145,7 +154,8 @@ CREATE TABLE trust_accounts (
   type TEXT,
   status TEXT DEFAULT 'active',
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  deleted_at TIMESTAMPTZ
 );
 
 -- 13. Enforcement Cases (التنفيذ القضائي)
@@ -157,7 +167,8 @@ CREATE TABLE enforcement (
   amount_collected DECIMAL(12, 2) DEFAULT 0,
   status TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  deleted_at TIMESTAMPTZ
 );
 
 -- 14. Audit Logs
@@ -326,8 +337,8 @@ CREATE POLICY "cases_delete" ON cases FOR DELETE USING (org_id = get_user_org_id
 
 -- Sessions: accessible via case's org
 CREATE POLICY "sessions_select" ON sessions FOR SELECT USING (
-  EXISTS (SELECT 1 FROM cases WHERE cases.id = sessions.case_id AND cases.org_id = get_user_org_id())
-  OR is_super_admin()
+  (EXISTS (SELECT 1 FROM cases WHERE cases.id = sessions.case_id AND cases.org_id = get_user_org_id()) OR is_super_admin())
+  AND deleted_at IS NULL
 );
 CREATE POLICY "sessions_insert" ON sessions FOR INSERT WITH CHECK (
   EXISTS (SELECT 1 FROM cases WHERE cases.id = sessions.case_id AND cases.org_id = get_user_org_id())
@@ -339,10 +350,27 @@ CREATE POLICY "sessions_delete" ON sessions FOR DELETE USING (
   EXISTS (SELECT 1 FROM cases WHERE cases.id = sessions.case_id AND cases.org_id = get_user_org_id())
 );
 
+-- Invoices
+CREATE POLICY "invoices_select" ON invoices FOR SELECT USING ((org_id = get_user_org_id() OR is_super_admin()) AND deleted_at IS NULL);
+CREATE POLICY "invoices_insert" ON invoices FOR INSERT WITH CHECK (org_id = get_user_org_id());
+CREATE POLICY "invoices_update" ON invoices FOR UPDATE USING (org_id = get_user_org_id());
+CREATE POLICY "invoices_delete" ON invoices FOR DELETE USING (org_id = get_user_org_id());
+
+-- ═══════════════════════════════════════════════════════
+-- Indexes for Performance (Stage R4 Optimization)
+-- ═══════════════════════════════════════════════════════
+
+CREATE INDEX IF NOT EXISTS idx_sessions_case_date ON sessions(case_id, date);
+CREATE INDEX IF NOT EXISTS idx_invoices_org_status_due ON invoices(org_id, status, due_date);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_org_created ON audit_logs(org_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_cases_org_status ON cases(org_id, status);
+CREATE INDEX IF NOT EXISTS idx_clients_org_name ON clients(org_id, name);
+);
+
 -- Documents
 CREATE POLICY "documents_select" ON documents FOR SELECT USING (
-  EXISTS (SELECT 1 FROM cases WHERE cases.id = documents.case_id AND cases.org_id = get_user_org_id())
-  OR is_super_admin()
+  (EXISTS (SELECT 1 FROM cases WHERE cases.id = documents.case_id AND cases.org_id = get_user_org_id()) OR is_super_admin())
+  AND deleted_at IS NULL
 );
 CREATE POLICY "documents_insert" ON documents FOR INSERT WITH CHECK (
   EXISTS (SELECT 1 FROM cases WHERE cases.id = documents.case_id AND cases.org_id = get_user_org_id())
@@ -351,7 +379,7 @@ CREATE POLICY "documents_update" ON documents FOR UPDATE USING (
   EXISTS (SELECT 1 FROM cases WHERE cases.id = documents.case_id AND cases.org_id = get_user_org_id())
 );
 CREATE POLICY "documents_delete" ON documents FOR DELETE USING (
-  EXISTS (SELECT 1 FROM cases WHERE cases.id = documents.case_id AND cases.org_id = get_user_org_id())
+  org_id = get_user_org_id()
 );
 
 -- Invoices (with soft delete check)
@@ -376,10 +404,10 @@ CREATE POLICY "poas_delete" ON poas FOR DELETE USING (
 );
 
 -- Tasks
-CREATE POLICY "tasks_select" ON tasks FOR SELECT USING (org_id = get_user_org_id() OR is_super_admin());
+CREATE POLICY "tasks_select" ON tasks FOR SELECT USING ((org_id = get_user_org_id() OR is_super_admin()) AND deleted_at IS NULL);
 CREATE POLICY "tasks_insert" ON tasks FOR INSERT WITH CHECK (org_id = get_user_org_id());
 CREATE POLICY "tasks_update" ON tasks FOR UPDATE USING (org_id = get_user_org_id());
-CREATE POLICY "tasks_delete" ON tasks FOR DELETE USING (org_id = get_user_org_id());
+CREATE POLICY "tasks_delete" ON tasks FOR DELETE USING (is_super_admin());
 
 -- Expenses
 CREATE POLICY "expenses_select" ON expenses FOR SELECT USING (org_id = get_user_org_id() OR is_super_admin());
@@ -453,6 +481,7 @@ CREATE INDEX idx_cases_org ON cases(org_id);
 CREATE INDEX idx_cases_client ON cases(client_id);
 CREATE INDEX idx_sessions_case ON sessions(case_id);
 CREATE INDEX idx_sessions_date ON sessions(date);
+CREATE INDEX idx_sessions_composite ON sessions(date, case_id);
 CREATE INDEX idx_documents_case ON documents(case_id);
 CREATE INDEX idx_invoices_org ON invoices(org_id);
 CREATE INDEX idx_invoices_client ON invoices(client_id);

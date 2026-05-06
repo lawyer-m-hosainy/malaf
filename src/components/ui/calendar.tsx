@@ -10,13 +10,15 @@ import { cn, formatHijriDate, formatHijriDayNumber } from "@/lib/utils"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from "lucide-react"
 
+import { ar } from "date-fns/locale"
+
 function Calendar({
   className,
   classNames,
   showOutsideDays = true,
   captionLayout = "label",
   buttonVariant = "ghost",
-  locale,
+  locale = ar,
   formatters,
   components,
   ...props

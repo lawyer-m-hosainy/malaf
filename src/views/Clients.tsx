@@ -194,13 +194,14 @@ export default function Clients() {
               <div className="grid grid-cols-2 gap-4">
                 {formData.type === 'فرد' ? (
                   <div className="space-y-2">
-                    <Label htmlFor="nationalId">الرقم القومي / جواز السفر</Label>
+                    <Label htmlFor="nationalId">الرقم القومي (14 رقم)</Label>
                     <Input 
                       id="nationalId"
                       value={formData.nationalId}
                       onChange={e => setFormData(prev => ({ ...prev, nationalId: e.target.value }))}
-                      placeholder="1XXXXXXXXX" 
+                      placeholder="2XXXXXXXXXXXXX" 
                       className="dark:bg-white/5 dark:border-white/10"
+                      maxLength={14}
                     />
                   </div>
                 ) : (
@@ -210,13 +211,13 @@ export default function Clients() {
                       id="cr"
                       value={formData.commercialRegistration}
                       onChange={e => setFormData(prev => ({ ...prev, commercialRegistration: e.target.value }))}
-                      placeholder="7XXXXXXXXX" 
+                      placeholder="XXXXXXX" 
                       className="dark:bg-white/5 dark:border-white/10"
                     />
                   </div>
                 )}
                 <div className="space-y-2">
-                  <Label htmlFor="phone">رقم الجوال</Label>
+                  <Label htmlFor="phone">رقم الهاتف المصري</Label>
                   <Input 
                     id="phone"
                     value={formData.phone}

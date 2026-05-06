@@ -41,10 +41,11 @@ export async function fetchClients(): Promise<Client[]> {
   try {
     const { data, error } = await supabase
       .from(CLIENTS_TABLE)
-      .select("*")
-      .eq("org_id", orgId) // ✅ عزل المستأجر
+      .select("id, name, type, phone, email, national_id, commercial_reg")
+      .eq("org_id", orgId)
+      .is("deleted_at", null)
       .order("name")
-      .limit(50);
+      .limit(20);
 
     if (error) throw error;
 
@@ -65,15 +66,16 @@ export async function fetchClients(): Promise<Client[]> {
 }
 
 export async function fetchClientsPaginated(
-  pageSize: number = 10,
+  pageSize: number = 20,
   page: number = 0
 ): Promise<{ data: Client[]; hasMore: boolean }> {
   const orgId = requireOrgId();
   try {
     const { data, error, count } = await supabase
       .from(CLIENTS_TABLE)
-      .select("*", { count: "exact" })
-      .eq("org_id", orgId) // ✅ عزل المستأجر
+      .select("id, name, type, phone, email, national_id, commercial_reg", { count: "exact" })
+      .eq("org_id", orgId)
+      .is("deleted_at", null)
       .order("name")
       .range(page * pageSize, (page + 1) * pageSize - 1);
 
@@ -124,13 +126,14 @@ export async function saveClient(client: Client): Promise<void> {
 
 export async function deleteClient(clientId: string): Promise<void> {
   const orgId = requireOrgId();
+  // ✅ الحذف الناعم بدلاً من الحذف الفعلي
   const { error } = await supabase
     .from(CLIENTS_TABLE)
-    .delete()
+    .update({ deleted_at: new Date().toISOString() })
     .eq("id", clientId)
-    .eq("org_id", orgId); // ✅ منع حذف بيانات مكتب آخر
+    .eq("org_id", orgId);
   if (error) throw error;
-  await logAuditAction("DELETE", "clients", clientId, "حذف موكل");
+  await logAuditAction("DELETE_SOFT", "clients", clientId, "حذف موكل (ناعم)");
 }
 
 // ─── القضايا (Cases) ─────────────────────────────────────────────
@@ -139,13 +142,14 @@ export async function fetchCases(): Promise<Case[]> {
   try {
     const { data, error } = await supabase
       .from(CASES_TABLE)
-      .select("*")
-      .eq("org_id", orgId) // ✅ عزل المستأجر
+      .select("id, plaintiff, defendant, court, case_number, case_year, status, created_at")
+      .eq("org_id", orgId)
+      .is("deleted_at", null)
       .order("created_at", { ascending: false })
-      .limit(100);
+      .limit(20);
 
     if (error) throw error;
-    return data || [];
+    return (data || []) as any;
   } catch (error) {
     console.error("خطأ في جلب القضايا:", error);
     throw error;
@@ -164,19 +168,31 @@ export async function saveCases(cases: Case[]): Promise<void> {
   }
 }
 
+export async function deleteCase(caseId: string): Promise<void> {
+  const orgId = requireOrgId();
+  const { error } = await supabase
+    .from(CASES_TABLE)
+    .update({ deleted_at: new Date().toISOString() }) // ✅ حذف ناعم
+    .eq("id", caseId)
+    .eq("org_id", orgId);
+  if (error) throw error;
+  await logAuditAction("DELETE_SOFT", "cases", caseId, "حذف قضية (ناعم)");
+}
+
 // ─── الفواتير (Invoices) ─────────────────────────────────────────
 export async function fetchInvoices(): Promise<Invoice[]> {
   const orgId = requireOrgId();
   try {
     const { data, error } = await supabase
       .from("invoices")
-      .select("*")
-      .eq("org_id", orgId) // ✅ عزل المستأجر
+      .select("id, client_id, amount, total, status, date, created_at")
+      .eq("org_id", orgId)
+      .is("deleted_at", null)
       .order("created_at", { ascending: false })
-      .limit(100);
+      .limit(20);
 
     if (error) throw error;
-    return data || [];
+    return (data || []) as any;
   } catch (error) {
     console.error("خطأ في جلب الفواتير:", error);
     return [];
@@ -209,11 +225,11 @@ export async function deleteInvoice(invoiceId: string): Promise<void> {
   const orgId = requireOrgId();
   const { error } = await supabase
     .from("invoices")
-    .delete()
+    .update({ deleted_at: new Date().toISOString() }) // ✅ حذف ناعم
     .eq("id", invoiceId)
-    .eq("org_id", orgId); // ✅ منع حذف بيانات مكتب آخر
+    .eq("org_id", orgId);
   if (error) throw error;
-  await logAuditAction("DELETE", "invoices", invoiceId, "حذف فاتورة");
+  await logAuditAction("DELETE_SOFT", "invoices", invoiceId, "حذف فاتورة (ناعم)");
 }
 
 // ─── المهام (Tasks) ──────────────────────────────────────────────
@@ -222,10 +238,11 @@ export async function fetchTasks(): Promise<any[]> {
   try {
     const { data, error } = await supabase
       .from("tasks")
-      .select("*")
-      .eq("org_id", orgId) // ✅ عزل المستأجر
+      .select("id, title, status, due_date, assigned_to")
+      .eq("org_id", orgId)
+      .is("deleted_at", null)
       .order("due_date")
-      .limit(100);
+      .limit(50);
     if (error) throw error;
     return data || [];
   } catch (error) {
@@ -234,13 +251,24 @@ export async function fetchTasks(): Promise<any[]> {
   }
 }
 
+export async function deleteTask(taskId: string): Promise<void> {
+  const orgId = requireOrgId();
+  const { error } = await supabase
+    .from("tasks")
+    .update({ deleted_at: new Date().toISOString() }) // ✅ حذف ناعم
+    .eq("id", taskId)
+    .eq("org_id", orgId);
+  if (error) throw error;
+  await logAuditAction("DELETE_SOFT", "tasks", taskId, "حذف مهمة (ناعم)");
+}
+
 // ─── فريق العمل (Profiles) ──────────────────────────────────────
 export async function fetchTeam(): Promise<any[]> {
   const orgId = requireOrgId();
   try {
     const { data, error } = await supabase
       .from("profiles")
-      .select("*")
+      .select("id, full_name, role, email, created_at")
       .eq("org_id", orgId) // ✅ عزل المستأجر
       .limit(50);
     if (error) throw error;
@@ -257,8 +285,9 @@ export async function fetchEnforcement(): Promise<any[]> {
   try {
     const { data, error } = await supabase
       .from("enforcement")
-      .select("*")
-      .eq("org_id", orgId) // ✅ عزل المستأجر
+      .select("id, case_id, amount_claimed, amount_collected, status, created_at")
+      .eq("org_id", orgId)
+      .is("deleted_at", null) // ✅ احترام الحذف الناعم
       .limit(100);
     if (error) throw error;
     return data || [];
@@ -268,14 +297,26 @@ export async function fetchEnforcement(): Promise<any[]> {
   }
 }
 
+export async function deleteEnforcement(id: string): Promise<void> {
+  const orgId = requireOrgId();
+  const { error } = await supabase
+    .from("enforcement")
+    .update({ deleted_at: new Date().toISOString() }) // ✅ حذف ناعم
+    .eq("id", id)
+    .eq("org_id", orgId);
+  if (error) throw error;
+  await logAuditAction("DELETE_SOFT", "enforcement", id, "حذف ملف تنفيذ (ناعم)");
+}
+
 // ─── حسابات الأمانات (Trust Accounts) ──────────────────────────
 export async function fetchTrustAccounts(): Promise<any[]> {
   const orgId = requireOrgId();
   try {
     const { data, error } = await supabase
       .from("trust_accounts")
-      .select("*")
-      .eq("org_id", orgId) // ✅ عزل المستأجر
+      .select("id, client_id, amount, type, status, created_at")
+      .eq("org_id", orgId)
+      .is("deleted_at", null) // ✅ احترام الحذف الناعم
       .limit(100);
     if (error) throw error;
     return data || [];
@@ -285,13 +326,24 @@ export async function fetchTrustAccounts(): Promise<any[]> {
   }
 }
 
+export async function deleteTrustAccount(id: string): Promise<void> {
+  const orgId = requireOrgId();
+  const { error } = await supabase
+    .from("trust_accounts")
+    .update({ deleted_at: new Date().toISOString() }) // ✅ حذف ناعم
+    .eq("id", id)
+    .eq("org_id", orgId);
+  if (error) throw error;
+  await logAuditAction("DELETE_SOFT", "trust_accounts", id, "حذف حساب أمانة (ناعم)");
+}
+
 // ─── الجلسات (Sessions) ──────────────────────────────────────────
 export async function fetchSessions(caseId?: string): Promise<any[]> {
   const orgId = requireOrgId();
   try {
     let query = supabase
       .from("sessions")
-      .select("*, cases!inner(org_id)")
+      .select("id, case_id, date, time, court_room, notes, created_at, cases!inner(org_id)")
       .eq("cases.org_id", orgId) // ✅ عزل عبر العلاقة مع القضايا
       .order("date", { ascending: false })
       .limit(200);
@@ -315,7 +367,7 @@ export async function fetchPOAs(): Promise<any[]> {
   try {
     const { data, error } = await supabase
       .from("poas")
-      .select("*, clients!inner(org_id)")
+      .select("id, client_id, number, year, office, type, status, expiry_date, created_at, clients!inner(org_id)")
       .eq("clients.org_id", orgId) // ✅ عزل عبر العلاقة مع الموكلين
       .limit(100);
     if (error) throw error;
@@ -332,8 +384,9 @@ export async function fetchExpenses(): Promise<any[]> {
   try {
     const { data, error } = await supabase
       .from("expenses")
-      .select("*")
-      .eq("org_id", orgId) // ✅ عزل المستأجر
+      .select("id, case_id, amount, category, description, date, created_at")
+      .eq("org_id", orgId)
+      .is("deleted_at", null) // ✅ احترام الحذف الناعم
       .order("date", { ascending: false })
       .limit(100);
     if (error) throw error;
@@ -342,6 +395,17 @@ export async function fetchExpenses(): Promise<any[]> {
     console.error("خطأ في جلب المصروفات:", error);
     return [];
   }
+}
+
+export async function deleteExpense(id: string): Promise<void> {
+  const orgId = requireOrgId();
+  const { error } = await supabase
+    .from("expenses")
+    .update({ deleted_at: new Date().toISOString() }) // ✅ حذف ناعم
+    .eq("id", id)
+    .eq("org_id", orgId);
+  if (error) throw error;
+  await logAuditAction("DELETE_SOFT", "expenses", id, "حذف مصروف (ناعم)");
 }
 
 // ─── العداد التسلسلي (Counters) ─────────────────────────────────

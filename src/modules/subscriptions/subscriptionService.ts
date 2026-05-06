@@ -1,7 +1,7 @@
 /**
  * Subscription Management Service
  * Defines 3 subscription tiers with quota limits.
- * Provides a Facade for future Moyasar/Stripe integration.
+ * Provides a Facade for future Paymob/Fawry integration.
  */
 
 export type PlanTier = 'basic' | 'advanced' | 'enterprise';
@@ -10,8 +10,8 @@ export interface SubscriptionPlan {
   tier: PlanTier;
   nameAr: string;
   nameEn: string;
-  priceMonthly: number; // EGP
-  priceYearly: number; // EGP
+  priceMonthly: number; // EGP (ج.م)
+  priceYearly: number; // EGP (ج.م)
   maxUsers: number;
   maxCases: number;
   maxStorage: string; // e.g. "5GB"
@@ -106,8 +106,8 @@ export function checkQuota(
   };
 }
 
-// ── Moyasar Payment Facade (Mocked) ────────────────────────────────
-// In production, replace with real Moyasar SDK calls.
+// ── Paymob/Fawry Payment Facade (Mocked) ───────────────────────────
+// In production, replace with real Paymob/Fawry SDK calls.
 export async function initializePayment(
   tenantId: string,
   plan: PlanTier,
@@ -117,16 +117,16 @@ export async function initializePayment(
   const amount = billing === 'monthly' ? selectedPlan.priceMonthly : selectedPlan.priceYearly;
 
   // Mock: In production, call Egyptian Payment Gateway (e.g. Paymob/Fawry)
-  console.log(`[Payment Mock] Initiating payment for tenant ${tenantId}, plan ${plan}, amount ${amount} EGP`);
+  console.log(`[Payment Mock] Initiating payment for tenant ${tenantId}, plan ${plan}, amount ${amount} EGP (ج.م)`);
 
   return {
-    paymentUrl: `https://api.payment-gateway.com/v1/payments?amount=${amount * 100}&currency=EGP&description=Mizan+Egypt+${plan}`,
+    paymentUrl: `https://api.paymob.com/v1/payments?amount=${amount * 100}&currency=EGP&description=Malaf+Egypt+${plan}`,
     sessionId: `MOCK-SESSION-${Date.now()}`
   };
 }
 
 export async function verifyPayment(sessionId: string): Promise<{ success: boolean; transactionId: string }> {
-  // Mock: In production, verify with Gateway API
+  // Mock: In production, verify with Gateway API (Paymob/Fawry)
   console.log(`[Payment Mock] Verifying payment session ${sessionId}`);
   return {
     success: true,

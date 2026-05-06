@@ -10,6 +10,15 @@ import { useFinanceStore } from "@/store/useFinanceStore";
 import { useTeamStore } from "@/store/useTeamStore";
 import { useInvoicesStore } from "@/store/useInvoicesStore";
 import { useEnforcementStore } from "@/store/useEnforcementStore";
+import { useNotificationsStore } from "@/store/useNotificationsStore";
+import { useAdvisoryStore } from "@/store/useAdvisoryStore";
+import { useCLMStore } from "@/store/useCLMStore";
+import { useComplianceStore } from "@/store/useComplianceStore";
+import { useCriminalStore } from "@/store/useCriminalStore";
+import { useExpertStore } from "@/store/useExpertStore";
+import { useIPStore } from "@/store/useIPStore";
+import { useUsageStore } from "@/store/useUsageStore";
+import { useUIStore } from "@/store/useUIStore";
 import { UserRole } from "@/types";
 import { setTenantIdCache } from "@/lib/tenant";
 import { toast } from "sonner";
@@ -23,6 +32,15 @@ function resetAllStores() {
   useTeamStore.getState().reset();
   useInvoicesStore.getState().reset();
   useEnforcementStore.getState().reset();
+  useNotificationsStore.getState().reset();
+  useAdvisoryStore.getState().reset();
+  useCLMStore.getState().reset();
+  useComplianceStore.getState().reset();
+  useCriminalStore.getState().reset();
+  useExpertStore.getState().reset();
+  useIPStore.getState().reset();
+  useUsageStore.getState().reset();
+  useUIStore.getState().reset();
   setTenantIdCache(null);
 }
 
@@ -48,6 +66,7 @@ async function resolveUserProfile(
       .from("profiles")
       .select("role, org_id")
       .eq("id", user.uid)
+      .limit(1)
       .single();
 
     if (profile && !error) {
@@ -102,6 +121,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
+        // BUG-017: تحقق من تفعيل البريد الإلكتروني في بيئة الإنتاج (اختياري - مفعل للعرض)
+        if (process.env.NODE_ENV === 'production' && !firebaseUser.emailVerified) {
+          // toast.warn("يرجى تفعيل بريدك الإلكتروني للوصول لكامل المميزات.");
+        }
+
         const profile = await resolveUserProfile(firebaseUser);
         if (!profile) {
           toast.error("تعذر تحميل ملف المستخدم. يرجى إعادة تسجيل الدخول.");

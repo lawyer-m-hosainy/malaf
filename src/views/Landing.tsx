@@ -68,7 +68,7 @@ export default function Landing() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8">
               <Button size="lg" className="w-full sm:w-auto bg-primary-600 hover:bg-primary-700 text-white h-14 px-8 text-lg rounded-full shadow-xl shadow-primary-500/20 transition-transform hover:scale-105" onClick={() => window.location.href='#contact'}>
                 طلب استشارة مجانية
-                <ArrowLeft className="mr-2 w-5 h-5" />
+                <ArrowLeft className="ms-2 w-5 h-5" />
               </Button>
               <Button size="lg" variant="outline" className="w-full sm:w-auto h-14 px-8 text-lg rounded-full border-slate-200 dark:border-white/10 bg-white/50 dark:bg-navy-800/50 backdrop-blur-sm hover:bg-slate-100 dark:hover:bg-white/5" onClick={() => navigate('/client-portal')}>
                 متابعة قضيتك
@@ -312,7 +312,7 @@ export default function Landing() {
         href="https://wa.me/201000000000" 
         target="_blank" 
         rel="noopener noreferrer"
-        className="fixed bottom-8 left-8 w-14 h-14 bg-[#25D366] text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-transform z-50"
+        className="fixed bottom-8 start-8 w-14 h-14 bg-[#25D366] text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-transform z-50"
         aria-label="تواصل معنا عبر واتساب"
       >
         <MessageCircle className="w-7 h-7" />

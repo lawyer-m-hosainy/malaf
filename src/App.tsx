@@ -49,6 +49,7 @@ const SpecializedTracks = lazy(() => import("./views/SpecializedTracks"));
 const AuditLogs = lazy(() => import("./views/AuditLogs"));
 const AIDocumentAnalyzer = lazy(() => import("./views/AIDocumentAnalyzer"));
 const InternalWiki = lazy(() => import("./views/InternalWiki"));
+const NotFound = lazy(() => import("./views/NotFound"));
 
 // Enterprise Modules
 const OnboardingFlow = lazy(() => import("./modules/onboarding/OnboardingFlow"));
@@ -134,7 +135,7 @@ export default function App() {
                 <Route path="clm" element={<CLM />} />
                 <Route path="ip-operations" element={<IPOperations />} />
                 <Route path="specialized-tracks" element={<SpecializedTracks />} />
-                <Route path="audit-logs" element={<PermissionGate permission="view_reports"><AuditLogs /></PermissionGate>} />
+                <Route path="audit-logs" element={<PermissionGate permission="view_audit_logs"><AuditLogs /></PermissionGate>} />
                 <Route path="ai-analyzer" element={<AIDocumentAnalyzer />} />
                 <Route path="wiki" element={<InternalWiki />} />
                 <Route path="platform-admin" element={<PermissionGate permission="platform_admin"><GlobalAdmin /></PermissionGate>} />
@@ -149,6 +150,7 @@ export default function App() {
                 <Route path="eta-invoicing" element={<ETAInvoicing />} />
                 <Route path="e-litigation" element={<ELitigation />} />
                 <Route path="settings" element={<Settings />} />
+                <Route path="*" element={<NotFound />} />
               </Route>
               
               {/* Redirect old routes if needed */}

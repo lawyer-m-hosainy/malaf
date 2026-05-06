@@ -10,8 +10,6 @@ import { analyzeLegalDocument } from "@/services/ai";
 import { EGYPTIAN_TEMPLATES } from "@/services/ai/egyptianTemplates";
 import { useCasesStore } from "@/store/useCasesStore";
 import { useClientsStore } from "@/store/useClientsStore";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 
@@ -77,6 +75,14 @@ export default function AIDocumentAnalyzer() {
 
     setIsAnalyzing(true);
     try {
+      const [jsPDFModule, html2canvasModule] = await Promise.all([
+        import("jspdf"),
+        import("html2canvas")
+      ]);
+      
+      const jsPDF = jsPDFModule.default;
+      const html2canvas = html2canvasModule.default;
+
       const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,
@@ -89,6 +95,7 @@ export default function AIDocumentAnalyzer() {
       pdf.save(`legal-document-${Date.now()}.pdf`);
       toast.success("تم تصدير الملف بنجاح");
     } catch (error) {
+      console.error("PDF Export Error:", error);
       toast.error("فشل تصدير الملف");
     } finally {
       setIsAnalyzing(false);

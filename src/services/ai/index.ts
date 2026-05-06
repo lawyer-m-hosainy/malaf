@@ -24,6 +24,7 @@ import {
   getMockAnalyzeResponse,
 } from "./mockResponses";
 import { EGYPTIAN_LEGAL_TEMPLATES, AI_DISCLAIMER } from "./templates";
+import { useUIStore } from "../../store/useUIStore";
 
 export interface DocumentContext {
   clientName?: string;
@@ -45,9 +46,15 @@ export async function getLegalAssistantResponse(
 ): Promise<string> {
   try {
     const result = await callAiApi("/api/ai/legal-assistant", { userMessage, history });
-    return result || getMockAssistantResponse(userMessage);
-  } catch {
-    console.warn("AI Backend unavailable → using local response");
+    if (result.isFallback) {
+      useUIStore.getState().setAiFallback(true);
+    } else {
+      useUIStore.getState().setAiFallback(false);
+    }
+    return result.text || getMockAssistantResponse(userMessage);
+  } catch (error) {
+    console.warn("AI Backend unavailable → using local response", error);
+    useUIStore.getState().setAiFallback(true);
     return getMockAssistantResponse(userMessage);
   }
 }
@@ -65,9 +72,15 @@ export async function draftLegalDocument(
     
     try {
       const result = await callAiApi("/api/ai/draft", { type: template.name, facts });
-      aiContent = result || facts;
+      if (result.isFallback) {
+        useUIStore.getState().setAiFallback(true);
+      } else {
+        useUIStore.getState().setAiFallback(false);
+      }
+      aiContent = result.text || facts;
     } catch (error) {
       console.warn("Backend drafting failed, using raw facts:", error);
+      useUIStore.getState().setAiFallback(true);
       aiContent = facts;
     }
 
@@ -98,6 +111,7 @@ export async function draftLegalDocument(
     return `${filledTemplate}\n\n---\n${AI_DISCLAIMER}`;
   } catch (error) {
     console.error("Drafting Error:", error);
+    useUIStore.getState().setAiFallback(true);
     return getMockDraftResponse(templateId, facts);
   }
 }
@@ -108,9 +122,15 @@ export async function analyzeLegalDocument(
 ): Promise<string> {
   try {
     const result = await callAiApi("/api/ai/analyze", { content });
-    return result || getMockAnalyzeResponse(content);
-  } catch {
-    console.warn("AI Backend unavailable → using local analysis");
+    if (result.isFallback) {
+      useUIStore.getState().setAiFallback(true);
+    } else {
+      useUIStore.getState().setAiFallback(false);
+    }
+    return result.text || getMockAnalyzeResponse(content);
+  } catch (error) {
+    console.warn("AI Backend unavailable → using local analysis", error);
+    useUIStore.getState().setAiFallback(true);
     return getMockAnalyzeResponse(content);
   }
 }

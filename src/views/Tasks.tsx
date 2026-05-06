@@ -136,120 +136,87 @@ export default function Tasks() {
 
       <Card className="border-none shadow-sm dark:bg-navy-800">
         <CardHeader className="border-b border-slate-50 dark:border-white/5">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                <Input 
-                  placeholder="بحث في المهام..." 
-                  className="pr-10 w-64 dark:bg-navy-900 dark:border-white/10"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-              <Select value={statusFilter} onValueChange={(val) => val && setStatusFilter(val)}>
-                <SelectTrigger className="w-40 dark:bg-navy-900 dark:border-white/10">
-                  <SelectValue placeholder="الحالة" />
-                </SelectTrigger>
-                <SelectContent className="dark:bg-navy-900">
-                  <SelectItem value="all">الكل</SelectItem>
-                  <SelectItem value="pending">معلقة</SelectItem>
-                  <SelectItem value="completed">مكتملة</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger render={<Button variant="outline" className="gap-2 dark:border-white/10" />}>
-                <Filter size={16} />
-                تصفية متقدمة {priorityFilter !== 'all' && `(${priorityFilter === 'high' ? 'عالية' : priorityFilter === 'medium' ? 'متوسطة' : 'عادية'})`}
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="dark:bg-navy-800 dark:border-white/10 w-40">
-                <div className="px-2 py-1.5 text-sm font-semibold text-slate-500">الأولوية</div>
-                <DropdownMenuItem onClick={() => setPriorityFilter("all")} className="cursor-pointer dark:focus:bg-white/5">
-                  الكل
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setPriorityFilter("high")} className="cursor-pointer dark:focus:bg-white/5">
-                  أولوية عالية
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setPriorityFilter("medium")} className="cursor-pointer dark:focus:bg-white/5">
-                  أولوية متوسطة
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setPriorityFilter("low")} className="cursor-pointer dark:focus:bg-white/5">
-                  أولوية عادية
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+          <div className="flex items-center gap-2">
+            <Filter className="text-slate-400" size={16} />
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-40 dark:bg-navy-900 dark:border-white/10">
+                <SelectValue placeholder="حالة المهمة" />
+              </SelectTrigger>
+              <SelectContent className="bg-white dark:bg-navy-900">
+                <SelectItem value="all">كل الحالات</SelectItem>
+                <SelectItem value="pending">قيد التنفيذ</SelectItem>
+                <SelectItem value="completed">مكتملة</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+              <SelectTrigger className="w-40 dark:bg-navy-900 dark:border-white/10">
+                <SelectValue placeholder="الأولوية" />
+              </SelectTrigger>
+              <SelectContent className="bg-white dark:bg-navy-900">
+                <SelectItem value="all">كل الأولويات</SelectItem>
+                <SelectItem value="high">عالية</SelectItem>
+                <SelectItem value="medium">متوسطة</SelectItem>
+                <SelectItem value="low">منخفضة</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardHeader>
         <CardContent className="p-0">
           <div className="divide-y divide-slate-50 dark:divide-white/5">
-            {filteredTasks.length > 0 ? (
-              filteredTasks.map((task: any) => {
-                const caseInfo = cases.find((c: any) => c.id === task.caseId);
-                const assignedMember = teamMembers.find((m: any) => m.id === task.assignedTo);
-                const caseLabel = caseInfo
-                  ? `${caseInfo.plaintiff} ضد ${caseInfo.defendant}`
-                  : task.caseId
-                    ? `قضية ${task.caseId} (غير موجودة في القائمة الحالية)`
-                    : "بدون قضية";
-                
-                return (
-                  <div key={task.id} className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group">
-                    <div className="flex items-center gap-4">
-                      <Checkbox 
-                        checked={task.status === 'completed'}
-                        onCheckedChange={() => updateTaskStatus(task.id, task.status === 'completed' ? 'pending' : 'completed')}
-                        className="h-5 w-5 border-2 border-slate-300 dark:border-white/20 data-[state=checked]:bg-primary-500 data-[state=checked]:border-primary-500"
-                      />
-                      <div>
-                        <p className={cn(
-                          "font-bold transition-all",
-                          task.status === 'completed' ? "text-slate-400 line-through" : "text-navy-900 dark:text-white"
-                        )}>
-                          {task.title || "(بدون عنوان)"}
-                        </p>
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1">
-                          <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                            <Scale size={12} className="text-primary-500" />
-                            {caseLabel}
-                          </span>
-                          <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                            <CalendarIcon size={12} className="text-accent-500" />
-                            تاريخ الاستحقاق: {task.dueDate}
-                          </span>
-                          <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                            <User size={12} className="text-blue-500" />
-                            المسؤول: {assignedMember?.name || "غير محدد"}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Badge className={cn(
-                        "font-bold",
-                        task.priority === 'high' ? "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400" : 
-                        task.priority === 'medium' ? "bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400" : 
-                        "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400"
+            {filteredTasks.length > 0 ? filteredTasks.map((task: any) => (
+              <div key={task.id} className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group">
+                <div className="flex items-center gap-4">
+                  <button 
+                    onClick={() => updateTaskStatus(task.id, task.status === 'completed' ? 'pending' : 'completed')}
+                    className={cn( 
+                      "w-5 h-5 rounded border-2 transition-all flex items-center justify-center",
+                      task.status === 'completed' ? "bg-emerald-500 border-emerald-500 text-white" : "border-slate-200 dark:border-white/20"
+                    )}
+                  >
+                    {task.status === 'completed' && <CheckCircle2 size={12} />}
+                  </button>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <p className={cn("text-sm font-bold", task.status === 'completed' ? "text-slate-400 line-through" : "text-navy-900 dark:text-white")}>
+                        {task.title}
+                      </p>
+                      <Badge variant="outline" className={cn(
+                        "text-[10px] py-0",
+                        task.priority === 'high' ? "text-red-500 border-red-200 bg-red-50" : 
+                        task.priority === 'medium' ? "text-amber-500 border-amber-200 bg-amber-50" : 
+                        "text-blue-500 border-blue-200 bg-blue-50"
                       )}>
                         {task.priority === 'high' ? 'عالية' : task.priority === 'medium' ? 'متوسطة' : 'عادية'}
                       </Badge>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => toast.info(`مهمة: ${task.title}`)}>
-                        <AlertCircle size={16} className="text-slate-400" />
-                      </Button>
+                    </div>
+                    <div className="flex items-center gap-3 mt-1">
+                      <span className="text-[11px] text-slate-400 flex items-center gap-1">
+                        <Clock size={10} />
+                        {task.dueDate}
+                      </span>
+                      <span className="text-[11px] text-slate-400 flex items-center gap-1">
+                        <User size={10} />
+                        {teamMembers.find((m: any) => m.id === task.assignedTo)?.name || 'غير معين'}
+                      </span>
+                      {task.caseId && (
+                        <span className="text-[11px] text-primary-500 flex items-center gap-1 font-medium">
+                          <Scale size={10} />
+                          رقم القضية: {task.caseId}
+                        </span>
+                      )}
                     </div>
                   </div>
-                );
-              })
-            ) : (
-              <div className="p-12 text-center text-slate-400">
-                <ListTodo size={48} className="mx-auto mb-4 opacity-20" />
-                <p className="font-medium text-navy-900 dark:text-white">
-                  {tasks.length === 0
-                    ? "لا توجد مهام بعد. اضغط «إضافة مهمة جديدة»."
-                    : searchQuery.trim() || statusFilter !== "all"
-                      ? "لا توجد مهام تطابق البحث أو التصفية"
-                      : "لا توجد مهام للعرض"}
-                </p>
+                </div>
+                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-primary-500">
+                    <AlertCircle size={16} />
+                  </Button>
+                </div>
+              </div>
+            )) : (
+              <div className="py-12 flex flex-col items-center justify-center text-slate-400">
+                <ListTodo className="h-12 w-12 opacity-10 mb-4" />
+                <p className="text-sm">لا توجد مهام تطابق البحث</p>
               </div>
             )}
           </div>

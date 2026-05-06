@@ -1,17 +1,19 @@
 services:
   - type: web
-    name: mohamy-pro-saudi
+    name: malaf-egypt-production
     runtime: node
     plan: free
-    buildCommand: npm install && npm run build
+    buildCommand: npm install && npm run build:all
     startCommand: node server.js
     healthCheckPath: /api/health
     envVars:
       - key: GEMINI_API_KEY
         sync: false
-      - key: VITE_ENCRYPTION_KEY
+      - key: GROQ_API_KEY
+        sync: false
+      - key: ENCRYPTION_KEY
         sync: false
       - key: NODE_ENV
         value: production
-      - key: ALLOWED_ORIGINS
-        value: https://mohamy-pro-saudi.onrender.com
+      - key: PRODUCTION_URL
+        value: https://malaf-egypt-production.onrender.com

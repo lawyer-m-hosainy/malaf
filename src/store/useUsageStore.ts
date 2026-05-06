@@ -6,12 +6,15 @@ interface UsageState {
   incrementAiDocCount: () => void;
   getAiDocCount: () => number;
   getLimit: (plan: 'free' | 'basic' | 'pro') => number;
+  reset: () => void;
 }
 
 export const useUsageStore = create<UsageState>()(
   persist(
     (set, get) => ({
       aiDocCount: {},
+      
+      reset: () => set({ aiDocCount: {} }),
       
       incrementAiDocCount: () => {
         const monthKey = new Date().toISOString().substring(0, 7); // YYYY-MM

@@ -252,37 +252,38 @@ export default function Login() {
               <div className="space-y-2">
                 <Label htmlFor="login-email" className="text-slate-700 dark:text-slate-300">البريد الإلكتروني</Label>
                 <div className="relative">
-                  <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Mail className="absolute start-3 top-3 text-slate-400" size={18} />
                   <Input 
                     id="login-email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="example@email.com"
-                    className="ps-10 dark:bg-white/5 dark:border-white/10"
+                    placeholder="name@lawfirm.eg"
+                    className="ps-10 dark:bg-white/5"
                     dir="ltr"
+                    required
                   />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="login-password" className="text-slate-700 dark:text-slate-300">كلمة المرور</Label>
+                <Label htmlFor="password">كلمة المرور</Label>
                 <div className="relative">
-                  <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Lock className="absolute start-3 top-3 text-slate-400" size={18} />
                   <Input 
-                    id="login-password"
+                    id="password"
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="ps-10 pe-10 dark:bg-white/5 dark:border-white/10"
+                    required
+                    className="ps-10 dark:bg-white/5"
                     dir="ltr"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute end-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    className="absolute end-3 top-3 text-slate-400 hover:text-slate-600 transition-colors"
                   >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
               </div>

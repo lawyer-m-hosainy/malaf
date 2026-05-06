@@ -4,7 +4,7 @@ import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import admin from 'firebase-admin';
@@ -14,6 +14,7 @@ import pino from 'pino';
 import crypto from 'crypto';
 // Load environment variables
 dotenv.config();
+
 // Initialize Logger
 const logger = pino({
     level: process.env.LOG_LEVEL || 'info',
@@ -24,6 +25,7 @@ const logger = pino({
     },
     timestamp: pino.stdTimeFunctions.isoTime,
 });
+
 // Initialize Firebase Admin for token verification
 try {
     if (admin.apps.length === 0) {
@@ -33,14 +35,19 @@ try {
 catch (e) {
     logger.warn('Firebase Admin init warning:', e);
 }
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
 const app = express();
 const PORT = process.env.PORT || 3000;
+
 // Structured Logging Middleware
 app.use(pinoHttp({ logger }));
+
 // Compression
 app.use(compression());
+
 // Security and utility middlewares
 app.use(helmet({
     contentSecurityPolicy: {
@@ -68,12 +75,25 @@ app.use(helmet({
         preload: true
     }
 }));
-const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ['http://localhost:5173', 'http://localhost:3000', 'https://mohamy-pro.onrender.com'];
+
+const allowedOrigins = process.env.NODE_ENV === 'production' 
+    ? [process.env.PRODUCTION_URL || 'https://malaf.app'] 
+    : ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:3005'];
+
 app.use(cors({
-    origin: allowedOrigins
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('CORS not allowed for this origin'));
+        }
+    },
+    credentials: true
 }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
 // Rate Limiter for AI Endpoints (10 requests per minute)
 const aiRateLimiter = rateLimit({
     windowMs: 60 * 1000,
@@ -82,6 +102,7 @@ const aiRateLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
 });
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
     res.status(200).json({
@@ -90,10 +111,11 @@ app.get('/api/health', (req, res) => {
         timestamp: new Date().toISOString(),
     });
 });
+
 // AI Configuration
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
-const ai = GEMINI_API_KEY ? new GoogleGenAI({ apiKey: GEMINI_API_KEY }) : null;
+const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
 const systemInstruction = 'أنت مساعد قانوني مصري. الإجابة استرشادية ويجب مراجعتها من محامٍ مقيد بنقابة المحامين المصريين.';
 
 async function callGroq(prompt, sysInstruction) {
@@ -192,22 +214,37 @@ app.post('/api/ai/legal-assistant', aiRateLimiter, async (req, res) => {
     try {
         const userMessage = String(req.body.userMessage || '');
         
-        // 1. Try Groq
+        // 1. Try Gemini
+        if (genAI) {
+            try {
+                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", systemInstruction });
+                const result = await model.generateContent(userMessage);
+                const response = await result.response;
+                const text = response.text();
+                if (text) return res.status(200).json({ text, provider: 'gemini' });
+            } catch (e) {
+                logger.error({ err: e }, "Gemini call failed");
+            }
+        }
+
+        // 2. Try Groq
         const groqResponse = await callGroq(userMessage, systemInstruction);
-        if (groqResponse) return res.status(200).json({ text: groqResponse });
+        if (groqResponse) return res.status(200).json({ text: groqResponse, provider: 'groq' });
         
-        // 2. Try Gemini
-        if (!ai) return res.status(200).json({ text: getMockAssistantResponse() });
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: userMessage,
-            config: { systemInstruction },
+        // 3. Fallback to Mock
+        return res.status(200).json({ 
+            text: getMockAssistantResponse(), 
+            provider: 'mock',
+            isFallback: true 
         });
-        return res.status(200).json({ text: response.text || getMockAssistantResponse() });
     }
     catch (error) {
         logger.error({ err: error }, "AI Error - Falling back to Mock");
-        return res.status(200).json({ text: getMockAssistantResponse() });
+        return res.status(200).json({ 
+            text: getMockAssistantResponse(), 
+            provider: 'mock',
+            isFallback: true 
+        });
     }
 });
 
@@ -217,24 +254,39 @@ app.post('/api/ai/draft', aiRateLimiter, async (req, res) => {
         const facts = String(req.body.facts || '');
         const prompt = `قم بصياغة ${type} احترافية بناءً على الوقائع التالية:\n${facts}`;
         
-        // 1. Try Groq
+        // 1. Try Gemini
+        if (genAI) {
+            try {
+                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", systemInstruction });
+                const result = await model.generateContent(prompt);
+                const response = await result.response;
+                const text = response.text();
+                if (text) return res.status(200).json({ text, provider: 'gemini' });
+            } catch (e) {
+                logger.error({ err: e }, "Gemini Draft call failed");
+            }
+        }
+
+        // 2. Try Groq
         const groqResponse = await callGroq(prompt, systemInstruction);
-        if (groqResponse) return res.status(200).json({ text: groqResponse });
+        if (groqResponse) return res.status(200).json({ text: groqResponse, provider: 'groq' });
         
-        // 2. Try Gemini
-        if (!ai) return res.status(200).json({ text: getMockDraftResponse(type, facts) });
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: prompt,
-            config: { systemInstruction },
+        // 3. Fallback to Mock
+        return res.status(200).json({ 
+            text: getMockDraftResponse(type, facts), 
+            provider: 'mock',
+            isFallback: true 
         });
-        return res.status(200).json({ text: response.text || getMockDraftResponse(type, facts) });
     }
     catch (error) {
         logger.error({ err: error }, "AI Draft Error - Falling back to Mock");
         const type = String(req.body.type || 'وثيقة قانونية');
         const facts = String(req.body.facts || '');
-        return res.status(200).json({ text: getMockDraftResponse(type, facts) });
+        return res.status(200).json({ 
+            text: getMockDraftResponse(type, facts), 
+            provider: 'mock',
+            isFallback: true 
+        });
     }
 });
 
@@ -243,45 +295,66 @@ app.post('/api/ai/analyze', aiRateLimiter, async (req, res) => {
         const content = String(req.body.content || '');
         const prompt = `حلل النص القانوني التالي وفق القانون المصري وحدد الملخص والدفوع والمخاطر:\n${content}`;
         
-        // 1. Try Groq
+        // 1. Try Gemini
+        if (genAI) {
+            try {
+                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", systemInstruction });
+                const result = await model.generateContent(prompt);
+                const response = await result.response;
+                const text = response.text();
+                if (text) return res.status(200).json({ text, provider: 'gemini' });
+            } catch (e) {
+                logger.error({ err: e }, "Gemini Analyze call failed");
+            }
+        }
+
+        // 2. Try Groq
         const groqResponse = await callGroq(prompt, systemInstruction);
-        if (groqResponse) return res.status(200).json({ text: groqResponse });
+        if (groqResponse) return res.status(200).json({ text: groqResponse, provider: 'groq' });
         
-        // 2. Try Gemini
-        if (!ai) return res.status(200).json({ text: getMockAnalyzeResponse() });
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: prompt,
-            config: { systemInstruction },
+        // 3. Fallback to Mock
+        return res.status(200).json({ 
+            text: getMockAnalyzeResponse(), 
+            provider: 'mock',
+            isFallback: true 
         });
-        return res.status(200).json({ text: response.text || getMockAnalyzeResponse() });
     }
     catch (error) {
         logger.error({ err: error }, "AI Analyze Error - Falling back to Mock");
-        return res.status(200).json({ text: getMockAnalyzeResponse() });
+        return res.status(200).json({ 
+            text: getMockAnalyzeResponse(), 
+            provider: 'mock',
+            isFallback: true 
+        });
     }
 });
 
 // --- Crypto Endpoints ---
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || crypto.randomBytes(32).toString('hex'); // Must be 32 bytes (256 bits)
-const IV_LENGTH = 16; // For AES, this is always 16
+const MASTER_ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || crypto.randomBytes(32).toString('hex');
+const IV_LENGTH = 16;
+
+/**
+ * Derives a tenant-specific encryption key using the master key and tenant ID.
+ * This ensures data isolation even if the database is compromised.
+ */
+function getTenantKey(tenantId) {
+    return crypto.pbkdf2Sync(MASTER_ENCRYPTION_KEY, tenantId, 100000, 32, 'sha512');
+}
 
 app.post('/api/crypto/encrypt', authMiddleware, (req, res) => {
     try {
         const text = req.body.text;
         if (!text) return res.status(400).json({ error: 'Text is required' });
         
-        const key = Buffer.from(ENCRYPTION_KEY, 'hex');
-        if (key.length !== 32) return res.status(500).json({ error: 'Invalid key length' });
-        
+        const tenantKey = getTenantKey(req.tenantId);
         const iv = crypto.randomBytes(IV_LENGTH);
-        const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
+        const cipher = crypto.createCipheriv('aes-256-cbc', tenantKey, iv);
         let encrypted = cipher.update(text, 'utf8', 'hex');
         encrypted += cipher.final('hex');
         
         res.status(200).json({ result: iv.toString('hex') + ':' + encrypted });
     } catch (error) {
-        logger.error({ err: error }, "Encryption Error");
+        logger.error({ err: error, tenantId: req.tenantId }, "Encryption Error");
         res.status(500).json({ error: 'Encryption failed' });
     }
 });
@@ -297,17 +370,17 @@ app.post('/api/crypto/decrypt', authMiddleware, (req, res) => {
         
         if (!ivHex || !encryptedText) return res.status(400).json({ error: 'Invalid encrypted text format' });
         
-        const key = Buffer.from(ENCRYPTION_KEY, 'hex');
+        const tenantKey = getTenantKey(req.tenantId);
         const iv = Buffer.from(ivHex, 'hex');
         
-        const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
+        const decipher = crypto.createDecipheriv('aes-256-cbc', tenantKey, iv);
         let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
         decrypted += decipher.final('utf8');
         
         res.status(200).json({ result: decrypted });
     } catch (error) {
-        logger.error({ err: error }, "Decryption Error");
-        res.status(200).json({ result: req.body.text }); // Fallback to original text if decryption fails (e.g. legacy data)
+        logger.error({ err: error, tenantId: req.tenantId }, "Decryption Error");
+        res.status(200).json({ result: req.body.text });
     }
 });
 

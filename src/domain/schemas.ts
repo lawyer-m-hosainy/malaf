@@ -43,7 +43,7 @@ export const CaseSchema = z.object({
 
 export type CaseValidationData = z.infer<typeof CaseSchema>;
 
-// Invoice Schema (Validation) — Egyptian: legal services exempt from VAT
+// Invoice Schema (Validation) — Egyptian 14% VAT
 export const InvoiceSchema = z.object({
   id: z.string(),
   clientId: z.string(),
@@ -54,9 +54,10 @@ export const InvoiceSchema = z.object({
 }).refine(data => {
   // Validate 14% VAT
   const expectedVat = data.subtotal * 0.14;
-  return Math.abs(data.vatAmount - expectedVat) < 0.01 || data.vatAmount === 0; // Allow 0 for exempt or 14%
+  // Allow for small rounding differences or 0 if specifically exempt
+  return Math.abs(data.vatAmount - expectedVat) < 1.0 || data.vatAmount === 0; 
 }, {
-  message: "ضريبة القيمة المضافة يجب أن تكون 14% من القيمة الأساسية أو 0 للمُعفاة",
+  message: "ضريبة القيمة المضافة يجب أن تكون 14% من القيمة الأساسية",
   path: ['vatAmount']
 }).refine(data => {
   const expectedTotal = data.subtotal + data.vatAmount + (data.stampDuty || 0);

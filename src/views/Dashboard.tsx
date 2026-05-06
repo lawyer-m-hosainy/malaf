@@ -30,8 +30,6 @@ import { toast } from "sonner";
 import { fetchCases, fetchClients, fetchEnforcement, fetchInvoices, fetchTasks, fetchTeam, fetchTrustAccounts } from "@/services/legalDataService";
 import { EGYPTIAN_LEGAL_TEMPLATES } from "@/services/ai/templates";
 import { useUsageStore } from "@/store/useUsageStore";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 
 const CATEGORY_COLORS: Record<string, { color: string; bgClass: string }> = {
   'تجاري': { color: 'var(--color-primary-500)', bgClass: 'bg-primary-500' },
@@ -149,6 +147,15 @@ export default function Dashboard() {
     if (!element) return;
 
     try {
+      // Lazy load dependencies
+      const [jsPDFModule, html2canvasModule] = await Promise.all([
+        import("jspdf"),
+        import("html2canvas")
+      ]);
+      
+      const jsPDF = jsPDFModule.default;
+      const html2canvas = html2canvasModule.default;
+
       const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,
@@ -165,6 +172,7 @@ export default function Dashboard() {
       pdf.save(`document-${draftType}-${Date.now()}.pdf`);
       toast.success("تم تحميل الملف بصيغة PDF");
     } catch (error) {
+      console.error("PDF Export Error:", error);
       toast.error("فشل تصدير ملف PDF");
     }
   };
@@ -457,7 +465,7 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent className="p-0">
             <div className="divide-y divide-slate-50 dark:divide-white/5">
-              {tasks.map((task) => (
+              {tasks.length > 0 ? tasks.map((task) => (
                 <div key={task.id} className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
                   <div className="flex items-center gap-4">
                     <button 
@@ -497,7 +505,12 @@ export default function Dashboard() {
                     <AlertCircle size={16} />
                   </Button>
                 </div>
-              ))}
+              )) : (
+                <div className="p-12 text-center flex flex-col items-center justify-center text-slate-400">
+                  <ListTodo className="h-12 w-12 opacity-10 mb-2" />
+                  <p className="text-sm">لا توجد مهام حالية</p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

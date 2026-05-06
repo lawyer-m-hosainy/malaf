@@ -31,7 +31,19 @@ export async function runSeed() {
   if (orgError) throw orgError;
   console.log(`✅ Seeded ${createdOrgs.length} organizations.`);
 
-  // 3. Seed Clients for each org
+  const mainOrg = createdOrgs.find(o => o.slug === 'nile-law');
+
+  // 3. Seed Demo Profiles (Note: Auth accounts must exist in Firebase)
+  if (mainOrg) {
+    const demoProfiles = [
+      { id: 'DEMO_ADMIN_ID', org_id: mainOrg.id, full_name: 'مدير النظام', email: 'admin@malaf.com', role: 'محامي شريك' },
+      { id: 'DEMO_LAWYER_ID', org_id: mainOrg.id, full_name: 'أحمد المحامي', email: 'lawyer@demo.com', role: 'محامي' },
+    ];
+    await supabase.from('profiles').upsert(demoProfiles, { onConflict: 'email' });
+    console.log("✅ Seeded demo profiles.");
+  }
+
+  // 4. Seed Clients for each org
   for (const org of createdOrgs) {
     const clients = Array.from({ length: 50 }).map((_, i) => ({
       org_id: org.id,

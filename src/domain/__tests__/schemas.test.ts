@@ -3,23 +3,23 @@ import { ClientSchema, CaseSchema } from '../schemas';
 
 describe('Domain Schemas', () => {
   describe('ClientSchema', () => {
-    it('should validate correct Saudi client data', () => {
+    it('should validate correct Egyptian client data', () => {
       const validData = {
         id: 'cl-1',
         type: 'فرد' as const,
         name: 'أحمد محمد',
-        phone: '+966512345678'
+        phone: '+201012345678'
       };
       const result = ClientSchema.safeParse(validData);
       expect(result.success).toBe(true);
     });
 
-    it('should fail for non-Saudi phone format', () => {
+    it('should fail for non-Egyptian phone format', () => {
       const invalidData = {
         id: 'cl-1',
         type: 'فرد' as const,
         name: 'أحمد محمد',
-        phone: '0512345678' // Should fail because regex expects +9665...
+        phone: '01012345678' // Should fail because regex expects +201...
       };
       const result = ClientSchema.safeParse(invalidData);
       expect(result.success).toBe(false);
@@ -34,7 +34,7 @@ describe('Domain Schemas', () => {
         id: 'cl-1',
         type: 'فرد' as const,
         name: 'أ',
-        phone: '+966512345678'
+        phone: '+201012345678'
       };
       const result = ClientSchema.safeParse(invalidData);
       expect(result.success).toBe(false);
@@ -45,10 +45,11 @@ describe('Domain Schemas', () => {
     it('should validate correct case data with recognized court', () => {
       const validData = {
         id: 'case-1',
-        court: 'المحكمة العامة' as const,
+        clientId: 'cl-1',
+        court: 'المحكمة الاقتصادية' as const,
         plaintiff: 'شركة أ',
         defendant: 'شركة ب',
-        status: 'نشطة' as const,
+        status: 'متداولة' as const,
         createdAt: new Date().toISOString()
       };
       const result = CaseSchema.safeParse(validData);

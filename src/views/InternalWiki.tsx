@@ -124,7 +124,7 @@ export default function InternalWiki() {
                   <p className="text-xs text-slate-500">{cat.count} مقال</p>
                 </div>
               </div>
-              <ChevronLeft size={16} className="text-slate-300" />
+              <ChevronLeft size={16} className="text-slate-300 rtl:rotate-180" />
             </CardContent>
           </Card>
         ))}

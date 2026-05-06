@@ -13,16 +13,16 @@ export const seedDemoData = async () => {
 
   // 1. Seed Team
   const demoTeam = [
-    { id: 'T1', name: 'أحمد النيل', role: 'شريك مؤسس', email: 'ahmed@nile.com', specialization: 'نقض وجنايات', status: 'نشط' },
+    { id: 'T-ADMIN', name: 'المدير العام', role: 'محامي شريك', email: 'admin@malaf.com', specialization: 'نقض وجنايات', status: 'نشط' },
+    { id: 'T-LAWYER', name: 'أحمد المحامي', role: 'محامي', email: 'lawyer@demo.com', specialization: 'مدني وتجاري', status: 'نشط' },
     { id: 'T2', name: 'سارة المنصوري', role: 'مدير مكتب', email: 'sara@nile.com', specialization: 'إدارة عمليات', status: 'نشط' },
     { id: 'T3', name: 'محمود حسن', role: 'محامي استئناف', email: 'mahmoud@nile.com', specialization: 'مدني وتجاري', status: 'نشط' },
-    { id: 'T4', name: 'ليلى علي', role: 'محامي مبتدئ', email: 'laila@nile.com', specialization: 'أحوال شخصية', status: 'نشط' },
-    { id: 'T5', name: 'زينب محمد', role: 'سكرتارية قانونية', email: 'zeinab@nile.com', specialization: 'أرشفة ومتابعة', status: 'نشط' },
   ];
   teamStore.setTeamMembers(demoTeam as any);
 
   // 2. Seed Clients
   const demoClients = [
+    { id: 'C-CLIENT', name: 'موكل تجريبي', type: 'فرد', phone: '01000000000', email: 'client@demo.com', nationalId: '29001011234567' },
     { id: 'C1', name: 'شركة النيل للصناعات الغذائية', type: 'منشأة', phone: '01012345678', email: 'info@nilefood.com', commercialRegistration: '123456', vatNumber: '100-200-300' },
     { id: 'C2', name: 'محمد أحمد عبد الرحمن', type: 'فرد', phone: '01223456789', email: 'm.ahmed@gmail.com', nationalId: '29001011234567' },
     { id: 'C3', name: 'البنك المصري للتجارة', type: 'منشأة', phone: '0223456789', email: 'legal@egybank.com', commercialRegistration: '987654' },

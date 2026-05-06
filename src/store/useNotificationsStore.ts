@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { v4 as uuidv4 } from 'uuid';
 
 export interface Notification {
   id: string;
@@ -18,16 +17,20 @@ interface NotificationsState {
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   clearAll: () => void;
+  /** مسح جميع الإشعارات عند تسجيل الخروج */
+  reset: () => void;
 }
 
 export const useNotificationsStore = create<NotificationsState>((set) => ({
   notifications: [],
   unreadCount: 0,
   
+  reset: () => set({ notifications: [], unreadCount: 0 }),
+  
   addNotification: (notification) => set((state) => {
     const newNotification: Notification = {
       ...notification,
-      id: uuidv4(),
+      id: Math.random().toString(36).substring(2, 9), // Simple ID generator instead of missing uuid
       read: false,
       createdAt: new Date().toISOString(),
     };

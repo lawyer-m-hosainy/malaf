@@ -63,6 +63,10 @@ interface ClientsState {
   addPOA: (poa: PowerOfAttorney) => void;
   updatePOA: (id: string, updatedData: Partial<PowerOfAttorney>) => void;
   hasLoaded: boolean;
+  currentPage: number;
+  hasMore: boolean;
+  setCurrentPage: (page: number) => void;
+  setHasMore: (hasMore: boolean) => void;
   /** مسح جميع بيانات الموكلين عند تسجيل الخروج */
   reset: () => void;
 }
@@ -74,7 +78,7 @@ const MOCK_CLIENTS: Client[] = [
     type: "منشأة",
     commercialRegistration: "1010123456",
     vatNumber: "300123456700003",
-    phone: "+966501234567"
+    phone: "+201012345678"
   },
   {
     id: "CL-102",
@@ -82,14 +86,14 @@ const MOCK_CLIENTS: Client[] = [
     type: "منشأة",
     commercialRegistration: "4030123456",
     vatNumber: "300987654300003",
-    phone: "+966551234567"
+    phone: "+201112345678"
   },
   {
     id: "CL-103",
     name: "أحمد بن عبدالله المفلح",
     type: "فرد",
-    nationalId: "1023456789",
-    phone: "+966541234567"
+    nationalId: "28501011234567",
+    phone: "+201212345678"
   }
 ];
 
@@ -100,6 +104,8 @@ const INITIAL_CLIENTS_STATE = {
   proposals: [] as Proposal[],
   poas: [] as PowerOfAttorney[],
   hasLoaded: false,
+  currentPage: 0,
+  hasMore: true,
 };
 
 export const useClientsStore = create<ClientsState>((set) => ({
@@ -123,10 +129,14 @@ export const useClientsStore = create<ClientsState>((set) => ({
   ],
 
   hasLoaded: false,
+  currentPage: 0,
+  hasMore: true,
 
   reset: () => set({ ...INITIAL_CLIENTS_STATE }),
 
   setClients: (clients) => set({ clients, hasLoaded: true }),
+  setCurrentPage: (currentPage) => set({ currentPage }),
+  setHasMore: (hasMore) => set({ hasMore }),
   addClient: (client) => set((state) => ({ clients: [client, ...state.clients] })),
   updateClient: (id, updatedData) => set((state) => ({
     clients: state.clients.map(c => c.id === id ? { ...c, ...updatedData } : c)

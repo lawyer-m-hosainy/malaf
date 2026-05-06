@@ -4,7 +4,7 @@ import { clientSchema } from "@/lib/schemas";
 import { ZodError } from "zod";
 import { toast } from "sonner";
 import { useEffect } from "react";
-import { fetchClients } from "@/services/legalDataService";
+import { fetchClients, fetchClientsPaginated } from "@/services/legalDataService";
 
 
 export function useClientsLogic() {
@@ -14,19 +14,32 @@ export function useClientsLogic() {
   const deleteClient = useClientsStore(state => state.deleteClient);
   const hasLoaded = useClientsStore(state => state.hasLoaded);
   const setClients = useClientsStore(state => state.setClients);
+  const currentPageStore = useClientsStore(state => state.currentPage);
+  const setCurrentPageStore = useClientsStore(state => state.setCurrentPage);
+  const hasMore = useClientsStore(state => state.hasMore);
+  const setHasMore = useClientsStore(state => state.setHasMore);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
 
   useEffect(() => {
-    if (!hasLoaded) {
-      fetchClients().then(data => {
-        if (data) setClients(data);
-      });
-    }
-  }, [hasLoaded, setClients]);
+    const loadClients = async () => {
+      try {
+        const { data, hasMore: more } = await fetchClientsPaginated(itemsPerPage, currentPage - 1);
+        if (data) {
+          setClients(data);
+          setHasMore(more);
+        }
+      } catch (error) {
+        console.error("Failed to fetch paginated clients", error);
+      }
+    };
+
+    loadClients();
+  }, [currentPage, setClients, setHasMore]);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState<"الكل" | "فرد" | "منشأة">("الكل");
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 20;
 
   const [isOpen, setIsOpen] = useState(false);
   const [editingClientId, setEditingClientId] = useState<string | null>(null);

@@ -8,10 +8,13 @@ interface AdvisoryState {
   addAdvisoryOpinion: (requestId: string, opinion: AdvisoryRequest['opinions'][number]) => void;
   updateAdvisoryStatus: (requestId: string, status: AdvisoryRequest['status']) => void;
   decideAdvisoryApproval: (requestId: string, approvalId: string, status: 'معتمد' | 'مرفوض', notes?: string) => void;
+  reset: () => void;
 }
 
 export const useAdvisoryStore = create<AdvisoryState>((set) => ({
   advisoryRequests: [],
+
+  reset: () => set({ advisoryRequests: [] }),
 
   setAdvisoryRequests: (advisoryRequests) => set({ advisoryRequests }),
   

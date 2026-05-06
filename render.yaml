@@ -17,3 +17,5 @@ services:
         value: production
       - key: PRODUCTION_URL
         value: https://malaf-egypt-production.onrender.com
+      - key: DAILY_API_KEY
+        sync: false

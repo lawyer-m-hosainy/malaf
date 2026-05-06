@@ -14,6 +14,7 @@ import { pinoHttp } from 'pino-http';
 import pino from 'pino';
 import crypto from 'crypto';
 import { runSeed } from './scripts/demo-seed-supabase.js'; // Ensure .js for NodeNext
+import videoRouter from './routes/video.js';
 
 
 // Load environment variables
@@ -420,6 +421,9 @@ app.post('/api/demo/reset', async (req, res) => {
     return res.status(500).json({ error: 'فشل إعادة الضبط' });
   }
 });
+
+// Register Video Router
+app.use('/api/video', videoRouter);
 
 // Serve frontend static files
 const distPath = path.join(__dirname, 'dist');

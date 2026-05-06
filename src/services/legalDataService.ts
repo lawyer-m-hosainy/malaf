@@ -1,7 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { getCurrentTenantId } from "@/lib/tenant";
 import { Case, Client, Invoice } from "@/types";
-import { decryptField, encryptField } from "@/lib/encryption";
+import { decryptField, encryptField, batchDecryptFields } from "@/lib/encryption";
 
 const CLIENTS_TABLE = "clients";
 const CASES_TABLE = "cases";
@@ -49,16 +49,22 @@ export async function fetchClients(): Promise<Client[]> {
 
     if (error) throw error;
 
-    return await Promise.all((data || []).map(
-      async (d: any) =>
+    const nationalIdsToDecrypt = data?.map((d: any) => d.national_id) || [];
+    const commercialRegsToDecrypt = data?.map((d: any) => d.commercial_reg) || [];
+    
+    const [decryptedNationalIds, decryptedCommercialRegs] = await Promise.all([
+      batchDecryptFields(nationalIdsToDecrypt),
+      batchDecryptFields(commercialRegsToDecrypt)
+    ]);
+
+    return (data || []).map(
+      (d: any, index: number) =>
         ({
           ...d,
-          nationalId: d.national_id ? await decryptField(d.national_id) : undefined,
-          commercialRegistration: d.commercial_reg
-            ? await decryptField(d.commercial_reg)
-            : undefined,
+          nationalId: decryptedNationalIds[index] || undefined,
+          commercialRegistration: decryptedCommercialRegs[index] || undefined,
         } as Client)
-    ));
+    );
   } catch (error) {
     console.error("خطأ في جلب الموكلين:", error);
     throw error;
@@ -81,16 +87,22 @@ export async function fetchClientsPaginated(
 
     if (error) throw error;
 
-    const mappedData = await Promise.all((data || []).map(
-      async (d: any) =>
+    const nationalIdsToDecrypt = data?.map((d: any) => d.national_id) || [];
+    const commercialRegsToDecrypt = data?.map((d: any) => d.commercial_reg) || [];
+    
+    const [decryptedNationalIds, decryptedCommercialRegs] = await Promise.all([
+      batchDecryptFields(nationalIdsToDecrypt),
+      batchDecryptFields(commercialRegsToDecrypt)
+    ]);
+
+    const mappedData = (data || []).map(
+      (d: any, index: number) =>
         ({
           ...d,
-          nationalId: d.national_id ? await decryptField(d.national_id) : undefined,
-          commercialRegistration: d.commercial_reg
-            ? await decryptField(d.commercial_reg)
-            : undefined,
+          nationalId: decryptedNationalIds[index] || undefined,
+          commercialRegistration: decryptedCommercialRegs[index] || undefined,
         } as Client)
-    ));
+    );
 
     return { data: mappedData, hasMore: (count || 0) > (page + 1) * pageSize };
   } catch (error) {

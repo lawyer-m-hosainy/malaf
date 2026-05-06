@@ -48,3 +48,21 @@ export async function decryptField(encryptedValue: string | undefined | null): P
   }
 }
 
+export async function batchDecryptFields(encryptedValues: (string | undefined | null)[]): Promise<string[]> {
+  if (!encryptedValues || encryptedValues.length === 0) return [];
+  const validValues = encryptedValues.map(v => v || "");
+  try {
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${API_URL}/api/crypto/batch-decrypt`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ texts: validValues }),
+    });
+    if (!response.ok) throw new Error("Batch decryption failed");
+    const data = await response.json();
+    return data.results || validValues; 
+  } catch (error) {
+    console.error("Batch decryption failed:", error);
+    return validValues; 
+  }
+}

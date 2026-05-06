@@ -384,6 +384,38 @@ app.post('/api/crypto/decrypt', authMiddleware, (req, res) => {
     }
 });
 
+app.post('/api/crypto/batch-decrypt', authMiddleware, (req, res) => {
+    try {
+        const texts = req.body.texts;
+        if (!Array.isArray(texts)) return res.status(400).json({ error: 'Texts array is required' });
+        
+        const tenantKey = getTenantKey(req.tenantId);
+        
+        const results = texts.map(text => {
+            if (!text) return text;
+            try {
+                const textParts = text.split(':');
+                if (textParts.length < 2) return text; // Not encrypted or invalid format
+                const ivHex = textParts.shift();
+                const encryptedText = textParts.join(':');
+                
+                const iv = Buffer.from(ivHex, 'hex');
+                const decipher = crypto.createDecipheriv('aes-256-cbc', tenantKey, iv);
+                let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
+                decrypted += decipher.final('utf8');
+                return decrypted;
+            } catch (e) {
+                return text; // Return original if decryption fails (e.g. wasn't encrypted)
+            }
+        });
+        
+        res.status(200).json({ results });
+    } catch (error) {
+        logger.error({ err: error, tenantId: req.tenantId }, "Batch Decryption Error");
+        res.status(200).json({ results: req.body.texts }); // Fallback to returning original array
+    }
+});
+
 // --- Firestore endpoints removed since we migrated to Supabase ---
 // Serve frontend static files
 const distPath = path.join(__dirname, 'dist');

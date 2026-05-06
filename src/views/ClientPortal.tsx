@@ -28,6 +28,8 @@ interface ClientData {
   phone: string;
   type: string;
   cases: ClientCase[];
+  invoices: any[];
+  documents: any[];
 }
 
 function ClientLoginForm({ onLogin }: { onLogin: (data: ClientData) => void }) {
@@ -111,8 +113,32 @@ function ClientLoginForm({ onLogin }: { onLogin: (data: ClientData) => void }) {
         }
       }
 
+      let documents: any[] = [];
+      let invoices: any[] = [];
+      
+      if (linkedClientId && orgId && cases.length > 0) {
+        try {
+          const caseIds = cases.map(c => c.id);
+          const { data: clientDocs } = await supabase
+            .from("documents")
+            .select("*")
+            .in("case_id", caseIds)
+            .eq("is_shared", true);
+            
+          if (clientDocs) documents = clientDocs;
+          
+          const { data: clientInvoices } = await supabase
+            .from("invoices")
+            .select("*")
+            .eq("org_id", orgId)
+            .eq("client_id", linkedClientId);
+            
+          if (clientInvoices) invoices = clientInvoices;
+        } catch {}
+      }
+
       toast.success(`مرحباً ${clientName}`);
-      onLogin({ name: clientName, phone: clientPhone, type: clientType, cases });
+      onLogin({ name: clientName, phone: clientPhone, type: clientType, cases, invoices, documents });
     } catch (error: any) {
       const code = error?.code || "";
       if (code === "auth/user-not-found" || code === "auth/invalid-credential") {
@@ -231,6 +257,13 @@ function ClientLoginForm({ onLogin }: { onLogin: (data: ClientData) => void }) {
                       createdAt: "2024-03-22",
                     }
                   ],
+                  invoices: [
+                    { id: "INV-2024-001", amount: 15000, status: "unpaid", due_date: "2024-05-01" },
+                    { id: "INV-2024-005", amount: 5000, status: "paid", due_date: "2024-04-15" }
+                  ],
+                  documents: [
+                    { id: "DOC-1", name: "مذكرة دفاع اولي.pdf", type: "pdf", is_shared: true, created_at: "2024-04-10" }
+                  ]
                 });
               }}
             >
@@ -245,6 +278,7 @@ function ClientLoginForm({ onLogin }: { onLogin: (data: ClientData) => void }) {
 
 function ClientDashboard({ data, onLogout }: { data: ClientData; onLogout: () => void }) {
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<"cases" | "invoices" | "documents">("cases");
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-navy-900 font-sans">
@@ -327,60 +361,180 @@ function ClientDashboard({ data, onLogout }: { data: ClientData; onLogout: () =>
             </Card>
           </div>
 
+          {/* Tabs Navigation */}
+          <div className="flex gap-2 overflow-x-auto pb-4 mb-4 hide-scrollbar">
+            <Button
+              variant={activeTab === "cases" ? "default" : "outline"}
+              className={cn("rounded-full whitespace-nowrap", activeTab === "cases" && "bg-primary-600")}
+              onClick={() => setActiveTab("cases")}
+            >
+              <Scale className="w-4 h-4 me-2" />
+              القضايا ({data.cases.length})
+            </Button>
+            <Button
+              variant={activeTab === "invoices" ? "default" : "outline"}
+              className={cn("rounded-full whitespace-nowrap", activeTab === "invoices" && "bg-primary-600")}
+              onClick={() => setActiveTab("invoices")}
+            >
+              <FileText className="w-4 h-4 me-2" />
+              الفواتير ({data.invoices.length})
+            </Button>
+            <Button
+              variant={activeTab === "documents" ? "default" : "outline"}
+              className={cn("rounded-full whitespace-nowrap", activeTab === "documents" && "bg-primary-600")}
+              onClick={() => setActiveTab("documents")}
+            >
+              <FileText className="w-4 h-4 me-2" />
+              المستندات ({data.documents.length})
+            </Button>
+          </div>
+
           {/* Cases List */}
-          <Card className="border-none shadow-sm dark:bg-navy-800">
-            <CardHeader className="border-b border-slate-50 dark:border-white/5 pb-4">
-              <CardTitle className="text-lg font-bold text-navy-900 dark:text-white flex items-center gap-2">
-                <Scale className="w-5 h-5 text-primary-500" />
-                قضاياك
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              {data.cases.length === 0 ? (
-                <div className="p-12 text-center text-slate-400">
-                  <FileText className="w-12 h-12 mx-auto mb-4 opacity-20" />
-                  <p className="font-bold">لا توجد قضايا مسجلة حالياً</p>
-                  <p className="text-sm mt-1">سيتم إضافة قضاياك بواسطة مكتبك القانوني</p>
-                </div>
-              ) : (
-                <div className="divide-y divide-slate-50 dark:divide-white/5">
-                  {data.cases.map((c) => (
-                    <div key={c.id} className="p-5 hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-bold text-navy-900 dark:text-white">
-                            {c.plaintiff} ضد {c.defendant}
-                          </p>
-                          <div className="flex items-center gap-3 mt-2 text-xs text-slate-500">
-                            <span className="flex items-center gap-1">
-                              <Scale size={12} />
-                              {c.court}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Calendar size={12} />
-                              {new Date(c.createdAt).toLocaleDateString("ar-EG")}
-                            </span>
+          {activeTab === "cases" && (
+            <Card className="border-none shadow-sm dark:bg-navy-800">
+              <CardHeader className="border-b border-slate-50 dark:border-white/5 pb-4">
+                <CardTitle className="text-lg font-bold text-navy-900 dark:text-white flex items-center gap-2">
+                  <Scale className="w-5 h-5 text-primary-500" />
+                  قضاياك
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                {data.cases.length === 0 ? (
+                  <div className="p-12 text-center text-slate-400">
+                    <FileText className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                    <p className="font-bold">لا توجد قضايا مسجلة حالياً</p>
+                    <p className="text-sm mt-1">سيتم إضافة قضاياك بواسطة مكتبك القانوني</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-slate-50 dark:divide-white/5">
+                    {data.cases.map((c) => (
+                      <div key={c.id} className="p-5 hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-bold text-navy-900 dark:text-white">
+                              {c.plaintiff} ضد {c.defendant}
+                            </p>
+                            <div className="flex items-center gap-3 mt-2 text-xs text-slate-500">
+                              <span className="flex items-center gap-1">
+                                <Scale size={12} />
+                                {c.court}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Calendar size={12} />
+                                {new Date(c.createdAt).toLocaleDateString("ar-EG")}
+                              </span>
+                            </div>
                           </div>
+                          <Badge
+                            className={cn(
+                              "font-bold",
+                              c.status === "نشطة"
+                                ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400"
+                                : c.status === "تحت الدراسة"
+                                ? "bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400"
+                                : "bg-slate-100 text-slate-600 dark:bg-white/5 dark:text-slate-400"
+                            )}
+                          >
+                            {c.status}
+                          </Badge>
                         </div>
-                        <Badge
-                          className={cn(
-                            "font-bold",
-                            c.status === "نشطة"
-                              ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400"
-                              : c.status === "تحت الدراسة"
-                              ? "bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400"
-                              : "bg-slate-100 text-slate-600 dark:bg-white/5 dark:text-slate-400"
-                          )}
-                        >
-                          {c.status}
-                        </Badge>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Invoices List */}
+          {activeTab === "invoices" && (
+            <Card className="border-none shadow-sm dark:bg-navy-800">
+              <CardHeader className="border-b border-slate-50 dark:border-white/5 pb-4">
+                <CardTitle className="text-lg font-bold text-navy-900 dark:text-white flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-primary-500" />
+                  الفواتير
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                {data.invoices.length === 0 ? (
+                  <div className="p-12 text-center text-slate-400">
+                    <FileText className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                    <p className="font-bold">لا توجد فواتير مسجلة</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-slate-50 dark:divide-white/5">
+                    {data.invoices.map((inv) => (
+                      <div key={inv.id} className="p-5 hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-bold text-navy-900 dark:text-white">
+                              مبلغ الفاتورة: {new Intl.NumberFormat('ar-EG', { style: 'currency', currency: 'EGP' }).format(inv.amount)}
+                            </p>
+                            <p className="text-sm text-slate-500 mt-1">
+                              تاريخ الاستحقاق: {new Date(inv.due_date || inv.created_at || Date.now()).toLocaleDateString("ar-EG")}
+                            </p>
+                          </div>
+                          <Badge
+                            className={cn(
+                              "font-bold",
+                              inv.status === "paid"
+                                ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400"
+                                : "bg-rose-50 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400"
+                            )}
+                          >
+                            {inv.status === "paid" ? "مدفوعة" : "غير مدفوعة"}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Documents List */}
+          {activeTab === "documents" && (
+            <Card className="border-none shadow-sm dark:bg-navy-800">
+              <CardHeader className="border-b border-slate-50 dark:border-white/5 pb-4">
+                <CardTitle className="text-lg font-bold text-navy-900 dark:text-white flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-primary-500" />
+                  المستندات المشتركة
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                {data.documents.length === 0 ? (
+                  <div className="p-12 text-center text-slate-400">
+                    <FileText className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                    <p className="font-bold">لا توجد مستندات مشتركة</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-slate-50 dark:divide-white/5">
+                    {data.documents.map((doc) => (
+                      <div key={doc.id} className="p-5 hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-bold text-navy-900 dark:text-white truncate max-w-xs sm:max-w-md">
+                              {doc.name}
+                            </p>
+                            <p className="text-sm text-slate-500 mt-1">
+                              تاريخ الإضافة: {new Date(doc.created_at).toLocaleDateString("ar-EG")}
+                            </p>
+                          </div>
+                          <Button variant="outline" size="sm" onClick={() => {
+                            if (doc.url) window.open(doc.url, "_blank");
+                            else toast.info("سيتم تحميل المستند قريباً");
+                          }}>
+                            عرض
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Contact Card */}
           <Card className="border-none shadow-sm dark:bg-navy-800 mt-6">

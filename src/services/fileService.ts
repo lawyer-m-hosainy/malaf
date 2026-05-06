@@ -1,7 +1,5 @@
-import { auth, storage } from "@/lib/firebase";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { getCurrentTenantId } from "@/lib/tenant";
 import { supabase } from "@/lib/supabase";
+import { getCurrentTenantId } from "@/lib/tenant";
 import { logEvent } from "@/observability/logger";
 
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB demo-safe limit
@@ -13,6 +11,7 @@ const ALLOWED_MIME_TYPES = new Set([
 ]);
 
 const ALLOWED_EXTENSIONS = new Set(["pdf", "doc", "docx", "txt"]);
+const BUCKET_NAME = "documents";
 
 function sanitizeFileName(fileName: string) {
   return fileName.replace(/[^a-zA-Z0-9._-]/g, "_");
@@ -36,9 +35,10 @@ function validateUpload(file: File) {
 async function writeUploadAudit(caseId: string, path: string, file: File) {
   try {
     const orgId = getCurrentTenantId();
+    const { data: user } = await supabase.auth.getUser();
     await supabase.from("audit_logs").insert({
       org_id: orgId,
-      user_id: auth.currentUser?.uid || null,
+      user_id: user?.user?.id || null,
       action: "document_upload",
       entity_type: "cases",
       entity_id: caseId,
@@ -55,42 +55,49 @@ async function writeUploadAudit(caseId: string, path: string, file: File) {
   }
 }
 
+async function ensureBucketExists() {
+  try {
+    const { data: buckets } = await supabase.storage.listBuckets();
+    if (!buckets?.find(b => b.name === BUCKET_NAME)) {
+      await supabase.storage.createBucket(BUCKET_NAME, {
+        public: true, // We'll assume public bucket with RLS or signed URLs if needed. For now, matching previous behavior.
+        fileSizeLimit: MAX_FILE_SIZE_BYTES
+      });
+    }
+  } catch (e) {
+    console.error("Failed to check/create bucket", e);
+  }
+}
+
 export async function uploadFile(file: File, path: string): Promise<string> {
   validateUpload(file);
-  const storageRef = ref(storage, path);
-  const uploadTask = uploadBytesResumable(storageRef, file, {
-    contentType: file.type,
-    customMetadata: {
-      tenantId: getCurrentTenantId(),
-      uploadedBy: auth.currentUser?.uid || "unknown",
-      originalName: sanitizeFileName(file.name),
-      uploadedAt: new Date().toISOString(),
-    },
-  });
+  await ensureBucketExists();
 
-  return new Promise((resolve, reject) => {
-    uploadTask.on(
-      "state_changed",
-      (snapshot) => {
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        logEvent("info", { event: "file_upload_progress", context: { progress: Math.round(progress), path } });
-      },
-      (error) => {
-        logEvent("error", { event: "file_upload_failed", context: { path, error: error.message } });
-        reject(error);
-      },
-      async () => {
-        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-        resolve(downloadURL);
-      }
-    );
-  });
+  const tenantId = getCurrentTenantId();
+  const { data: user } = await supabase.auth.getUser();
+
+  const { error } = await supabase.storage
+    .from(BUCKET_NAME)
+    .upload(path, file, {
+      cacheControl: '3600',
+      upsert: false
+    });
+
+  if (error) {
+    logEvent("error", { event: "file_upload_failed", context: { path, error: error.message } });
+    throw new Error(error.message);
+  }
+
+  logEvent("info", { event: "file_upload_success", context: { path } });
+  
+  const { data } = supabase.storage.from(BUCKET_NAME).getPublicUrl(path);
+  return data.publicUrl;
 }
 
 export function buildCaseUploadPath(caseId: string, fileName: string) {
   const tenantId = getCurrentTenantId();
   const safeName = sanitizeFileName(fileName);
-  return `tenants/${tenantId}/cases/${caseId}/${Date.now()}_${safeName}`;
+  return `${tenantId}/${caseId}/${Date.now()}_${safeName}`;
 }
 
 export async function uploadCaseDocument(file: File, caseId: string) {
@@ -109,7 +116,7 @@ export async function uploadCaseDocument(file: File, caseId: string) {
     return { url, path };
   } catch (error) {
     if (error instanceof Error && error.message === "UPLOAD_TIMEOUT") {
-      throw new Error("انتهت مهلة رفع الملف. يرجى التحقق من الاتصال أو إعدادات Firebase Storage.");
+      throw new Error("انتهت مهلة رفع الملف. يرجى التحقق من الاتصال.");
     }
     throw error;
   }

@@ -137,7 +137,7 @@ export default function App() {
                 <Route path="clm" element={<CLM />} />
                 <Route path="ip-operations" element={<IPOperations />} />
                 <Route path="specialized-tracks" element={<SpecializedTracks />} />
-                <Route path="audit-logs" element={<PermissionGate permission="view_audit_logs"><AuditLogs /></PermissionGate>} />
+                <Route path="audit-logs" element={<PermissionGate permission="org_admin"><AuditLogs /></PermissionGate>} />
                 <Route path="ai-analyzer" element={<AIDocumentAnalyzer />} />
                 <Route path="wiki" element={<InternalWiki />} />
                 <Route path="whatsapp" element={<PermissionGate permission="org_admin"><WhatsAppSettings /></PermissionGate>} />

@@ -14,6 +14,7 @@ import { useClientsStore } from "@/store/useClientsStore";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import StartVideoButton from "@/components/cases/StartVideoButton";
 
 interface CaseDetailsPanelProps {
   caseData: Case;
@@ -232,6 +233,7 @@ export default function CaseDetailsPanel({ caseData, sessions, expenses, tasks, 
 
         {!['محفوظة', 'مغلقة'].includes(caseData.status) && (
           <div className="flex flex-wrap gap-2">
+            <StartVideoButton caseId={caseData.id} caseName={caseData.title || ''} clientName={caseClient?.name || ''} />
             <AddSessionDialog caseData={caseData} />
             <AddDeadlineDialog caseId={caseData.id} />
             <AddTaskDialog caseId={caseData.id} />

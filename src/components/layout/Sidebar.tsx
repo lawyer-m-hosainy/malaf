@@ -130,22 +130,20 @@ export function Sidebar() {
           <Settings size={18} />
           الإعدادات
         </NavLink>
-        {hasPermission('view_reports') && (
-          <NavLink 
-            to="/dashboard/audit-logs"
-            className={({ isActive }) =>
-              cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-md transition-colors text-sm font-medium mt-1",
-                isActive 
-                  ? "bg-primary-500 text-white shadow-sm" 
-                  : "text-slate-300 hover:bg-white/5 hover:text-white"
-              )
-            }
-          >
-            <History size={18} />
-            سجل العمليات
-          </NavLink>
-        )}
+        <NavLink 
+          to="/dashboard/audit-logs"
+          className={({ isActive }) =>
+            cn(
+              "flex items-center gap-3 px-3 py-2.5 rounded-md transition-colors text-sm font-medium mt-1",
+              isActive 
+                ? "bg-primary-500 text-white shadow-sm" 
+                : "text-slate-300 hover:bg-white/5 hover:text-white"
+            )
+          }
+        >
+          <History size={18} />
+          سجل العمليات
+        </NavLink>
       </div>
     </aside>
     </>

@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { supabase } from "@/lib/supabase";
-import { WhatsAppDashboard } from "@/components/whatsapp/WhatsAppDashboard";
+import WhatsAppStats from "@/components/whatsapp/WhatsAppStats";
+import WorkingHours from "@/components/whatsapp/WorkingHours";
+import CommandsReference from "@/components/whatsapp/CommandsReference";
+import WhatsAppContacts from "@/components/whatsapp/WhatsAppContacts";
+import BotTester from "@/components/whatsapp/BotTester";
+import ConnectionStatus from "@/components/whatsapp/ConnectionStatus";
 import { MessageLog } from "@/components/whatsapp/MessageLog";
 import { NotificationToggles } from "@/components/whatsapp/NotificationToggles";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -109,7 +114,7 @@ export function WhatsAppSettings() {
   if (loading) return <div className="p-8 text-center">جاري التحميل...</div>;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-10">
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">واتساب بوت مَلَف</h2>
@@ -117,79 +122,83 @@ export function WhatsAppSettings() {
             أدر محادثات موكليك وتلقى أوامر المحامين عبر الواتساب.
           </p>
         </div>
-        <Button onClick={handleSave} disabled={saving} className="gap-2">
+        <Button onClick={handleSave} disabled={saving} className="gap-2 bg-[#15803d] hover:bg-[#166534] text-white">
           <Save className="w-4 h-4" />
           {saving ? 'جاري الحفظ...' : 'حفظ التغييرات'}
         </Button>
       </div>
 
-      <WhatsAppDashboard stats={stats} />
+      <ConnectionStatus />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>الإعدادات الأساسية</CardTitle>
-                  <CardDescription>اربط رقم واتساب مكتبك بالمنصة</CardDescription>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Label htmlFor="active-toggle" className={settings.is_active ? "text-emerald-600 font-bold cursor-pointer" : "cursor-pointer"}>
-                    {settings.is_active ? 'مفعّل' : 'معطّل'}
-                  </Label>
-                  <Checkbox 
-                    id="active-toggle"
-                    checked={settings.is_active} 
-                    onCheckedChange={(v) => setSettings({ ...settings, is_active: !!v })} 
-                  />
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-2">
-                <Label htmlFor="waPhone">رقم الواتساب (بدون +)</Label>
-                <Input 
-                  id="waPhone" 
-                  placeholder="201012345678" 
-                  value={settings.wa_phone_number || ''}
-                  onChange={(e) => setSettings({ ...settings, wa_phone_number: e.target.value })}
-                  dir="ltr"
-                />
-              </div>
+      <WhatsAppStats />
 
-              <div className="grid gap-2">
-                <Label htmlFor="welcome">رسالة الترحيب (للموكلين الجدد)</Label>
-                <Textarea 
-                  id="welcome" 
-                  rows={3}
-                  value={settings.welcome_message || ''}
-                  onChange={(e) => setSettings({ ...settings, welcome_message: e.target.value })}
-                />
-              </div>
+      <Card className="bg-white rounded-2xl border border-gray-100 shadow-sm mb-6">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>الإعدادات الأساسية</CardTitle>
+              <CardDescription>اربط رقم واتساب مكتبك بالمنصة</CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="active-toggle" className={settings.is_active ? "text-emerald-600 font-bold cursor-pointer" : "cursor-pointer"}>
+                {settings.is_active ? 'مفعّل' : 'معطّل'}
+              </Label>
+              <Checkbox 
+                id="active-toggle"
+                checked={settings.is_active} 
+                onCheckedChange={(v) => setSettings({ ...settings, is_active: !!v })} 
+              />
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-2">
+            <Label htmlFor="waPhone">رقم الواتساب (بدون +)</Label>
+            <Input 
+              id="waPhone" 
+              placeholder="201012345678" 
+              value={settings.wa_phone_number || ''}
+              onChange={(e) => setSettings({ ...settings, wa_phone_number: e.target.value })}
+              dir="ltr"
+            />
+          </div>
 
-              <div className="grid gap-2">
-                <Label htmlFor="away">رسالة الغياب (خارج أوقات العمل)</Label>
-                <Textarea 
-                  id="away" 
-                  rows={2}
-                  value={settings.away_message || ''}
-                  onChange={(e) => setSettings({ ...settings, away_message: e.target.value })}
-                />
-              </div>
-            </CardContent>
-          </Card>
+          <div className="grid gap-2">
+            <Label htmlFor="welcome">رسالة الترحيب (للموكلين الجدد)</Label>
+            <Textarea 
+              id="welcome" 
+              rows={3}
+              value={settings.welcome_message || ''}
+              onChange={(e) => setSettings({ ...settings, welcome_message: e.target.value })}
+            />
+          </div>
 
-          <NotificationToggles 
-            notifications={settings.notifications || {}} 
-            onChange={handleNotificationChange} 
-          />
-        </div>
+          <div className="grid gap-2">
+            <Label htmlFor="away">رسالة الغياب (خارج أوقات العمل)</Label>
+            <Textarea 
+              id="away" 
+              rows={2}
+              value={settings.away_message || ''}
+              onChange={(e) => setSettings({ ...settings, away_message: e.target.value })}
+            />
+          </div>
+        </CardContent>
+      </Card>
 
-        <div>
-          <MessageLog messages={messages} />
-        </div>
-      </div>
+      <WorkingHours />
+
+      <NotificationToggles 
+        notifications={settings.notifications || {}} 
+        onChange={handleNotificationChange} 
+      />
+
+      <CommandsReference />
+
+      <WhatsAppContacts />
+
+      <BotTester />
+
+      <MessageLog messages={messages} />
     </div>
   );
 }

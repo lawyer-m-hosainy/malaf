@@ -16,12 +16,15 @@ import cryptoRouter from './routes/crypto.js';
 import whatsappRouter from './routes/whatsapp.js';
 // Note: videoRouter is TS, we import it as .ts or let the loader handle it
 import videoRouter from './routes/video.js';
+import { initScheduler } from './services/whatsapp/notificationScheduler.js';
 
 // Import Middlewares
 import { authMiddleware } from './middleware/auth.js';
 
 // Load environment variables
 dotenv.config();
+
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 const logger = pino({
     level: process.env.LOG_LEVEL || 'info',
@@ -113,7 +116,44 @@ app.use((err, req, res, next) => {
     });
 });
 
+
 // Start Server
 app.listen(PORT, () => {
     logger.info(`🚀 Malaf Backend is running on port ${PORT} [${process.env.NODE_ENV || 'development'}]`);
+
+    // Initialize WhatsApp session reminders & invoice notifications
+    try {
+        initScheduler(async (phone, message, orgId) => {
+            // Fetch org's WhatsApp settings to send via correct provider
+            if (!supabaseServiceKey) return false;
+            const { createClient } = await import('@supabase/supabase-js');
+            const sb = createClient(process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL, supabaseServiceKey);
+            const { data: settings } = await sb
+                .from('whatsapp_settings')
+                .select('*')
+                .eq('org_id', orgId)
+                .eq('is_active', true)
+                .single();
+            if (!settings) return false;
+
+            const apiToken = settings.api_token_encrypted;
+            const provider = settings.provider || '360dialog';
+            let apiUrl, headers, body;
+            if (provider === '360dialog') {
+                apiUrl = 'https://waba.360dialog.io/v1/messages';
+                headers = { 'D360-API-KEY': apiToken, 'Content-Type': 'application/json' };
+            } else {
+                apiUrl = `https://graph.facebook.com/v18.0/${settings.wa_phone_number}/messages`;
+                headers = { 'Authorization': `Bearer ${apiToken}`, 'Content-Type': 'application/json' };
+            }
+            body = { messaging_product: 'whatsapp', to: phone.replace('+', ''), type: 'text', text: { body: message } };
+            try {
+                const resp = await fetch(apiUrl, { method: 'POST', headers, body: JSON.stringify(body) });
+                return resp.ok;
+            } catch { return false; }
+        });
+        logger.info('📅 WhatsApp Notification Scheduler activated');
+    } catch (err) {
+        logger.warn({ err: err.message }, 'WhatsApp Scheduler init skipped (non-critical)');
+    }
 });

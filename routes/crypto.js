@@ -2,10 +2,22 @@ import express from 'express';
 import crypto from 'crypto';
 import { z } from 'zod';
 import pino from 'pino';
+import rateLimit from 'express-rate-limit';
 import { authMiddleware } from '../middleware/auth.js';
 
 const logger = pino();
 const router = express.Router();
+
+// Rate Limiter for Crypto Endpoints (30 requests per minute per IP)
+const cryptoRateLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 30,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, error: 'تم تجاوز الحد الأقصى لطلبات التشفير. حاول بعد دقيقة.' },
+});
+
+router.use(cryptoRateLimiter);
 
 const MASTER_ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || crypto.randomBytes(32).toString('hex');
 const IV_LENGTH = 12; // GCM standard IV length

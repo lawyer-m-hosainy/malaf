@@ -56,6 +56,7 @@ const OnboardingFlow = lazy(() => import("./modules/onboarding/OnboardingFlow"))
 const GlobalAdmin = lazy(() => import("./modules/admin/GlobalAdmin"));
 const WhatsAppSettings = lazy(() => import("./pages/dashboard/WhatsAppSettings").then(m => ({ default: m.WhatsAppSettings })));
 const VideoRoom = lazy(() => import("./pages/dashboard/VideoRoom"));
+const VideoRoomManager = lazy(() => import("./pages/dashboard/VideoRoomManager"));
 
 // Egyptian Modules
 const BarAssociation = lazy(() => import("./views/BarAssociation"));
@@ -141,6 +142,7 @@ export default function App() {
                 <Route path="ai-analyzer" element={<AIDocumentAnalyzer />} />
                 <Route path="wiki" element={<InternalWiki />} />
                 <Route path="whatsapp" element={<PermissionGate permission="org_admin"><WhatsAppSettings /></PermissionGate>} />
+                <Route path="video-rooms" element={<VideoRoomManager />} />
                 <Route path="video/:caseId" element={<VideoRoom />} />
                 <Route path="platform-admin" element={<PermissionGate permission="platform_admin"><GlobalAdmin /></PermissionGate>} />
                 {/* Egyptian Modules */}

@@ -3,7 +3,7 @@ import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Scale, Loader2, Mail, Lock, Eye, EyeOff, UserPlus } from "lucide-react";
+import { Scale, Loader2, Mail, Lock, Eye, EyeOff, UserPlus, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
@@ -146,15 +146,15 @@ export default function Login() {
     <div className="min-h-screen bg-slate-50 dark:bg-navy-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
-          <div className="w-16 h-16 bg-primary-600 rounded-2xl flex items-center justify-center shadow-xl shadow-primary-500/20">
+          <div className="w-16 h-16 bg-gradient-to-br from-primary-600 to-emerald-600 rounded-2xl flex items-center justify-center shadow-xl shadow-primary-500/20">
             <Scale className="text-white w-10 h-10" />
           </div>
         </div>
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-navy-900 dark:text-white">
-          تسجيل الدخول
+        <h2 className="mt-6 text-center text-4xl font-black tracking-tighter text-navy-900 dark:text-white uppercase">
+          مَلَف <span className="text-primary-600">MALAF</span>
         </h2>
-        <p className="mt-2 text-center text-sm text-slate-600 dark:text-slate-400">
-          مرحباً بك في منصة مكتب العدالة للمحاماة
+        <p className="mt-2 text-center text-sm text-slate-600 dark:text-slate-400 font-medium">
+          نظام حوكمة وإدارة المكاتب القانونية الذكي
         </p>
       </div>
 
@@ -343,32 +343,32 @@ export default function Login() {
               </Dialog>
             </div>
 
-            {(import.meta as any).env?.MODE !== "production" && (
-              <>
-                <div className="bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 p-3 rounded-lg text-sm border border-amber-200 dark:border-amber-900/50 text-center font-bold">
-                  هذا الوضع للعرض التجريبي فقط — لا تدخل بيانات حقيقية
-                </div>
-                <Button 
-                  variant="outline"
-                  onClick={() => {
-                    const { setDemoMode, setCurrentUser } = useAuthStore.getState();
-                    setDemoMode(true);
-                    setCurrentUser({
-                      id: "demo-admin",
-                      name: "مستخدم تجريبي (مدير مكتب)",
-                      email: "demo@example.com",
-                      role: "مدير مكتب"
-                    });
-                    localStorage.setItem("demoStartedAt", Date.now().toString());
-                    toast.success("تم الدخول بوضع المعاينة التجريبية (صالح لمدة 30 دقيقة)");
-                    navigate("/dashboard");
-                  }}
-                  className="w-full py-6 border-dashed border-primary-500/30 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/10"
-                >
-                  الدخول التجريبي (لفحص الأقسام)
-                </Button>
-              </>
-            )}
+            <div className="pt-4">
+              <div className="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 p-4 rounded-xl text-xs border border-emerald-200 dark:border-emerald-900/50 text-center space-y-2">
+                <div className="font-black text-sm uppercase">منطقة المستثمرين | Investor Zone</div>
+                <p>يمكنك استكشاف كامل ميزات المنصة ببيانات تجريبية مصرية واقعية من خلال الزر أدناه.</p>
+              </div>
+              <Button 
+                variant="outline"
+                onClick={() => {
+                  const { setDemoMode, setCurrentUser } = useAuthStore.getState();
+                  setDemoMode(true);
+                  setCurrentUser({
+                    id: "demo-admin",
+                    name: "مستخدم تجريبي (مدير مكتب)",
+                    email: "demo@example.com",
+                    role: "مدير مكتب"
+                  });
+                  localStorage.setItem("demoStartedAt", Date.now().toString());
+                  toast.success("تم تفعيل وضع العرض التفاعلي بنجاح");
+                  navigate("/dashboard");
+                }}
+                className="w-full mt-3 py-7 border-2 border-emerald-500/20 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white dark:hover:bg-emerald-500/20 transition-all font-bold rounded-xl shadow-lg shadow-emerald-500/10"
+              >
+                <Sparkles className="me-2 w-5 h-5" />
+                بدء العرض التفاعلي للمنصة
+              </Button>
+            </div>
 
             <div className="mt-4 text-center">
               <Button variant="link" onClick={() => navigate('/')} className="text-primary-600 dark:text-primary-400">

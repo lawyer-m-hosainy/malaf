@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { 
   Scale, ShieldCheck, Clock, Users, ArrowLeft, MessageCircle, 
-  CheckCircle2, Star, Phone, Mail, MapPin, Briefcase, Building2, Gavel, FileText
+  CheckCircle2, Star, Phone, Mail, MapPin, Briefcase, Building2, Gavel, FileText, TrendingUp
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -18,10 +18,13 @@ export default function Landing() {
       <nav className="fixed top-0 w-full z-50 bg-white/80 dark:bg-navy-900/80 backdrop-blur-md border-b border-slate-200 dark:border-white/10 transition-all">
         <div className="container mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo(0,0)}>
-            <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/20">
+            <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/20">
               <Scale className="text-white w-6 h-6" />
             </div>
-            <span className="text-xl font-bold tracking-tight">مكتب العدالة</span>
+            <div className="flex flex-col">
+              <span className="text-2xl font-black tracking-tighter text-navy-900 dark:text-white leading-none">مَلَف</span>
+              <span className="text-[10px] font-bold text-primary-600 tracking-widest uppercase">MALAF</span>
+            </div>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600 dark:text-slate-300">
             <a href="#services" className="hover:text-primary-600 transition-colors">خدماتنا</a>
@@ -56,14 +59,14 @@ export default function Landing() {
             <Badge className="bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400 border border-primary-100 dark:border-primary-800/30 px-4 py-1.5 text-sm font-medium">
               الريادة في تقديم الخدمات القانونية المتكاملة
             </Badge>
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold leading-[1.1] tracking-tight">
-              حماية حقوقك <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-blue-600 dark:from-primary-400 dark:to-blue-400">
-                بخبرة واحترافية
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-black leading-[1.05] tracking-tight text-navy-900 dark:text-white">
+              حوكمة مكاتب <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 via-emerald-600 to-blue-600 animate-gradient">
+                المحاماة الذكية
               </span>
             </h1>
             <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 leading-relaxed max-w-2xl mx-auto">
-              نقدم استشارات قانونية متكاملة وتمثيل قضائي احترافي للشركات والأفراد، معتمدين على أحدث التقنيات لضمان الشفافية وسرعة الإنجاز في جميع محاكم جمهورية مصر العربية.
+              أول منصة ERP قانونية متكاملة مصممة خصيصاً للمكاتب والشركات القانونية في مصر. أتمتة كاملة، ذكاء اصطناعي، وإدارة شاملة للقضايا والموكلين.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8">
               <Button size="lg" className="w-full sm:w-auto bg-primary-600 hover:bg-primary-700 text-white h-14 px-8 text-lg rounded-full shadow-xl shadow-primary-500/20 transition-transform hover:scale-105" onClick={() => window.location.href='#contact'}>
@@ -174,29 +177,31 @@ export default function Landing() {
               </Button>
             </div>
             <div className="lg:w-1/2 relative">
-              <div className="absolute inset-0 bg-gradient-to-tr from-primary-500/20 to-blue-500/20 rounded-3xl blur-3xl"></div>
-              <div className="relative bg-slate-50 dark:bg-navy-900 border border-slate-200 dark:border-white/10 rounded-3xl p-4 shadow-2xl">
-                {/* Mockup of the portal */}
-                <div className="rounded-2xl overflow-hidden border border-slate-200 dark:border-white/5 bg-white dark:bg-navy-800 aspect-video flex flex-col">
-                  <div className="h-10 border-b border-slate-100 dark:border-white/5 flex items-center px-4 gap-2 bg-slate-50 dark:bg-navy-900">
-                    <div className="w-3 h-3 rounded-full bg-red-400"></div>
-                    <div className="w-3 h-3 rounded-full bg-amber-400"></div>
-                    <div className="w-3 h-3 rounded-full bg-green-400"></div>
-                  </div>
-                  <div className="p-6 flex-1 flex flex-col gap-4">
-                    <div className="flex justify-between items-center">
-                      <div className="h-6 w-32 bg-slate-200 dark:bg-white/10 rounded-md"></div>
-                      <div className="h-8 w-8 bg-slate-200 dark:bg-white/10 rounded-full"></div>
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9, rotate: -2 }}
+                whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
+                transition={{ duration: 0.8 }}
+                className="relative z-10"
+              >
+                <div className="absolute -inset-4 bg-gradient-to-tr from-primary-500/20 to-emerald-500/20 rounded-[2rem] blur-2xl"></div>
+                <div className="relative bg-white dark:bg-navy-800 border border-slate-200 dark:border-white/10 rounded-[2rem] p-2 shadow-2xl overflow-hidden">
+                  <img 
+                    src="https://picsum.photos/seed/malaf/1200/800" 
+                    alt="Malaf Dashboard Preview" 
+                    className="rounded-[1.5rem] w-full shadow-inner opacity-50 grayscale"
+                  />
+                  {/* Floating badge */}
+                  <div className="absolute top-8 -start-6 bg-white dark:bg-navy-900 p-4 rounded-2xl shadow-xl border border-slate-100 dark:border-white/5 flex items-center gap-3 animate-bounce-slow">
+                    <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center text-emerald-600">
+                      <TrendingUp size={20} />
                     </div>
-                    <div className="grid grid-cols-3 gap-4">
-                      <div className="h-24 bg-slate-100 dark:bg-white/5 rounded-xl"></div>
-                      <div className="h-24 bg-slate-100 dark:bg-white/5 rounded-xl"></div>
-                      <div className="h-24 bg-slate-100 dark:bg-white/5 rounded-xl"></div>
+                    <div>
+                      <div className="text-[10px] text-slate-400 font-bold uppercase">معدل الإنجاز</div>
+                      <div className="text-lg font-black text-navy-900 dark:text-white">98.5%</div>
                     </div>
-                    <div className="flex-1 bg-slate-100 dark:bg-white/5 rounded-xl mt-2"></div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </div>
           </div>
         </div>
@@ -251,7 +256,10 @@ export default function Landing() {
                 <div className="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center">
                   <Scale className="text-white w-6 h-6" />
                 </div>
-                <span className="text-xl font-bold text-white tracking-tight">مكتب العدالة</span>
+                <div className="flex flex-col">
+                  <span className="text-xl font-black tracking-tighter text-white leading-none">مَلَف</span>
+                  <span className="text-[8px] font-bold text-primary-400 tracking-widest uppercase">MALAF</span>
+                </div>
               </div>
               <p className="text-sm leading-relaxed text-slate-400">
                 مكتب محاماة رائد يقدم خدمات قانونية متكاملة للشركات والأفراد، معتمدين على الخبرة العميقة والتقنية الحديثة.

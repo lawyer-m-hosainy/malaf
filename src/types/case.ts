@@ -57,7 +57,7 @@ export interface Case {
   memorandums: string[]; // مذكرات وصحائف دعوى
   documents?: Document[];
   powerOfAttorneyRef: string; // رقم التوكيل (مشهر بالشهر العقاري)
-  status: 'متداولة' | 'مغلقة' | 'تحت الدراسة' | 'محفوظة';
+  status: 'متداولة' | 'مغلقة' | 'تحت الدراسة' | 'محفوظة' | 'حكم نهائي';
   eLitigationStatus?: 'مربوط ببوابة التقاضي' | 'غير مربوط'; // E-Litigation Portal Tracker
   
   // ─── Multi-Tier Case Numbering (Egyptian System) ───

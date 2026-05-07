@@ -483,6 +483,7 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
               <option value="تحت الدراسة">تحت الدراسة</option>
               {caseToEdit && <option value="محفوظة">محفوظة</option>}
               {caseToEdit && <option value="مغلقة">مغلقة</option>}
+              {caseToEdit && <option value="حكم نهائي">حكم نهائي (نقل للتنفيذ)</option>}
             </select>
           </div>
 

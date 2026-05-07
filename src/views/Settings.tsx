@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState, useRef, useEffect } from "react";
-import { Building2, Mail, Phone, MapPin, Hash, Upload, Moon, Sun, Monitor } from "lucide-react";
+import { Building2, Mail, Phone, MapPin, Hash, Upload, Moon, Sun, Monitor, History, ShieldCheck } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { useUIStore } from '@/store/useUIStore';
@@ -13,6 +14,7 @@ export default function Settings() {
   const officeSettings = useUIStore((state) => state.officeSettings);
   const setOfficeSettings = useUIStore((state) => state.setOfficeSettings);
   const { theme, setTheme } = useTheme();
+  const navigate = useNavigate();
   
   // Initialize with fallback to prevent runtime errors if store is empty
   const [formData, setFormData] = useState(officeSettings || {
@@ -205,6 +207,23 @@ export default function Settings() {
                 تغيير الشعار
               </Button>
               <p className="text-[10px] text-slate-400 text-center">يفضل استخدام صورة بصيغة PNG أو SVG بخلفية شفافة.</p>
+            </CardContent>
+          </Card>
+
+          {/* سجل العمليات */}
+          <Card className="border-none shadow-sm dark:bg-navy-800 hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate('/dashboard/audit-logs')}>
+            <CardContent className="p-6 flex flex-col items-center gap-3 text-center">
+              <div className="w-14 h-14 rounded-xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
+                <History size={28} className="text-amber-600 dark:text-amber-400" />
+              </div>
+              <h3 className="font-bold text-navy-900 dark:text-white">سجل العمليات</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                تتبع كافة الأنشطة والتغييرات على النظام — مين فتح ملف، مين عدّل فاتورة، ومتى.
+              </p>
+              <div className="flex items-center gap-1.5 text-[10px] text-amber-600 dark:text-amber-400 font-medium bg-amber-50 dark:bg-amber-900/20 px-3 py-1 rounded-full">
+                <ShieldCheck size={12} />
+                أداة أمنية — للمدير فقط
+              </div>
             </CardContent>
           </Card>
         </div>

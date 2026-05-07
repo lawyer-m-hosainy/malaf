@@ -67,7 +67,7 @@ router.post('/create-room', async (req, res) => {
       roomName 
     });
 
-  } catch (err: any) {
+  } catch (err) {
     console.error('Video room error:', err);
     res.status(500).json({ success: false, error: err.message });
   }
@@ -92,7 +92,7 @@ router.post('/end-session', async (req, res) => {
     if (error) throw error;
     res.json({ success: true });
 
-  } catch (err: any) {
+  } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
 });
@@ -108,7 +108,7 @@ router.get('/sessions/:caseId', async (req, res) => {
 
     if (error) throw error;
     res.json({ success: true, sessions: data });
-  } catch (err: any) {
+  } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
 });

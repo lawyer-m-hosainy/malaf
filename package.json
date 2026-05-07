@@ -6,8 +6,7 @@
   "scripts": {
     "dev": "vite --port=3005 --host=0.0.0.0",
     "build": "vite build",
-    "build:server": "tsc server.ts --esModuleInterop --target ES2022 --module NodeNext --moduleResolution NodeNext",
-    "build:all": "npm run build && npm run build:server",
+    "build:all": "npm run build",
     "start": "node server.js",
     "preview": "vite preview",
     "clean": "rm -rf dist",

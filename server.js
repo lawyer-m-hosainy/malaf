@@ -15,7 +15,7 @@ import aiRouter from './routes/ai.js';
 import cryptoRouter from './routes/crypto.js';
 import whatsappRouter from './routes/whatsapp.js';
 // Note: videoRouter is TS, we import it as .ts or let the loader handle it
-import videoRouter from './routes/video.ts';
+import videoRouter from './routes/video.js';
 
 // Import Middlewares
 import { authMiddleware } from './middleware/auth.js';

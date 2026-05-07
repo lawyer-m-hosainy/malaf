@@ -82,12 +82,20 @@ const MemoizedPieChart = React.memo(({ data }: { data: any[] }) => (
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const cases = useCasesStore(state => state.cases);
-  const sessions = useCasesStore(state => state.sessions);
-  const deadlines = useCasesStore(state => state.deadlines);
-  const clients = useClientsStore(state => state.clients);
-  const tasks = useTeamStore(state => state.tasks);
-  const updateTaskStatus = useTeamStore(state => state.updateTaskStatus);
+  const cases = useCasesStore((state) => state.cases);
+  const clients = useClientsStore((state) => state.clients);
+  const tasks = useTeamStore((state) => state.tasks);
+  const updateTaskStatus = useTeamStore((state) => state.updateTaskStatus);
+  const refreshCases = useCasesStore((state) => state.fetchCases);
+  const refreshClients = useClientsStore((state) => state.fetchClients);
+  const refreshTasks = useTeamStore((state) => state.fetchTasks);
+
+  // BUG-011: Sync data on mount if counts are 0 to ensure stats are accurate
+  useEffect(() => {
+    if (cases.length === 0) refreshCases();
+    if (clients.length === 0) refreshClients();
+    if (tasks.length === 0) refreshTasks();
+  }, [cases.length, clients.length, tasks.length]);
   
   const [isDrafting, setIsDrafting] = useState(false);
   const [draftResult, setDraftResult] = useState("");

@@ -12,7 +12,8 @@ interface TeamState {
   removeTeamMember: (id: string) => void;
   addTask: (task: Task) => void;
   updateTaskStatus: (id: string, status: 'pending' | 'completed') => void;
-  hasLoaded: boolean;
+  fetchTeamMembers: () => Promise<void>;
+  fetchTasks: () => Promise<void>;
   reset: () => void;
 }
 
@@ -73,4 +74,11 @@ export const useTeamStore = create<TeamState>((set) => ({
   updateTaskStatus: (id, status) => set((state) => ({
     tasks: state.tasks.map(t => t.id === id ? { ...t, status } : t)
   })),
+  fetchTeamMembers: async () => {
+    set({ teamMembers: MOCK_TEAM_MEMBERS, hasLoaded: true });
+  },
+  fetchTasks: async () => {
+    // In a real app, this calls legalDataService.fetchTasks()
+    set({ hasLoaded: true });
+  },
 }));

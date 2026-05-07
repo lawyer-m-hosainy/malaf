@@ -8,7 +8,8 @@ const logger = pino();
 const router = express.Router();
 
 const MASTER_ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || crypto.randomBytes(32).toString('hex');
-const IV_LENGTH = 16;
+const IV_LENGTH = 12; // GCM standard IV length
+const AUTH_TAG_LENGTH = 16;
 
 /**
  * Derives a tenant-specific encryption key using the master key and tenant ID.
@@ -35,14 +36,16 @@ router.post('/encrypt', async (req, res) => {
         
         const tenantKey = getTenantKey(req.tenantId);
         const iv = crypto.randomBytes(IV_LENGTH);
-        const cipher = crypto.createCipheriv('aes-256-cbc', tenantKey, iv);
+        const cipher = crypto.createCipheriv('aes-256-gcm', tenantKey, iv);
         
         let encrypted = cipher.update(text, 'utf8', 'hex');
         encrypted += cipher.final('hex');
+        const authTag = cipher.getAuthTag().toString('hex');
         
+        // Format: iv:authTag:encryptedText
         res.status(200).json({ 
             success: true, 
-            result: iv.toString('hex') + ':' + encrypted 
+            result: `${iv.toString('hex')}:${authTag}:${encrypted}`
         });
     } catch (error) {
         if (error instanceof z.ZodError) {
@@ -58,25 +61,31 @@ router.post('/decrypt', async (req, res) => {
         const { text } = cryptoSchema.parse(req.body);
         
         const textParts = text.split(':');
-        if (textParts.length < 2) throw new Error('Invalid format');
+        if (textParts.length < 3) throw new Error('Invalid format for GCM');
         
-        const ivHex = textParts.shift();
-        const encryptedText = textParts.join(':');
+        const ivHex = textParts[0];
+        const authTagHex = textParts[1];
+        const encryptedText = textParts[2];
         
         const tenantKey = getTenantKey(req.tenantId);
         const iv = Buffer.from(ivHex, 'hex');
+        const authTag = Buffer.from(authTagHex, 'hex');
         
-        const decipher = crypto.createDecipheriv('aes-256-cbc', tenantKey, iv);
+        const decipher = crypto.createDecipheriv('aes-256-gcm', tenantKey, iv);
+        decipher.setAuthTag(authTag);
+        
         let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
         decrypted += decipher.final('utf8');
         
         res.status(200).json({ success: true, result: decrypted });
     } catch (error) {
-        // Return original text if decryption fails (as fallback) but log it
-        logger.warn({ err: error.message, tenantId: req.tenantId }, "Decryption Fallback");
+        // Log decryption failure but don't leak reason to client
+        logger.warn({ err: error.message, tenantId: req.tenantId }, "Decryption Failed (GCM Auth Failure?)");
+        // Return original if it's not encrypted, or handle accordingly
         res.status(200).json({ success: true, result: req.body.text });
     }
 });
+
 
 router.post('/batch-decrypt', async (req, res) => {
     try {
@@ -87,11 +96,18 @@ router.post('/batch-decrypt', async (req, res) => {
             if (!text || !text.includes(':')) return text;
             try {
                 const textParts = text.split(':');
-                const ivHex = textParts.shift();
-                const encryptedText = textParts.join(':');
+                if (textParts.length < 3) return text; // Fallback for old format or unencrypted
+                
+                const ivHex = textParts[0];
+                const authTagHex = textParts[1];
+                const encryptedText = textParts[2];
                 
                 const iv = Buffer.from(ivHex, 'hex');
-                const decipher = crypto.createDecipheriv('aes-256-cbc', tenantKey, iv);
+                const authTag = Buffer.from(authTagHex, 'hex');
+                
+                const decipher = crypto.createDecipheriv('aes-256-gcm', tenantKey, iv);
+                decipher.setAuthTag(authTag);
+                
                 let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
                 decrypted += decipher.final('utf8');
                 return decrypted;
@@ -108,5 +124,6 @@ router.post('/batch-decrypt', async (req, res) => {
         res.status(200).json({ success: true, results: req.body.texts });
     }
 });
+
 
 export default router;

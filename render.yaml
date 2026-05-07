@@ -1,35 +1,39 @@
 services:
   - type: web
-    name: malaf-egypt-production
+    name: malaf-platform
     runtime: node
     plan: free
-    buildCommand: npm install && npm run build:all
+    region: frankfurt
+    buildCommand: npm install && npm run build
     startCommand: node server.js
     healthCheckPath: /api/health
+    autoDeploy: true
     envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: SUPABASE_URL
+        value: https://zidejnagdyoimyhprxrt.supabase.co
+      - key: VITE_SUPABASE_URL
+        value: https://zidejnagdyoimyhprxrt.supabase.co
+      - key: SUPABASE_ANON_KEY
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InppZGVqbmFnZHlvaW15aHByeHJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxOTE3NzgsImV4cCI6MjA5Mzc2Nzc3OH0.OVOEHZmySQXdQNN-KYlDDijyoWYkYUBKzra6XlKRd_E
+      - key: VITE_SUPABASE_ANON_KEY
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InppZGVqbmFnZHlvaW15aHByeHJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxOTE3NzgsImV4cCI6MjA5Mzc2Nzc3OH0.OVOEHZmySQXdQNN-KYlDDijyoWYkYUBKzra6XlKRd_E
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
       - key: GEMINI_API_KEY
         sync: false
       - key: GROQ_API_KEY
         sync: false
       - key: ENCRYPTION_KEY
         sync: false
-      - key: NODE_ENV
-        value: production
-      - key: PRODUCTION_URL
-        value: https://malaf-egypt-production.onrender.com
-      - key: PORT
-        value: 10000
-      - key: SUPABASE_URL
-        sync: false
-      - key: SUPABASE_ANON_KEY
-        sync: false
-      - key: SUPABASE_SERVICE_KEY
+      - key: DAILY_API_KEY
         sync: false
       - key: VITE_FIREBASE_API_KEY
         sync: false
       - key: VITE_FIREBASE_AUTH_DOMAIN
         sync: false
       - key: VITE_FIREBASE_PROJECT_ID
-        sync: false
-      - key: DAILY_API_KEY
         sync: false

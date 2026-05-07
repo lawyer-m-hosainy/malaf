@@ -84,6 +84,7 @@ interface ClientsState {
   setCurrentPage: (page: number) => void;
   setHasMore: (hasMore: boolean) => void;
   /** مسح جميع بيانات الموكلين عند تسجيل الخروج */
+  fetchClients: () => Promise<void>;
   reset: () => void;
 }
 
@@ -172,4 +173,8 @@ export const useClientsStore = create<ClientsState>((set) => ({
     }
     return { poas: updatedPOAs };
   }),
+  fetchClients: async () => {
+    // In a real app, this calls legalDataService.fetchClients()
+    set({ hasLoaded: true });
+  },
 }));

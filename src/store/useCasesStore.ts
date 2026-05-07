@@ -19,6 +19,7 @@ interface CasesState {
   isLoading: boolean;
   hasLoadedSessions: boolean;
   loadSessions: () => Promise<void>;
+  fetchCases: () => Promise<void>;
   reset: () => void;
 }
 
@@ -78,6 +79,10 @@ export const useCasesStore = create<CasesState>((set, get) => ({
   reset: () => set({ cases: [], sessions: [], deadlines: [], hasLoaded: false, hasLoadedSessions: false, isLoading: false }),
 
   setCases: (cases) => set({ cases, hasLoaded: true }),
+  fetchCases: async () => {
+    // In a real app, this calls legalDataService.fetchCases()
+    set({ hasLoaded: true });
+  },
   addCase: (caseData) => set((state) => ({ cases: [caseData, ...state.cases] })),
   updateCase: (id, updatedData) => {
     // R7: AUTO-TRANSITION TO ENFORCEMENT

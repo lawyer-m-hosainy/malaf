@@ -188,6 +188,13 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
         firstInstanceNumber: "",
         appealNumber: "",
         cassationNumber: "",
+        criminalTier: "جنحة",
+        criminalStage: "مرحلة المحاكمة",
+        prosecutionRef: "",
+        familyCaseType: "نفقة زوجية",
+        stateCouncilYearQ: "",
+        commercialRegRef: "",
+        taxIdRef: "",
       });
     } catch (error) {
       if (error instanceof ZodError) {

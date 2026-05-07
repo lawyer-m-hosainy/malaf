@@ -83,6 +83,8 @@ const MemoizedPieChart = React.memo(({ data }: { data: any[] }) => (
 export default function Dashboard() {
   const navigate = useNavigate();
   const cases = useCasesStore((state) => state.cases);
+  const sessions = useCasesStore((state) => state.sessions);
+  const deadlines = useCasesStore((state) => state.deadlines);
   const clients = useClientsStore((state) => state.clients);
   const tasks = useTeamStore((state) => state.tasks);
   const updateTaskStatus = useTeamStore((state) => state.updateTaskStatus);

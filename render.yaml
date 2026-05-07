@@ -33,9 +33,3 @@ services:
         sync: false
       - key: DAILY_API_KEY
         sync: false
-      - key: GEMINI_API_KEY
-        sync: false
-      - key: GROQ_API_KEY
-        sync: false
-      - key: ENCRYPTION_KEY
-        sync: false

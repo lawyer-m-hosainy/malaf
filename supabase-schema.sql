@@ -771,4 +771,36 @@ CREATE POLICY "ip_records_update" ON ip_records FOR UPDATE USING (org_id = get_u
 CREATE POLICY "ip_records_delete" ON ip_records FOR DELETE USING (org_id = get_user_org_id());
 CREATE INDEX idx_ip_records_org ON ip_records(org_id);
 CREATE INDEX idx_ip_records_client ON ip_records(client_id);
-CREATE TRIGGER update_ip_records_modtime BEFORE UPDATE ON ip_records FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+-- ═══════════════════════════════════════════════════════
+-- 30. Video Rooms Table (Daily.co)
+-- ═══════════════════════════════════════════════════════
+CREATE TABLE video_rooms (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  org_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
+  case_id UUID REFERENCES cases(id) ON DELETE CASCADE,
+  room_name TEXT UNIQUE NOT NULL,
+  room_url TEXT NOT NULL,
+  lawyer_id UUID REFERENCES profiles(id),
+  client_id UUID REFERENCES clients(id),
+  status TEXT DEFAULT 'active',
+  scheduled_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE video_rooms ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "video_rooms_isolation" ON video_rooms FOR ALL USING (org_id = get_user_org_id() OR is_super_admin());
+CREATE INDEX idx_video_rooms_org ON video_rooms(org_id);
+CREATE INDEX idx_video_rooms_case ON video_rooms(case_id);
+CREATE TRIGGER update_video_rooms_modtime BEFORE UPDATE ON video_rooms FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
+-- ═══════════════════════════════════════════════════════
+-- Additional Performance Indexes (R5 Optimization)
+-- ═══════════════════════════════════════════════════════
+CREATE INDEX IF NOT EXISTS idx_cases_created_at ON cases(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_sessions_created_at ON sessions(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_expenses_date_desc ON expenses(date DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at_desc ON audit_logs(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_expert_missions_org ON expert_missions(case_id);
+CREATE INDEX IF NOT EXISTS idx_real_estate_org ON real_estate_registry(org_id);
+

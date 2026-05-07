@@ -319,6 +319,7 @@ export default function TimeTracking() {
                       </div>
                     </TableCell>
                     <TableCell className="max-w-xs truncate">{entry.description}</TableCell>
+                    <TableCell>
                       <div className="flex items-center gap-2 text-xs">
                         <Calendar size={14} className="text-slate-400" />
                         {new Date(entry.date).toLocaleDateString('ar-EG')}

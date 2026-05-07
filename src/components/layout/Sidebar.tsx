@@ -31,7 +31,6 @@ const sidebarStructure: SidebarItem[] = [
   // ── أقسام مستقلة ──
   { type: 'link', name: "الشغل الإداري", href: "/dashboard/tasks", icon: ClipboardList },
   { type: 'link', name: "التنفيذ القضائي", href: "/dashboard/enforcement", icon: Gavel },
-  { type: 'link', name: "فريق العمل", href: "/dashboard/team", icon: Users2 },
 
   // ── المستندات والعقود ──
   { type: 'group', title: "المستندات والعقود", icon: FolderOpen, items: [
@@ -59,6 +58,9 @@ const sidebarStructure: SidebarItem[] = [
     { name: "المعرفة القانونية", href: "/dashboard/wiki", icon: BookOpen },
     { name: "فحص تعارض المصالح", href: "/dashboard/conflict-check", icon: Shield },
   ]},
+
+  // ── فريق العمل (مستقل) ──
+  { type: 'link', name: "فريق العمل", href: "/dashboard/team", icon: Users2 },
 
   // ── البوابات الرسمية ──
   { type: 'group', title: "البوابات الرسمية", icon: Building2, items: [
@@ -201,20 +203,7 @@ export function Sidebar() {
           <Settings size={18} />
           الإعدادات
         </NavLink>
-        <NavLink 
-          to="/dashboard/audit-logs"
-          className={({ isActive }) =>
-            cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-md transition-colors text-sm font-medium mt-1",
-              isActive 
-                ? "bg-primary-500 text-white shadow-sm" 
-                : "text-slate-300 hover:bg-white/5 hover:text-white"
-            )
-          }
-        >
-          <History size={18} />
-          سجل العمليات
-        </NavLink>
+
       </div>
     </aside>
     </>

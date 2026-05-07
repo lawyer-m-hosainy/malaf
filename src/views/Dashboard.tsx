@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Scale, Users, FileText, TrendingUp, Clock, CheckCircle2, AlertCircle, Sparkles, Loader2, ListTodo, Calendar as CalendarIcon, Download } from "lucide-react";
+import { Scale, Users, FileText, TrendingUp, Clock, CheckCircle2, AlertCircle, Sparkles, Loader2, ListTodo, Calendar as CalendarIcon, Download, DollarSign } from "lucide-react";
 import { useCasesStore } from "@/store/useCasesStore";
 import { useClientsStore } from "@/store/useClientsStore";
 import { useTeamStore } from "@/store/useTeamStore";
@@ -515,6 +515,8 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
+
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="border-none shadow-sm dark:bg-navy-800">

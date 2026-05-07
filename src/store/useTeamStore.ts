@@ -14,6 +14,7 @@ interface TeamState {
   updateTaskStatus: (id: string, status: 'pending' | 'completed') => void;
   fetchTeamMembers: () => Promise<void>;
   fetchTasks: () => Promise<void>;
+  hasLoaded: boolean;
   reset: () => void;
 }
 

@@ -93,6 +93,13 @@ export async function parseCommand(text, orgId, supabase) {
     return await handleNewClientCommand(trimmed, orgId, supabase);
   }
 
+  // ── 8. وصلت [ملاحظة اختيارية] ──
+  // مثال: "وصلت" أو "وصلت محكمة شمال القاهرة"
+  // ملاحظة: يحتاج رسالة موقع (location) مرفقة أو يُرسل بدونها كتأكيد فقط
+  if (trimmed === 'وصلت' || trimmed.startsWith('وصلت ')) {
+    return await handleCheckinCommand(trimmed, orgId, supabase);
+  }
+
   // لم يُتعرف على الأمر
   return { recognized: false, command: null, response: null };
 }
@@ -350,4 +357,106 @@ async function handleNewClientCommand(text, orgId, supabase) {
     console.error('New client command error:', err);
     return { recognized: true, command: 'موكل جديد', response: '⚠️ حدث خطأ أثناء إنشاء ملف الموكل' };
   }
+}
+
+
+// ═══════════════════════════════════════════════════════
+// 8. تسجيل الحضور الميداني — "وصلت"
+// ═══════════════════════════════════════════════════════
+
+async function handleCheckinCommand(text, orgId, supabase, locationData) {
+  try {
+    const notes = text.replace(/^وصلت\s*/, '').trim() || null;
+
+    // إذا أرسل المستخدم موقعه عبر واتساب (location message)
+    const lat = locationData?.latitude;
+    const lng = locationData?.longitude;
+
+    if (!lat || !lng) {
+      // لم يُرسل موقع — سجّل كتأكيد بدون تحقق GPS
+      await supabase.from('field_checkins').insert({
+        org_id: orgId,
+        user_id: 'whatsapp_user',
+        user_name: 'عبر الواتساب',
+        latitude: 0,
+        longitude: 0,
+        is_verified: false,
+        checkin_type: 'arrival',
+        source: 'whatsapp',
+        notes: notes || 'تسجيل وصول بدون موقع',
+      });
+
+      return {
+        recognized: true,
+        command: 'وصلت',
+        response: `✅ تم تسجيل وصولك${notes ? `\n📋 ${notes}` : ''}\n\n💡 لتسجيل موقعك بدقة، أرسل موقعك الحالي (📎 → الموقع) بعد هذه الرسالة.`
+      };
+    }
+
+    // البحث عن أقرب موقع معروف
+    const { data: locations } = await supabase
+      .from('known_locations')
+      .select('*')
+      .eq('org_id', orgId)
+      .eq('is_active', true);
+
+    let matchedLocation = null;
+    let minDistance = Infinity;
+
+    if (locations?.length) {
+      for (const loc of locations) {
+        const dist = haversineDistance(lat, lng, loc.latitude, loc.longitude);
+        if (dist < minDistance) {
+          minDistance = dist;
+          matchedLocation = loc;
+        }
+      }
+    }
+
+    const isVerified = matchedLocation && minDistance <= matchedLocation.radius_meters;
+
+    await supabase.from('field_checkins').insert({
+      org_id: orgId,
+      user_id: 'whatsapp_user',
+      user_name: 'عبر الواتساب',
+      latitude: lat,
+      longitude: lng,
+      matched_location_id: isVerified ? matchedLocation.id : null,
+      matched_location_name: matchedLocation?.name || null,
+      distance_meters: Math.round(minDistance),
+      is_verified: isVerified,
+      checkin_type: 'arrival',
+      source: 'whatsapp',
+      notes,
+    });
+
+    if (isVerified) {
+      return {
+        recognized: true,
+        command: 'وصلت',
+        response: `✅ تم تسجيل وصولك بنجاح!\n📍 ${matchedLocation.name}\n📏 على بُعد ${Math.round(minDistance)} متر\n🔒 تم التحقق من الموقع${notes ? `\n📋 ${notes}` : ''}`
+      };
+    } else {
+      return {
+        recognized: true,
+        command: 'وصلت',
+        response: `✅ تم تسجيل وصولك\n📍 موقع غير معروف${matchedLocation ? `\n📏 أقرب موقع: ${matchedLocation.name} (${Math.round(minDistance)} متر)` : ''}\n⚠️ لم يتم التحقق — الموقع خارج النطاق المسجل${notes ? `\n📋 ${notes}` : ''}`
+      };
+    }
+  } catch (err) {
+    console.error('Checkin command error:', err);
+    return { recognized: true, command: 'وصلت', response: '⚠️ حدث خطأ أثناء تسجيل الوصول' };
+  }
+}
+
+
+// ── مساعد: حساب المسافة بين نقطتين GPS (Haversine Formula) ──
+function haversineDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371000; // نصف قطر الأرض بالمتر
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }

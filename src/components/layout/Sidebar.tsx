@@ -6,7 +6,7 @@ import {
   Globe, Sparkles, Landmark, History, BookOpen, FileText, GraduationCap,
   Gavel, HandCoins, FileSignature, MessageSquare, Layers,
   Shield, Building, Home, Heart, Siren, Receipt, Monitor,
-  Search, ClipboardList, ChevronDown, FolderOpen, Coins, Building2, Video
+  Search, ClipboardList, ChevronDown, FolderOpen, Coins, Building2, Video, MapPin
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -51,6 +51,7 @@ const sidebarStructure: SidebarItem[] = [
 
   // ── الخدمات الذكية ──
   { type: 'group', title: "الخدمات الذكية", icon: Sparkles, items: [
+    { name: "أين فريقي؟", href: "/dashboard/field-checkins", icon: MapPin },
     { name: "المحلل الذكي", href: "/dashboard/ai-analyzer", icon: Sparkles },
     { name: "واتساب بوت", href: "/dashboard/whatsapp", icon: MessageSquare },
     { name: "غرف الفيديو", href: "/dashboard/video-rooms", icon: Video },

@@ -80,6 +80,7 @@ export interface Case {
   // Economic court fields
   commercialRegRef?: string; // سجل تجاري للشركة الموكلة
   taxIdRef?: string; // رقم ضريبي للشركة الموكلة
+  assignedTo?: string; // المحامي المسؤول عن القضية
   createdAt: string;
 }
 

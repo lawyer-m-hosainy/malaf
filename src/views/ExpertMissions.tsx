@@ -168,7 +168,7 @@ export default function ExpertMissions() {
                             <p className="text-xs text-slate-600 dark:text-slate-400">{s.result}</p>
                           </div>
                           {s.nextSession && (
-                            <div className="text-left md:text-right bg-slate-50 dark:bg-white/5 px-3 py-2 rounded">
+                            <div className="text-start bg-slate-50 dark:bg-white/5 px-3 py-2 rounded">
                               <p className="text-[10px] text-slate-500 uppercase tracking-wider">الجلسة القادمة</p>
                               <p className="text-sm font-bold text-primary-700 dark:text-primary-400">{new Date(s.nextSession).toLocaleDateString('ar-EG')}</p>
                             </div>

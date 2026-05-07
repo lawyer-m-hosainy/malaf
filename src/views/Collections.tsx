@@ -19,11 +19,11 @@ function daysPastDue(dueDate: string) {
 }
 
 function agingBucket(days: number) {
-  if (days <= 0) return "Current";
-  if (days <= 30) return "1-30";
-  if (days <= 60) return "31-60";
-  if (days <= 90) return "61-90";
-  return "90+";
+  if (days <= 0) return "حالي";
+  if (days <= 30) return "1-30 يوم";
+  if (days <= 60) return "31-60 يوم";
+  if (days <= 90) return "61-90 يوم";
+  return "+90 يوم";
 }
 
 export default function Collections() {
@@ -69,9 +69,9 @@ export default function Collections() {
       id: `AL-COL-${Date.now()}`,
       userId: currentUser?.id || "unknown",
       userName: currentUser?.name || "unknown",
-      action: "Collection Action",
+      action: "إجراء تحصيل",
       module: "collections",
-      details: `Receivable ${receivableId}: ${type}`,
+      details: `مطالبة ${receivableId}: ${type}`,
       timestamp: new Date().toISOString(),
     });
     toast.success(`تم تسجيل إجراء: ${type}`);
@@ -81,7 +81,7 @@ export default function Collections() {
     const item = receivables.find((r) => r.id === receivableId);
     if (!item) return;
     if (!item.isReconciled) {
-      toast.error("لا يمكن إغلاق الملف المالي قبل التسوية (Reconciliation)");
+      toast.error("لا يمكن إغلاق الملف المالي قبل إتمام المطابقة المحاسبية");
       return;
     }
     closeReceivable(receivableId);
@@ -89,9 +89,9 @@ export default function Collections() {
       id: `AL-COL-CLOSE-${Date.now()}`,
       userId: currentUser?.id || "unknown",
       userName: currentUser?.name || "unknown",
-      action: "Close Receivable",
+      action: "إغلاق مطالبة",
       module: "collections",
-      details: `Receivable ${receivableId} closed`,
+      details: `تم إغلاق المطالبة ${receivableId}`,
       timestamp: new Date().toISOString(),
     });
     toast.success("تم إغلاق الملف المالي");
@@ -132,7 +132,7 @@ export default function Collections() {
           <p className="text-slate-500 mt-1">إدارة المطالبات، الإنذارات، جداول السداد والتسويات مع ضوابط مالية.</p>
         </div>
         <div className="flex items-center gap-3">
-          <Badge className="bg-primary-100 text-primary-700 hidden sm:inline-flex">A/R</Badge>
+          <Badge className="bg-primary-100 text-primary-700 hidden sm:inline-flex">ذمم مدينة</Badge>
           <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
             <DialogTrigger render={<Button className="bg-primary-500 hover:bg-primary-600 text-white gap-2" />}>
               <Plus size={16} />
@@ -161,7 +161,7 @@ export default function Collections() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">تاريخ الاستحقاق (Due Date)</label>
+                  <label className="text-sm font-medium">تاريخ الاستحقاق</label>
                   <Input 
                     type="date" 
                     value={newRec.dueDate}
@@ -193,7 +193,7 @@ export default function Collections() {
       </div>
 
       <Card className="border-none shadow-sm dark:bg-navy-800">
-        <CardHeader><CardTitle className="text-base flex items-center gap-2"><FileWarning size={16} /> Aging Report</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base flex items-center gap-2"><FileWarning size={16} /> تقرير أعمار الذمم</CardTitle></CardHeader>
         <CardContent className="grid grid-cols-2 md:grid-cols-5 gap-3">
           {Object.entries(aging).map(([bucket, amount]) => (
             <div key={bucket} className="p-3 rounded-md bg-slate-50">
@@ -205,7 +205,7 @@ export default function Collections() {
       </Card>
 
       <Card className="border-none shadow-sm dark:bg-navy-800">
-        <CardHeader><CardTitle className="text-base">Collection Performance</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">أداء التحصيل</CardTitle></CardHeader>
         <CardContent className="space-y-3">
           {receivables.map((r) => (
             <div key={r.id} className="p-3 border rounded-md">
@@ -215,13 +215,13 @@ export default function Collections() {
                   {r.status}
                 </Badge>
               </div>
-              <p className="text-xs text-slate-500 mt-1">Outstanding: {r.outstandingAmount.toLocaleString()} • Due: {r.dueDate}</p>
+              <p className="text-xs text-slate-500 mt-1">المتبقي: {r.outstandingAmount.toLocaleString()} ج.م • الاستحقاق: {new Date(r.dueDate).toLocaleDateString('ar-EG')}</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 <Button size="sm" variant="outline" onClick={() => recordAction(r.id, "إصدار مطالبة")}>إصدار مطالبة</Button>
                 <Button size="sm" variant="outline" onClick={() => recordAction(r.id, "إنذار رسمي")}>إنذار قانوني</Button>
                 <Button size="sm" variant="outline" onClick={() => recordAction(r.id, "جدولة سداد")}>جدولة سداد</Button>
                 <Button size="sm" variant="outline" onClick={() => recordAction(r.id, "تسوية")}>تسوية</Button>
-                <Button size="sm" variant="outline" onClick={() => { reconcileReceivable(r.id); toast.success("تمت التسوية المحاسبية"); }}>Reconcile</Button>
+                <Button size="sm" variant="outline" onClick={() => { reconcileReceivable(r.id); toast.success("تمت المطابقة المحاسبية"); }}>مطابقة محاسبية</Button>
                 <Button size="sm" onClick={() => tryClose(r.id)}>إغلاق مالي</Button>
               </div>
             </div>

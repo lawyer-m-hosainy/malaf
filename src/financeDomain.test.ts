@@ -51,7 +51,7 @@ describe('financeDomain', () => {
         { id: '2', clientId: 'c2', clientName: 'ب', base: 2000, vat: 300, total: 2300, status: 'غير مدفوعة', date: '2025-02-01' },
       ];
       const expenses: Expense[] = [
-        { id: 'e1', caseId: 'c1', caseName: 'ق', category: 'رسوم قضائية', amount: 200, date: '2025-01-15', status: 'تم السداد', description: '' },
+        { id: 'e1', clientId: 'c1', caseId: 'c1', caseName: 'ق', category: 'رسوم قضائية', amount: 200, date: '2025-01-15', status: 'تم السداد', description: '' },
       ];
       const summary = computeFinancialSummary(invoices, expenses);
       expect(summary.totalRevenue).toBe(3450);

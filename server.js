@@ -423,6 +423,10 @@ import { initScheduler } from './services/whatsapp/notificationScheduler.js';
 
 app.use('/api/whatsapp', whatsappRouter);
 
+// =================== VIDEO MODULE ===================
+import videoRouter from './routes/video.ts';
+app.use('/api/video', authMiddleware, videoRouter);
+
 // تشغيل مجدول الإشعارات (إذا كان Supabase مُعدّاً)
 if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
     initScheduler(async (phone, message, orgId) => {

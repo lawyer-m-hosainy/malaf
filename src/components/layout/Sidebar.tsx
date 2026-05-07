@@ -24,7 +24,9 @@ const navGroups = [
       { name: "الشغل الإداري", href: "/dashboard/tasks", icon: ClipboardList },
       { name: "التنفيذ القضائي", href: "/dashboard/enforcement", icon: Gavel },
       { name: "المالية والمصروفات", href: "/dashboard/finance", icon: Calculator },
+      { name: "المصروفات", href: "/dashboard/expenses", icon: Wallet },
       { name: "العقود والمستندات", href: "/dashboard/documents", icon: Library },
+      { name: "إدارة العقود", href: "/dashboard/clm", icon: FileEdit },
     ]
   },
   {

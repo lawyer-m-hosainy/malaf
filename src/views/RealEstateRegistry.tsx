@@ -57,9 +57,9 @@ export default function RealEstateRegistry() {
   const renderStageBadge = (stage: string) => {
     switch(stage) {
       case 'إيداع': return <Badge variant="outline" className="bg-slate-50 text-slate-700">إيداع</Badge>;
-      case 'فحص': return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200"><Clock size={12} className="mr-1"/> فحص</Badge>;
-      case 'اعتراض': return <Badge className="bg-red-50 text-red-700 border-none hover:bg-red-100"><AlertTriangle size={12} className="mr-1"/> اعتراض</Badge>;
-      case 'شهر': return <Badge className="bg-emerald-50 text-emerald-700 border-none hover:bg-emerald-100"><CheckCircle size={12} className="mr-1"/> تم الشهر</Badge>;
+      case 'فحص': return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200"><Clock size={12} className="me-1"/> فحص</Badge>;
+      case 'اعتراض': return <Badge className="bg-red-50 text-red-700 border-none hover:bg-red-100"><AlertTriangle size={12} className="me-1"/> اعتراض</Badge>;
+      case 'شهر': return <Badge className="bg-emerald-50 text-emerald-700 border-none hover:bg-emerald-100"><CheckCircle size={12} className="me-1"/> تم الشهر</Badge>;
       default: return <Badge>{stage}</Badge>;
     }
   };

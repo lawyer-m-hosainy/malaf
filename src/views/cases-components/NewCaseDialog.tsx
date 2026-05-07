@@ -121,6 +121,31 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
         await saveCases([finalCaseData]);
         toast.success("تم تحديث القضية بنجاح");
       } else {
+        // === Duplicate Detection ===
+        const existingCases = useCasesStore.getState().cases;
+        
+        // 1. Check for exact same case ID (number)
+        const duplicateById = existingCases.find(c => c.id === finalCaseData.id);
+        if (duplicateById) {
+          toast.error(`قضية مكررة: يوجد بالفعل قضية بنفس الرقم (${finalCaseData.id})`, { duration: 5000 });
+          return;
+        }
+        
+        // 2. Check for same court + plaintiff + defendant combination
+        const duplicateByParties = existingCases.find(c => 
+          c.court === finalCaseData.court &&
+          c.plaintiff === finalCaseData.plaintiff &&
+          c.defendant === finalCaseData.defendant &&
+          c.type === finalCaseData.type
+        );
+        if (duplicateByParties) {
+          toast.error(
+            `قضية مكررة: يوجد بالفعل قضية بنفس المحكمة والأطراف (رقم ${duplicateByParties.id}) — إذا كانت قضية مختلفة، غيّر رقم القضية أو نوعها`,
+            { duration: 7000 }
+          );
+          return;
+        }
+
         const generatedCirculationCode = await getNextCounter('circulation');
         const newCaseObj = {
           ...finalCaseData,
@@ -132,14 +157,12 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
         addCase(newCaseObj);
         await saveCases([newCaseObj]);
         
-        // Auto conflict check
-        const casesList = useCasesStore.getState().cases;
-        const hasConflict = casesList.some(c => 
-          (c.plaintiff === newCaseObj.defendant && c.defendant === newCaseObj.plaintiff) ||
-          (c.plaintiff === newCaseObj.plaintiff && c.defendant === newCaseObj.defendant)
+        // Auto conflict check (reversed parties — warning only, not blocked)
+        const hasConflict = existingCases.some(c => 
+          c.plaintiff === newCaseObj.defendant && c.defendant === newCaseObj.plaintiff
         );
         if (hasConflict) {
-          toast.warning("تنبيه تعارض: تم رصد تعارض محتمل مع أطراف قضايا سابقة", { duration: 5000 });
+          toast.warning("تنبيه تعارض: تم رصد تعارض محتمل — الموكل مدعى عليه في قضية أخرى من نفس الأطراف", { duration: 5000 });
         } else {
           toast.info("فحص التعارض: النظام لم يرصد أي تعارض", { duration: 3000 });
         }

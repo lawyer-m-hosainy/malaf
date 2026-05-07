@@ -103,15 +103,20 @@ export function useClientsLogic() {
     e.preventDefault();
     
     try {
-      clientSchema.parse(formData);
+      const formattedData = {
+        ...formData,
+        phone: formData.phone.startsWith('01') ? `+20${formData.phone.substring(1)}` : formData.phone
+      };
+
+      clientSchema.parse(formattedData);
       
       if (editingClientId) {
-        updateClient(editingClientId, formData);
+        updateClient(editingClientId, formattedData);
         toast.success("تم تحديث بيانات العميل بنجاح");
       } else {
         const newClient = {
           id: `C-${Date.now()}`,
-          ...formData,
+          ...formattedData,
         };
         addClient(newClient as any);
         toast.success("تم إضافة العميل بنجاح");

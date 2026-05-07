@@ -60,6 +60,36 @@ export function Topbar() {
   const handleLogout = async () => {
     try {
       await signOut(auth);
+      
+      // ═══ R2 Security: مسح جميع بيانات المستأجر من الذاكرة ═══
+      // هذا حرج لمنع تسرب بيانات مكتب لمكتب آخر عند تبديل الحسابات
+      const { useAuthStore } = await import('@/store/useAuthStore');
+      const { useClientsStore } = await import('@/store/useClientsStore');
+      const { useCasesStore } = await import('@/store/useCasesStore');
+      const { useTeamStore } = await import('@/store/useTeamStore');
+      const { useFinanceStore } = await import('@/store/useFinanceStore');
+      const { useInvoicesStore } = await import('@/store/useInvoicesStore');
+      const { useEnforcementStore } = await import('@/store/useEnforcementStore');
+      const { useNotificationsStore } = await import('@/store/useNotificationsStore');
+      const { setTenantIdCache } = await import('@/lib/tenant');
+      
+      // مسح cache المستأجر
+      setTenantIdCache(null);
+      
+      // مسح جميع الـ stores
+      useAuthStore.getState().reset();
+      useClientsStore.getState().setClients([]);
+      useCasesStore.getState().setCases([]);
+      useTeamStore.getState().setTeamMembers([]);
+      useTeamStore.getState().setTasks([]);
+      useFinanceStore.getState().setTrustAccounts([]);
+      useInvoicesStore.getState().loadInvoices([]);
+      useEnforcementStore.getState().setEnforcementCases([]);
+      useNotificationsStore.getState().clearAll();
+      
+      // مسح localStorage لمنع استعادة بيانات قديمة
+      localStorage.removeItem('auth-storage');
+      
       toast.success("تم تسجيل الخروج بنجاح");
       navigate("/login");
     } catch {

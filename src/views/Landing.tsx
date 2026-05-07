@@ -43,8 +43,8 @@ export default function Landing() {
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5 dark:opacity-[0.02]"></div>
-        <div className="absolute top-0 right-0 -mr-40 -mt-40 w-96 h-96 rounded-full bg-primary-500/10 blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 -ml-40 -mb-40 w-96 h-96 rounded-full bg-blue-500/10 blur-3xl"></div>
+        <div className="absolute top-0 right-0 -me-40 -mt-40 w-96 h-96 rounded-full bg-primary-500/10 blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 -ms-40 -mb-40 w-96 h-96 rounded-full bg-blue-500/10 blur-3xl"></div>
         
         <div className="container mx-auto px-6 relative z-10 text-center">
           <motion.div

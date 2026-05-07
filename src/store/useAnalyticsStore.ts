@@ -75,6 +75,24 @@ export const useAnalyticsStore = create<AnalyticsState>((set) => ({
       set({ isLoading: false });
     }
   },
+  getAttorneyPerformance: () => {
+    const teamMembers = useTeamStore.getState().teamMembers || [];
+    const cases = useCasesStore.getState().cases || [];
+    
+    return teamMembers
+      .filter(m => m.role === 'محامي' || m.role === 'محامي شريك' || m.role === 'محامي مستشار' || m.role === 'محامي متدرب')
+      .map(member => {
+        const memberCases = cases.filter(c => c.clientId && c.assignedTo === member.id);
+        const closedCases = memberCases.filter(c => c.status === 'مغلقة');
+        const winningRate = memberCases.length > 0 ? Math.round((closedCases.length / memberCases.length) * 100) : 0;
+        return {
+          name: member.name,
+          cases: memberCases.length,
+          winningRate,
+          billableHours: memberCases.length * 12, // estimated
+        };
+      });
+  },
   executeConflictCheck: (query) => {
     const clientsState = useClientsStore.getState();
     const casesState = useCasesStore.getState();

@@ -658,3 +658,117 @@ CREATE INDEX idx_payments_invoice ON payments(invoice_id);
 CREATE INDEX idx_payments_org ON payments(org_id);
 CREATE TRIGGER update_payments_modtime BEFORE UPDATE ON payments FOR EACH ROW EXECUTE FUNCTION update_modified_column();
 
+-- ═══════════════════════════════════════════════════════
+-- 26. Time Entries Table (تتبع الوقت — M17)
+-- ═══════════════════════════════════════════════════════
+CREATE TABLE time_entries (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  org_id UUID REFERENCES organizations(id),
+  lawyer_id UUID REFERENCES profiles(id),
+  case_id UUID REFERENCES cases(id),
+  description TEXT,
+  duration INTEGER NOT NULL, -- in minutes
+  hourly_rate DECIMAL(10, 2),
+  billable BOOLEAN DEFAULT TRUE,
+  is_billed BOOLEAN DEFAULT FALSE,
+  date DATE DEFAULT CURRENT_DATE,
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  deleted_at TIMESTAMPTZ
+);
+
+ALTER TABLE time_entries ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "time_entries_select" ON time_entries FOR SELECT USING (org_id = get_user_org_id() OR is_super_admin());
+CREATE POLICY "time_entries_insert" ON time_entries FOR INSERT WITH CHECK (org_id = get_user_org_id());
+CREATE POLICY "time_entries_update" ON time_entries FOR UPDATE USING (org_id = get_user_org_id());
+CREATE POLICY "time_entries_delete" ON time_entries FOR DELETE USING (org_id = get_user_org_id());
+CREATE INDEX idx_time_entries_org ON time_entries(org_id);
+CREATE INDEX idx_time_entries_lawyer ON time_entries(lawyer_id);
+CREATE INDEX idx_time_entries_case ON time_entries(case_id);
+CREATE TRIGGER update_time_entries_modtime BEFORE UPDATE ON time_entries FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
+-- ═══════════════════════════════════════════════════════
+-- 27. Contracts Table (إدارة العقود CLM — M22)
+-- ═══════════════════════════════════════════════════════
+CREATE TABLE contracts (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  org_id UUID REFERENCES organizations(id),
+  client_id UUID REFERENCES clients(id),
+  title TEXT NOT NULL,
+  type TEXT, -- 'اتفاقية أتعاب', 'عقد تأسيس', 'عقد إيجار', etc.
+  status TEXT DEFAULT 'مسودة', -- 'مسودة', 'قيد المراجعة', 'نشط', 'منتهي', 'ملغي'
+  start_date DATE,
+  end_date DATE,
+  value DECIMAL(12, 2),
+  content TEXT,
+  signed_url TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  deleted_at TIMESTAMPTZ
+);
+
+ALTER TABLE contracts ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "contracts_select" ON contracts FOR SELECT USING ((org_id = get_user_org_id() OR is_super_admin()) AND deleted_at IS NULL);
+CREATE POLICY "contracts_insert" ON contracts FOR INSERT WITH CHECK (org_id = get_user_org_id());
+CREATE POLICY "contracts_update" ON contracts FOR UPDATE USING (org_id = get_user_org_id() AND deleted_at IS NULL);
+CREATE POLICY "contracts_delete" ON contracts FOR DELETE USING (org_id = get_user_org_id());
+CREATE INDEX idx_contracts_org ON contracts(org_id);
+CREATE INDEX idx_contracts_client ON contracts(client_id);
+CREATE TRIGGER update_contracts_modtime BEFORE UPDATE ON contracts FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
+-- ═══════════════════════════════════════════════════════
+-- 28. Receivables Table (التحصيل — M21)
+-- ═══════════════════════════════════════════════════════
+CREATE TABLE receivables (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  org_id UUID REFERENCES organizations(id),
+  client_id UUID REFERENCES clients(id),
+  case_id UUID REFERENCES cases(id),
+  total_amount DECIMAL(12, 2) NOT NULL,
+  collected_amount DECIMAL(12, 2) DEFAULT 0,
+  outstanding_amount DECIMAL(12, 2) GENERATED ALWAYS AS (total_amount - collected_amount) STORED,
+  due_date DATE,
+  status TEXT DEFAULT 'مفتوح', -- 'مفتوح', 'متأخر', 'تحت التحصيل', 'مسوى', 'مغلق'
+  is_reconciled BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  deleted_at TIMESTAMPTZ
+);
+
+ALTER TABLE receivables ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "receivables_select" ON receivables FOR SELECT USING ((org_id = get_user_org_id() OR is_super_admin()) AND deleted_at IS NULL);
+CREATE POLICY "receivables_insert" ON receivables FOR INSERT WITH CHECK (org_id = get_user_org_id());
+CREATE POLICY "receivables_update" ON receivables FOR UPDATE USING (org_id = get_user_org_id() AND deleted_at IS NULL);
+CREATE POLICY "receivables_delete" ON receivables FOR DELETE USING (org_id = get_user_org_id());
+CREATE INDEX idx_receivables_org ON receivables(org_id);
+CREATE INDEX idx_receivables_client ON receivables(client_id);
+CREATE TRIGGER update_receivables_modtime BEFORE UPDATE ON receivables FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
+-- ═══════════════════════════════════════════════════════
+-- 29. IP Records Table (الملكية الفكرية — M16)
+-- ═══════════════════════════════════════════════════════
+CREATE TABLE ip_records (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  org_id UUID REFERENCES organizations(id),
+  client_id UUID REFERENCES clients(id),
+  title TEXT NOT NULL,
+  type TEXT, -- 'علامة تجارية', 'براءة اختراع', 'نموذج صناعي', 'حق مؤلف'
+  registration_number TEXT,
+  filing_date DATE,
+  expiry_date DATE,
+  status TEXT DEFAULT 'قيد التسجيل', -- 'قيد التسجيل', 'مسجل', 'منتهي', 'مرفوض'
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  deleted_at TIMESTAMPTZ
+);
+
+ALTER TABLE ip_records ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "ip_records_select" ON ip_records FOR SELECT USING ((org_id = get_user_org_id() OR is_super_admin()) AND deleted_at IS NULL);
+CREATE POLICY "ip_records_insert" ON ip_records FOR INSERT WITH CHECK (org_id = get_user_org_id());
+CREATE POLICY "ip_records_update" ON ip_records FOR UPDATE USING (org_id = get_user_org_id() AND deleted_at IS NULL);
+CREATE POLICY "ip_records_delete" ON ip_records FOR DELETE USING (org_id = get_user_org_id());
+CREATE INDEX idx_ip_records_org ON ip_records(org_id);
+CREATE INDEX idx_ip_records_client ON ip_records(client_id);
+CREATE TRIGGER update_ip_records_modtime BEFORE UPDATE ON ip_records FOR EACH ROW EXECUTE FUNCTION update_modified_column();

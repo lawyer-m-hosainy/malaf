@@ -75,7 +75,7 @@ export default function IPManagement() {
               <p className="text-sm text-slate-500">العلامات التجارية</p>
               <Shield size={18} className="text-primary-500" />
             </div>
-            <h3 className="text-2xl font-bold">{ipRecords.filter(r => r.type === 'علامة تجارية').length}</h3>
+            <h3 className="text-2xl font-bold">{ipRecords.filter(r => r.type === 'علامة تجارية').length.toLocaleString('ar-EG')}</h3>
           </CardContent>
         </Card>
         <Card className="border-none shadow-sm dark:bg-navy-800">
@@ -84,7 +84,7 @@ export default function IPManagement() {
               <p className="text-sm text-slate-500">براءات الاختراع</p>
               <Fingerprint size={18} className="text-amber-500" />
             </div>
-            <h3 className="text-2xl font-bold">{ipRecords.filter(r => r.type === 'براءة اختراع').length}</h3>
+            <h3 className="text-2xl font-bold">{ipRecords.filter(r => r.type === 'براءة اختراع').length.toLocaleString('ar-EG')}</h3>
           </CardContent>
         </Card>
         <Card className="border-none shadow-sm dark:bg-navy-800">
@@ -93,7 +93,7 @@ export default function IPManagement() {
               <p className="text-sm text-slate-500">حقوق المؤلف</p>
               <User size={18} className="text-emerald-500" />
             </div>
-            <h3 className="text-2xl font-bold">{ipRecords.filter(r => r.type === 'حق مؤلف').length}</h3>
+            <h3 className="text-2xl font-bold">{ipRecords.filter(r => r.type === 'حق مؤلف').length.toLocaleString('ar-EG')}</h3>
           </CardContent>
         </Card>
         <Card className="border-none shadow-sm dark:bg-navy-800">
@@ -102,7 +102,7 @@ export default function IPManagement() {
               <p className="text-sm text-slate-500">تحت الفحص</p>
               <Search size={18} className="text-blue-500" />
             </div>
-            <h3 className="text-2xl font-bold">{ipRecords.filter(r => r.status === 'تحت الفحص').length}</h3>
+            <h3 className="text-2xl font-bold">{ipRecords.filter(r => r.status === 'تحت الفحص').length.toLocaleString('ar-EG')}</h3>
           </CardContent>
         </Card>
       </div>
@@ -131,7 +131,7 @@ export default function IPManagement() {
                   <TableCell>
                     <div className="flex items-center gap-2 text-xs">
                       <Calendar size={14} className="text-slate-400" />
-                      {record.expiryDate}
+                      {new Date(record.expiryDate).toLocaleDateString('ar-EG')}
                     </div>
                   </TableCell>
                   <TableCell>

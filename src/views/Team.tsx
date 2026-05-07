@@ -54,9 +54,9 @@ export default function Team() {
   const totalPendingTasks = teamMembers.reduce((acc, curr) => acc + curr.pendingTasks, 0);
 
   const stats = [
-    { title: "إجمالي الفريق", value: teamMembers.length.toString(), icon: Users, color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-900/20" },
-    { title: "قضايا نشطة", value: totalCases.toString(), icon: Briefcase, color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-900/20" },
-    { title: "مهام معلقة", value: totalPendingTasks.toString(), icon: Clock, color: "text-amber-500", bg: "bg-amber-50 dark:bg-amber-900/20" },
+    { title: "إجمالي الفريق", value: teamMembers.length.toLocaleString('ar-EG'), icon: Users, color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-900/20" },
+    { title: "قضايا نشطة", value: totalCases.toLocaleString('ar-EG'), icon: Briefcase, color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-900/20" },
+    { title: "مهام معلقة", value: totalPendingTasks.toLocaleString('ar-EG'), icon: Clock, color: "text-amber-500", bg: "bg-amber-50 dark:bg-amber-900/20" },
   ];
 
   return (
@@ -107,7 +107,7 @@ export default function Team() {
               </div>
               <div className="space-y-2">
                 <Label>البريد الإلكتروني</Label>
-                <Input required type="email" placeholder="email@example.com" className="dark:bg-navy-800" value={newMember.email} onChange={(e) => setNewMember(prev => ({ ...prev, email: e.target.value }))} />
+                <Input required type="email" placeholder="example@lawfirm.eg" dir="ltr" className="dark:bg-navy-800 text-start" value={newMember.email} onChange={(e) => setNewMember(prev => ({ ...prev, email: e.target.value }))} />
               </div>
               <div className="space-y-2">
                 <Label>الدور</Label>
@@ -194,15 +194,15 @@ export default function Team() {
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div className="space-y-1">
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">قضايا</p>
-                  <p className="text-lg font-bold text-navy-900 dark:text-white">{member.activeCases}</p>
+                  <p className="text-lg font-bold text-navy-900 dark:text-white">{member.activeCases.toLocaleString('ar-EG')}</p>
                 </div>
                 <div className="space-y-1 border-x border-slate-50 dark:border-white/5">
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">مهام</p>
-                  <p className="text-lg font-bold text-navy-900 dark:text-white">{member.pendingTasks}</p>
+                  <p className="text-lg font-bold text-navy-900 dark:text-white">{member.pendingTasks.toLocaleString('ar-EG')}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">مكتملة</p>
-                  <p className="text-lg font-bold text-navy-900 dark:text-white">{member.completedTasks}</p>
+                  <p className="text-lg font-bold text-navy-900 dark:text-white">{member.completedTasks.toLocaleString('ar-EG')}</p>
                 </div>
               </div>
 
@@ -210,7 +210,7 @@ export default function Team() {
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-500 dark:text-slate-400">معدل الإنجاز</span>
                   <span className="font-bold text-navy-900 dark:text-white">
-                    {Math.round((member.completedTasks / Math.max(1, member.completedTasks + member.pendingTasks)) * 100)}%
+                    {Math.round((member.completedTasks / Math.max(1, member.completedTasks + member.pendingTasks)) * 100).toLocaleString('ar-EG')}%
                   </span>
                 </div>
                 <Progress 

@@ -87,10 +87,10 @@ export default function Analytics() {
   };
 
   const stats = [
-    { title: "إجمالي الإيرادات", value: `${financial.totalRevenue.toLocaleString()} ج.م`, trend: "+12%", trendUp: true, icon: DollarSign, color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-900/20" },
-    { title: "كفاءة التحصيل", value: `${financial.collectionRate.toFixed(1)}%`, trend: "+5%", trendUp: true, icon: TrendingUp, color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-900/20" },
-    { title: "صافي الأرباح (تقديري)", value: `${(financial.totalRevenue * 0.7).toLocaleString()} ج.م`, trend: "+15%", trendUp: true, icon: TrendingUp, color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-900/20" },
-    { title: "معدل كسب القضايا", value: "85%", trend: "+2%", trendUp: true, icon: Scale, color: "text-primary-500", bg: "bg-primary-50 dark:bg-primary-900/20" },
+    { title: "إجمالي الإيرادات", value: `${financial.totalRevenue.toLocaleString('ar-EG')} ج.م`, trend: "+12%", trendUp: true, icon: DollarSign, color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-900/20" },
+    { title: "كفاءة التحصيل", value: `${financial.collectionRate.toLocaleString('ar-EG', { maximumFractionDigits: 1 })}%`, trend: "+5%", trendUp: true, icon: TrendingUp, color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-900/20" },
+    { title: "صافي الأرباح (تقديري)", value: `${(financial.totalRevenue * 0.7).toLocaleString('ar-EG')} ج.م`, trend: "+15%", trendUp: true, icon: TrendingUp, color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-900/20" },
+    { title: "معدل كسب القضايا", value: (85).toLocaleString('ar-EG') + "%", trend: "+2%", trendUp: true, icon: Scale, color: "text-primary-500", bg: "bg-primary-50 dark:bg-primary-900/20" },
   ];
 
   return (

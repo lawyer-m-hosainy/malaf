@@ -35,9 +35,9 @@ export default function Expenses() {
     .reduce((acc, curr) => acc + curr.amount, 0);
 
   const stats = [
-    { title: "إجمالي المصروفات", value: `${totalExpenses.toLocaleString()} ج.م`, icon: Wallet, color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-900/20" },
-    { title: "بانتظار الاسترداد", value: `${pendingReimbursement.toLocaleString()} ج.م`, icon: TrendingDown, color: "text-amber-500", bg: "bg-amber-50 dark:bg-amber-900/20" },
-    { title: "عدد العمليات", value: expenses.length.toString(), icon: History, color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-900/20" },
+    { title: "إجمالي المصروفات", value: `${totalExpenses.toLocaleString('ar-EG')} ج.م`, icon: Wallet, color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-900/20" },
+    { title: "بانتظار الاسترداد", value: `${pendingReimbursement.toLocaleString('ar-EG')} ج.م`, icon: TrendingDown, color: "text-amber-500", bg: "bg-amber-50 dark:bg-amber-900/20" },
+    { title: "عدد العمليات", value: expenses.length.toLocaleString('ar-EG'), icon: History, color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-900/20" },
   ];
 
   return (
@@ -158,10 +158,10 @@ export default function Expenses() {
             <CardTitle className="text-lg font-bold text-navy-900 dark:text-white">سجل المصروفات</CardTitle>
             <div className="flex items-center gap-2">
               <div className="relative">
-                <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                <Search className="absolute start-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                 <Input 
                   placeholder="بحث في المصروفات..." 
-                  className="pr-10 w-64 dark:bg-navy-900 dark:border-white/10"
+                  className="ps-10 w-64 dark:bg-navy-900 dark:border-white/10"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -187,7 +187,7 @@ export default function Expenses() {
             <TableBody>
               {filteredExpenses.map((exp) => (
                 <TableRow key={exp.id} className="hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors">
-                  <TableCell className="text-sm dark:text-slate-300">{exp.date}</TableCell>
+                  <TableCell className="text-sm dark:text-slate-300">{new Date(exp.date).toLocaleDateString('ar-EG')}</TableCell>
                   <TableCell className="font-bold text-navy-900 dark:text-white">{exp.caseName}</TableCell>
                   <TableCell>
                     <Badge variant="outline" className="dark:border-white/10 dark:text-slate-300">
@@ -198,7 +198,7 @@ export default function Expenses() {
                     {exp.description}
                   </TableCell>
                   <TableCell className="font-bold text-navy-900 dark:text-white">
-                    {exp.amount.toLocaleString()} ج.م
+                    {exp.amount.toLocaleString('ar-EG')} ج.م
                   </TableCell>
                   <TableCell className="flex items-center gap-2">
                     <Badge className={cn(

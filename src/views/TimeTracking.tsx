@@ -60,9 +60,9 @@ export default function TimeTracking() {
   };
 
   const totalWeekMinutes = timeEntries.reduce((sum, e) => sum + e.duration, 0);
-  const totalWeekHours = (totalWeekMinutes / 60).toFixed(1);
+  const totalWeekHours = (totalWeekMinutes / 60).toLocaleString('ar-EG', { maximumFractionDigits: 1 });
   const billedWeekMinutes = timeEntries.filter(e => e.isBilled).reduce((sum, e) => sum + e.duration, 0);
-  const billedWeekHours = (billedWeekMinutes / 60).toFixed(1);
+  const billedWeekHours = (billedWeekMinutes / 60).toLocaleString('ar-EG', { maximumFractionDigits: 1 });
   const estimatedValue = billedWeekMinutes * 500; // 500 EGP/min rate
   const formatEGP = (n: number) => n.toLocaleString('ar-EG');
 
@@ -79,9 +79,9 @@ export default function TimeTracking() {
         </div>
         <div className="flex items-center gap-3">
           <Card className="border-none shadow-sm dark:bg-navy-800 px-4 py-2 flex items-center gap-4">
-            <div className="text-right">
+            <div className="text-start">
               <p className="text-[10px] text-slate-500 uppercase font-bold">الوقت الفعلي</p>
-              <p className="text-xl font-mono font-bold">{formatTime(timerSeconds)}</p>
+              <p className="text-xl font-mono font-bold" dir="ltr">{formatTime(timerSeconds)}</p>
             </div>
             <div className="flex items-center gap-2">
               <Button 
@@ -319,14 +319,13 @@ export default function TimeTracking() {
                       </div>
                     </TableCell>
                     <TableCell className="max-w-xs truncate">{entry.description}</TableCell>
-                    <TableCell>
                       <div className="flex items-center gap-2 text-xs">
                         <Calendar size={14} className="text-slate-400" />
-                        {entry.date}
+                        {new Date(entry.date).toLocaleDateString('ar-EG')}
                       </div>
                     </TableCell>
-                    <TableCell className="font-mono font-bold">
-                      {Math.floor(entry.duration / 60)}س {entry.duration % 60}د
+                    <TableCell className="font-bold">
+                      {Math.floor(entry.duration / 60).toLocaleString('ar-EG')}س {(entry.duration % 60).toLocaleString('ar-EG')}د
                     </TableCell>
                     <TableCell>
                       <Badge 

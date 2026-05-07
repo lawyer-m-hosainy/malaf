@@ -1,6 +1,7 @@
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
+import rateLimit from 'express-rate-limit';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
@@ -74,6 +75,17 @@ app.use(cors({
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Global API Rate Limiter (100 requests per minute per IP)
+const globalApiLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, error: 'تم تجاوز الحد الأقصى للطلبات. حاول بعد دقيقة.' },
+    skip: (req) => req.path === '/api/health', // لا تحدّ Health check
+});
+app.use('/api', globalApiLimiter);
 
 // --- Routes Mounting ---
 

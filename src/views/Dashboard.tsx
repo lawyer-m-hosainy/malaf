@@ -516,7 +516,32 @@ export default function Dashboard() {
         </Card>
 
 
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="border-none shadow-sm dark:bg-navy-800">
+          <CardHeader className="border-b border-slate-50 dark:border-white/5 pb-4">
+            <CardTitle className="text-lg font-bold text-navy-900 dark:text-white flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-emerald-500" />
+              توزيع القضايا حسب التخصص
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 h-[300px]">
+            <MemoizedPieChart data={dynamicCategoryData} />
+          </CardContent>
+        </Card>
+
+        <Card className="border-none shadow-sm dark:bg-navy-800">
+          <CardHeader className="border-b border-slate-50 dark:border-white/5 pb-4">
+            <CardTitle className="text-lg font-bold text-navy-900 dark:text-white flex items-center gap-2">
+              <DollarSign className="w-5 h-5 text-primary-500" />
+              إحصائيات الأداء المالي
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 h-[300px]">
+            <MemoizedBarChart data={dynamicCategoryData} />
+          </CardContent>
+        </Card>
       </div>
+
     </motion.div>
   );
 }

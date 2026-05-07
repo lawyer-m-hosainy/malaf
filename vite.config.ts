@@ -15,5 +15,18 @@ export default defineConfig(({mode}) => {
     server: {
       hmr: process.env.DISABLE_HMR !== 'true',
     },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+            'vendor-ui': ['lucide-react', 'framer-motion', 'motion/react', 'clsx', 'tailwind-merge'],
+            'vendor-utils': ['zod', 'pino', 'firebase/app', 'firebase/auth', '@supabase/supabase-js'],
+          }
+        }
+      },
+      chunkSizeWarningLimit: 1000,
+      sourcemap: false
+    },
   };
 });

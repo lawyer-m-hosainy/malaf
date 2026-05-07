@@ -11,6 +11,7 @@ import {
 } from 'recharts';
 import { toast } from "sonner";
 import { useAnalyticsStore } from '@/store/useAnalyticsStore';
+import { useMemo } from "react";
 
 const revenueData = [
   { name: 'يناير', revenue: 45000, expenses: 12000, profit: 33000 },
@@ -36,8 +37,12 @@ const workloadData = [
 
 export default function Analytics() {
   const financial = useAnalyticsStore((state) => state.financialSummary);
+  const practiceAreaStats = useAnalyticsStore((state) => state.practiceAreaStats);
   const isLoading = useAnalyticsStore((state) => state.isLoading);
   const fetchAnalyticsData = useAnalyticsStore((state) => state.fetchAnalyticsData);
+  const getAttorneyPerformance = useAnalyticsStore((state) => state.getAttorneyPerformance);
+  
+  const attorneyPerformance = useMemo(() => getAttorneyPerformance(), [getAttorneyPerformance]);
   
   useEffect(() => {
     fetchAnalyticsData();
@@ -215,7 +220,7 @@ export default function Analytics() {
           </CardHeader>
           <CardContent className="p-6 h-[350px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={workloadData} layout="vertical">
+              <BarChart data={attorneyPerformance} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
                 <XAxis type="number" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b'}} />
                 <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b'}} />
@@ -224,7 +229,7 @@ export default function Analytics() {
                 />
                 <Legend />
                 <Bar dataKey="cases" name="القضايا" fill="#006c35" radius={[0, 4, 4, 0]} barSize={20} />
-                <Bar dataKey="tasks" name="المهام" fill="#d4af37" radius={[0, 4, 4, 0]} barSize={20} />
+                <Bar dataKey="winningRate" name="نسبة النجاح %" fill="#d4af37" radius={[0, 4, 4, 0]} barSize={20} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>

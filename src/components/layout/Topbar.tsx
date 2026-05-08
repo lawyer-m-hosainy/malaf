@@ -272,7 +272,7 @@ export function Topbar() {
               <Avatar className="h-9 w-9 border-2 border-primary-50 dark:border-white/10">
                 <AvatarImage src={currentUser?.avatar} />
                 <AvatarFallback className="bg-primary-500 text-white font-bold">
-                  {currentUser?.name.substring(0, 2)}
+                  {currentUser?.name?.substring(0, 2)}
                 </AvatarFallback>
               </Avatar>
             </button>

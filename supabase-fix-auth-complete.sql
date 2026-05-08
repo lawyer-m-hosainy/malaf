@@ -39,6 +39,9 @@ ALTER TABLE public.organizations ADD COLUMN IF NOT EXISTS name TEXT;
 ALTER TABLE public.organizations ADD COLUMN IF NOT EXISTS slug TEXT;
 ALTER TABLE public.organizations ADD COLUMN IF NOT EXISTS plan TEXT DEFAULT 'free';
 
+-- إضافة UNIQUE constraint على slug (ضروري لـ ON CONFLICT)
+CREATE UNIQUE INDEX IF NOT EXISTS idx_organizations_slug ON public.organizations(slug);
+
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS org_id UUID;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS full_name TEXT;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'محامي';
@@ -215,7 +218,7 @@ BEGIN
     new_org_id,
     COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1), 'المستخدم'),
     NEW.email,
-    'محامي'::TEXT
+    'محامي'::public.user_role
   )
   ON CONFLICT (id) DO UPDATE SET
     org_id = COALESCE(public.profiles.org_id, new_org_id),
@@ -268,7 +271,7 @@ BEGIN
       new_org_id,
       COALESCE(u.raw_user_meta_data->>'full_name', split_part(u.email, '@', 1), 'المستخدم'),
       u.email,
-      'محامي'::TEXT
+      'محامي'::public.user_role
     )
     ON CONFLICT (id) DO NOTHING;
 

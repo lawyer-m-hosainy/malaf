@@ -53,22 +53,34 @@ const DEFAULT_ROLE: UserRole = "محامي";
 
 /**
  * Reads or creates the user profile from Supabase (profiles table).
- * All authentication and data is handled through Supabase only.
+ * The DB trigger `handle_new_user` auto-creates org + profile on signup.
+ * This function reads the profile, retrying once if the trigger hasn't finished yet.
  */
 async function resolveUserProfile(
   user: any
 ): Promise<{ role: UserRole; orgId: string } | null> {
   try {
-    // 1. Fetch profile from Supabase
-    const { data: profile, error } = await supabase
+    // 1. Try to fetch existing profile
+    let { data: profile, error } = await supabase
       .from("profiles")
       .select("role, org_id")
       .eq("id", user.id)
-      .limit(1)
-      .single();
+      .maybeSingle();
 
+    // 2. If no profile yet, the DB trigger might still be running — wait & retry
+    if (!profile) {
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      const retry = await supabase
+        .from("profiles")
+        .select("role, org_id")
+        .eq("id", user.id)
+        .maybeSingle();
+      profile = retry.data;
+      error = retry.error;
+    }
+
+    // 3. If profile exists, sync org_id to JWT metadata for RLS
     if (profile && !error) {
-      // Keep raw_user_meta_data updated with org_id for RLS policies
       if (user.user_metadata?.org_id !== profile.org_id) {
         await supabase.auth.updateUser({
           data: { org_id: profile.org_id, role: profile.role }
@@ -81,7 +93,9 @@ async function resolveUserProfile(
       };
     }
 
-    // 2. No profile exists — Create default organization
+    // 4. Fallback: manually create org + profile if trigger didn't fire
+    console.warn("Profile not found after retry, creating manually...");
+
     const { data: org, error: orgError } = await supabase
       .from("organizations")
       .insert({
@@ -92,12 +106,38 @@ async function resolveUserProfile(
       .single();
 
     if (orgError || !org) {
-      console.error("Failed to create organization:", orgError);
-      return null;
+      // Maybe org already exists (slug conflict) — try to find it
+      const { data: existingOrg } = await supabase
+        .from("organizations")
+        .select("id")
+        .eq("slug", `office-${user.id.slice(0, 8)}`)
+        .maybeSingle();
+      
+      if (!existingOrg) {
+        console.error("Failed to create/find organization:", orgError);
+        return null;
+      }
+      
+      // Use the existing org
+      const orgId = existingOrg.id;
+      
+      await supabase.from("profiles").upsert({
+        id: user.id,
+        org_id: orgId,
+        full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || "المستخدم",
+        email: user.email || "",
+        role: DEFAULT_ROLE,
+      });
+      
+      await supabase.auth.updateUser({
+        data: { org_id: orgId, role: DEFAULT_ROLE }
+      });
+      
+      return { role: DEFAULT_ROLE, orgId };
     }
 
-    // 3. Create profile linked to the new organization
-    const { error: profileError } = await supabase.from("profiles").insert({
+    // 5. Create profile linked to new org
+    const { error: profileError } = await supabase.from("profiles").upsert({
       id: user.id,
       org_id: org.id,
       full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || "المستخدم",
@@ -110,7 +150,7 @@ async function resolveUserProfile(
       return null;
     }
     
-    // 4. Set org_id in Supabase Auth user metadata so get_user_org_id() SQL function works
+    // 6. Set org_id in JWT metadata so RLS works immediately
     await supabase.auth.updateUser({
       data: { org_id: org.id, role: DEFAULT_ROLE }
     });

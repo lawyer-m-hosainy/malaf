@@ -83,7 +83,7 @@ export function Topbar() {
       useTeamStore.getState().setTeamMembers([]);
       useTeamStore.getState().setTasks([]);
       useFinanceStore.getState().setTrustAccounts([]);
-      useInvoicesStore.getState().loadInvoices([]);
+      useInvoicesStore.getState().setInvoices([]);
       useEnforcementStore.getState().setEnforcementCases([]);
       useNotificationsStore.getState().clearAll();
       

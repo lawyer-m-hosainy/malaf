@@ -82,9 +82,13 @@ async function resolveUserProfile(
     // 3. If profile exists, sync org_id to JWT metadata for RLS
     if (profile && !error) {
       if (user.user_metadata?.org_id !== profile.org_id) {
-        await supabase.auth.updateUser({
-          data: { org_id: profile.org_id, role: profile.role }
-        });
+        try {
+          await supabase.auth.updateUser({
+            data: { org_id: profile.org_id, role: profile.role }
+          });
+        } catch (e) {
+          console.error("Failed to sync org_id to JWT:", e);
+        }
       }
       
       return {
@@ -129,9 +133,13 @@ async function resolveUserProfile(
         role: DEFAULT_ROLE,
       });
       
-      await supabase.auth.updateUser({
-        data: { org_id: orgId, role: DEFAULT_ROLE }
-      });
+      try {
+        await supabase.auth.updateUser({
+          data: { org_id: orgId, role: DEFAULT_ROLE }
+        });
+      } catch (e) {
+        console.error("Failed to sync org_id to JWT:", e);
+      }
       
       return { role: DEFAULT_ROLE, orgId };
     }
@@ -151,9 +159,13 @@ async function resolveUserProfile(
     }
     
     // 6. Set org_id in JWT metadata so RLS works immediately
-    await supabase.auth.updateUser({
-      data: { org_id: org.id, role: DEFAULT_ROLE }
-    });
+    try {
+      await supabase.auth.updateUser({
+        data: { org_id: org.id, role: DEFAULT_ROLE }
+      });
+    } catch (e) {
+      console.error("Failed to sync org_id to JWT:", e);
+    }
 
     return { role: DEFAULT_ROLE, orgId: org.id };
   } catch (error) {
@@ -167,15 +179,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      handleAuthChange(session?.user || null);
-    };
-    
-    checkUser();
-
+    // Supabase v2 onAuthStateChange fires INITIAL_SESSION immediately upon subscribing.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        // Prevent infinite loops: if we triggered the update ourselves, just update the local state
+        if (event === 'USER_UPDATED') {
+           setUser(session?.user || null);
+           return;
+        }
         handleAuthChange(session?.user || null);
       }
     );

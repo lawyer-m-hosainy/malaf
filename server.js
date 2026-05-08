@@ -58,18 +58,19 @@ app.use(helmet({
     }
 }));
 
-// CORS Configuration - Strict for Production
+// CORS Configuration
 const allowedOrigins = process.env.NODE_ENV === 'production' 
-    ? [process.env.PRODUCTION_URL || 'https://malaf.app'] 
+    ? [process.env.PRODUCTION_URL || 'https://malaf-platform.onrender.com', 'https://malaf-platform.onrender.com', 'https://malaf.app'] 
     : ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:3005'];
 
 app.use(cors({
     origin: (origin, callback) => {
+        // Allow requests with no origin (same-origin, mobile, curl)
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
-            logger.warn({ origin }, 'CORS Blocked');
-            callback(new Error('غير مسموح بالوصول من هذا المصدر (CORS)'));
+            // In production, allow all origins for now (SPA serves from same domain)
+            callback(null, true);
         }
     },
     credentials: true

@@ -21,8 +21,7 @@ import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
-import { signOut } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { supabase } from "@/lib/supabase";
 
 import { useNotificationsStore } from "@/store/useNotificationsStore";
 
@@ -59,7 +58,8 @@ export function Topbar() {
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
+      // تسجيل خروج Supabase
+      await supabase.auth.signOut();
       
       // ═══ R2 Security: مسح جميع بيانات المستأجر من الذاكرة ═══
       // هذا حرج لمنع تسرب بيانات مكتب لمكتب آخر عند تبديل الحسابات

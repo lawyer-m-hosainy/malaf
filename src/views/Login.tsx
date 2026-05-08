@@ -53,9 +53,11 @@ export default function Login() {
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
+      const redirectUrl = window.location.origin + '/dashboard';
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
+          redirectTo: redirectUrl,
           queryParams: { prompt: "select_account" }
         }
       });

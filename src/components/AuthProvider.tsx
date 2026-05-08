@@ -87,7 +87,6 @@ async function resolveUserProfile(
       .insert({
         name: user.user_metadata?.full_name || "مكتب المحاماة",
         slug: `office-${user.id.slice(0, 8)}`,
-        plan: "free",
       })
       .select("id")
       .single();

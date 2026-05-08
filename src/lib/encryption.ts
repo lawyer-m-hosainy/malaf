@@ -1,16 +1,20 @@
-import { auth } from "./firebase";
+/**
+ * Encryption API Client — uses Supabase Auth tokens.
+ */
+import { supabase } from "./supabase";
 
-async function getAuthHeaders() {
-  const user = auth.currentUser;
-  if (!user) return {};
-  const token = await user.getIdToken();
-  return {
-    "Authorization": `Bearer ${token}`,
+const API_URL = (import.meta as any).env?.VITE_APP_URL || "http://localhost:3005";
+
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  const { data: { session } } = await supabase.auth.getSession();
+  const headers: Record<string, string> = {
     "Content-Type": "application/json"
   };
+  if (session?.access_token) {
+    headers["Authorization"] = `Bearer ${session.access_token}`;
+  }
+  return headers;
 }
-
-const API_URL = import.meta.env.VITE_APP_URL || "http://localhost:3005";
 
 export async function encryptField(value: string | undefined | null): Promise<string> {
   if (!value) return "";

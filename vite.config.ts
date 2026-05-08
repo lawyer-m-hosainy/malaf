@@ -21,7 +21,7 @@ export default defineConfig(({mode}) => {
           manualChunks: {
             'vendor-react': ['react', 'react-dom', 'react-router-dom'],
             'vendor-ui': ['lucide-react', 'framer-motion', 'motion/react', 'clsx', 'tailwind-merge'],
-            'vendor-utils': ['zod', 'pino', 'firebase/app', 'firebase/auth', '@supabase/supabase-js'],
+            'vendor-utils': ['zod', 'pino', '@supabase/supabase-js'],
           }
         }
       },

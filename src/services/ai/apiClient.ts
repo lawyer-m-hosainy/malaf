@@ -1,9 +1,7 @@
 /**
- * AI API Client - يتصل بالخادم (Backend) لتوليد ردود حقيقية.
- * يُستخدم فقط عندما يكون الخادم متاحاً ومفتاح Gemini API مُعدّ.
+ * AI API Client — uses Supabase Auth tokens.
  */
-
-import { auth } from "@/lib/firebase";
+import { supabase } from "@/lib/supabase";
 
 export interface ApiResponse {
   text: string;
@@ -15,18 +13,16 @@ export async function callAiApi<T extends Record<string, unknown>>(
   path: string,
   payload: T
 ): Promise<ApiResponse> {
-  const currentUser = auth.currentUser;
+  const { data: { session } } = await supabase.auth.getSession();
 
-  if (!currentUser) {
+  if (!session?.access_token) {
     throw new Error("UNAUTHORIZED");
   }
-
-  const token = await currentUser.getIdToken();
 
   const response = await fetch(path, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${session.access_token}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify(payload),

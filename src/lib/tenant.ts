@@ -1,4 +1,7 @@
-import { auth } from "@/lib/firebase";
+/**
+ * Tenant (Organization) ID management — Supabase only.
+ * Firebase has been completely removed from this project.
+ */
 
 export const DEMO_TENANT_ID = "demo-tenant";
 
@@ -13,10 +16,8 @@ export function setTenantIdCache(tenantId: string | null) {
 }
 
 /**
- * Returns the current organization ID.
- * Priority: cached value from AuthProvider > Firebase Auth tenantId > demo fallback.
+ * Returns the current organization ID from the in-memory cache.
  */
 export function getCurrentTenantId(): string {
-  if (cachedTenantId) return cachedTenantId;
-  return auth.currentUser?.tenantId || "";
+  return cachedTenantId || "";
 }

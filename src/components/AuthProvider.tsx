@@ -52,8 +52,8 @@ const AuthContext = createContext<AuthContextType>({ user: null, loading: true }
 const DEFAULT_ROLE: UserRole = "محامي";
 
 /**
- * يقرأ أو يُنشئ ملف المستخدم من Supabase (جدول profiles).
- * Firebase Auth يبقى للمصادقة فقط — Supabase للبيانات.
+ * Reads or creates the user profile from Supabase (profiles table).
+ * All authentication and data is handled through Supabase only.
  */
 async function resolveUserProfile(
   user: any

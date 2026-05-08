@@ -9,9 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Globe, LogIn, Plus, Users, Mail, Lock, Copy, CheckCircle2, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useClientsStore } from "@/store/useClientsStore";
-import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from "firebase/auth";
 import { supabase } from "@/lib/supabase";
-import { auth } from "@/lib/firebase";
 import { getCurrentTenantId } from "@/lib/tenant";
 
 interface PortalUser {
@@ -93,15 +91,36 @@ export default function PortalManagement() {
 
     setIsCreating(true);
     try {
-      // Create Firebase Auth account
-      const cred = await createUserWithEmailAndPassword(auth, clientEmail.trim(), clientPassword);
-      await updateProfile(cred.user, { displayName: selectedClient?.name || "موكل" });
-      await sendEmailVerification(cred.user);
+      // Create Supabase Auth account for the client
+      const { data: signUpData, error: signUpError } = await supabase.auth.admin
+        ? await supabase.auth.signUp({
+            email: clientEmail.trim(),
+            password: clientPassword,
+            options: {
+              data: {
+                full_name: selectedClient?.name || "موكل",
+                role: "client"
+              }
+            }
+          })
+        : await supabase.auth.signUp({
+            email: clientEmail.trim(),
+            password: clientPassword,
+            options: {
+              data: {
+                full_name: selectedClient?.name || "موكل",
+                role: "client"
+              }
+            }
+          });
 
-      // Create user document in Supabase profiles with role: 'client'
+      if (signUpError) throw signUpError;
+      if (!signUpData.user) throw new Error("فشل إنشاء الحساب");
+
+      // Create user profile in Supabase with role: 'client'
       const orgId = getCurrentTenantId();
       const { error: profileError } = await supabase.from("profiles").insert({
-        id: cred.user.uid,
+        id: signUpData.user.id,
         full_name: selectedClient?.name || "موكل",
         email: clientEmail.trim(),
         role: "client",
@@ -112,7 +131,7 @@ export default function PortalManagement() {
       if (profileError) throw profileError;
 
       const newUser: PortalUser = {
-        id: cred.user.uid,
+        id: signUpData.user.id,
         name: selectedClient?.name || "موكل",
         email: clientEmail.trim(),
         linkedClientId: selectedClientId,
@@ -124,7 +143,8 @@ export default function PortalManagement() {
       setIsDialogOpen(false);
       resetForm();
     } catch (error: any) {
-      if (error?.code === "auth/email-already-in-use") {
+      const msg = error?.message || "";
+      if (msg.includes("already registered") || msg.includes("already been registered")) {
         toast.error("هذا البريد مسجل مسبقاً. استخدم بريداً مختلفاً.");
       } else {
         toast.error("حدث خطأ أثناء إنشاء الحساب. حاول لاحقاً.");

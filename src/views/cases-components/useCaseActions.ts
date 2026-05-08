@@ -40,7 +40,7 @@ export function useCaseActions() {
           ? "نوع الملف غير مسموح. المسموح: PDF, DOC, DOCX, TXT"
           : error instanceof Error && error.message.includes("مهلة")
           ? error.message
-          : "فشل رفع الملف. تأكد من الاتصال بالإنترنت وإعدادات Firebase.";
+          : "فشل رفع الملف. تأكد من الاتصال بالإنترنت.";
       onError(message);
     }
   };

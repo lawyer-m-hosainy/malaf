@@ -82,7 +82,7 @@ RETURNS TEXT AS $$
   SELECT COALESCE(
     auth.jwt() -> 'user_metadata' ->> 'role',
     auth.jwt() -> 'raw_user_meta_data' ->> 'role',
-    (SELECT role FROM public.profiles WHERE id = auth.uid() LIMIT 1),
+    (SELECT role::TEXT FROM public.profiles WHERE id = auth.uid() LIMIT 1),
     'محامي'
   );
 $$ LANGUAGE SQL STABLE SECURITY DEFINER;
@@ -215,7 +215,7 @@ BEGIN
     new_org_id,
     COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1), 'المستخدم'),
     NEW.email,
-    'محامي'
+    'محامي'::TEXT
   )
   ON CONFLICT (id) DO UPDATE SET
     org_id = COALESCE(public.profiles.org_id, new_org_id),
@@ -268,7 +268,7 @@ BEGIN
       new_org_id,
       COALESCE(u.raw_user_meta_data->>'full_name', split_part(u.email, '@', 1), 'المستخدم'),
       u.email,
-      'محامي'
+      'محامي'::TEXT
     )
     ON CONFLICT (id) DO NOTHING;
 

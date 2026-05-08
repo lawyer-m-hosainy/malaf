@@ -32,7 +32,7 @@ services:
       - key: DAILY_API_KEY
         sync: false
       - key: PRODUCTION_URL
-        value: https://malaf.onrender.com
+        value: https://malaf-platform.onrender.com
       - key: VITE_ENABLE_DEMO
         value: "true"
       - key: VITE_FIREBASE_API_KEY

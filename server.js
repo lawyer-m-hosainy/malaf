@@ -17,7 +17,10 @@ import cryptoRouter from './routes/crypto.js';
 import whatsappRouter from './routes/whatsapp.js';
 // Note: videoRouter is TS, we import it as .ts or let the loader handle it
 import videoRouter from './routes/video.js';
+import paymentRouter from './routes/payment.js';
+import messengerRouter from './routes/messenger.js';
 import { initScheduler } from './services/whatsapp/notificationScheduler.js';
+import { initSubscriptionCron } from './services/subscription/subscriptionCron.js';
 
 // Import Middlewares
 import { authMiddleware } from './middleware/auth.js';
@@ -182,6 +185,16 @@ app.use('/api/video', authMiddleware, securityRequestLogger, videoRouter);
 app.use('/api/whatsapp/webhook', whatsappRouter); // GET/POST webhook — عامة
 app.use('/api/whatsapp', authMiddleware, securityRequestLogger, whatsappRouter); // /send, /settings, /stats, /messages — محمية
 
+// Payment Routes — callback عام (Paymob webhook)، باقي الـ routes محمية
+app.use('/api/payment/callback', paymentRouter); // POST callback — عام
+app.use('/api/payment/plans', paymentRouter); // GET plans — عام
+app.use('/api/payment/status', paymentRouter); // GET status — عام
+app.use('/api/payment', authMiddleware, securityRequestLogger, paymentRouter); // /create — محمي
+
+// Facebook Messenger — webhook عام (مطلوب من Meta)
+app.use('/api/messenger/webhook', messengerRouter); // GET/POST webhook — عام
+app.use('/api/messenger', authMiddleware, messengerRouter); // /status — محمي
+
 // --- Frontend Serving ---
 const distPath = path.join(__dirname, 'dist');
 if (fs.existsSync(distPath)) {
@@ -220,6 +233,40 @@ app.listen(PORT, () => {
     if (IS_PROD) {
         logger.info(`   📡 Health: /api/health | Ping: /api/health/ping`);
         logger.info(`   🌐 CORS: ${allowedOrigins.join(', ')}`);
+    }
+
+    // Initialize Subscription Cron Jobs (renewal reminders, expiration, win-back)
+    try {
+        initSubscriptionCron(async (phone, message, orgId) => {
+            if (!supabaseServiceKey) return false;
+            const { createClient } = await import('@supabase/supabase-js');
+            const sb = createClient(process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL, supabaseServiceKey);
+            const { data: settings } = await sb
+                .from('whatsapp_settings')
+                .select('*')
+                .eq('org_id', orgId)
+                .eq('is_active', true)
+                .single();
+            if (!settings) return false;
+            const apiToken = settings.api_token_encrypted;
+            const provider = settings.provider || '360dialog';
+            let apiUrl, headers, body;
+            if (provider === '360dialog') {
+                apiUrl = 'https://waba.360dialog.io/v1/messages';
+                headers = { 'D360-API-KEY': apiToken, 'Content-Type': 'application/json' };
+            } else {
+                apiUrl = `https://graph.facebook.com/v18.0/${settings.wa_phone_number}/messages`;
+                headers = { 'Authorization': `Bearer ${apiToken}`, 'Content-Type': 'application/json' };
+            }
+            body = { messaging_product: 'whatsapp', to: phone.replace('+', ''), type: 'text', text: { body: message } };
+            try {
+                const resp = await fetch(apiUrl, { method: 'POST', headers, body: JSON.stringify(body) });
+                return resp.ok;
+            } catch { return false; }
+        });
+        logger.info('📅 Subscription Cron Jobs activated');
+    } catch (err) {
+        logger.warn({ err: err.message }, 'Subscription Cron init skipped (non-critical)');
     }
 
     // Initialize WhatsApp session reminders & invoice notifications

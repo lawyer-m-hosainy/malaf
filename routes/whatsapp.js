@@ -329,7 +329,10 @@ router.post('/webhook', async (req, res) => {
       }
       // أي شيء آخر → Gemini AI
       else {
-        replyText = await handleWithAI(messageText, orgId, contact, supabase);
+        replyText = await handleWithAI(messageText, orgId, contact, supabase, {
+          source: 'whatsapp',
+          senderPhone: senderPhone,
+        });
         await logMessage(orgId, 'outbound', waNumber, senderPhone, replyText, {
           ai_handled: true,
           client_id: contact.linked_id,
@@ -343,10 +346,15 @@ router.post('/webhook', async (req, res) => {
       }
     }
 
-    // ── رقم غير مسجّل: رسالة ترحيب ──
+    // ── رقم غير مسجّل: سيناريو البيع عبر AI ──
     else {
-      replyText = settings.welcome_message;
-      await logMessage(orgId, 'outbound', waNumber, senderPhone, replyText);
+      replyText = await handleWithAI(messageText, null, { contact_type: 'unknown' }, supabase, {
+        source: 'whatsapp',
+        senderPhone: senderPhone,
+      });
+      await logMessage(orgId || null, 'outbound', waNumber, senderPhone, replyText, {
+        ai_handled: true,
+      });
     }
 
     // إرسال الرد

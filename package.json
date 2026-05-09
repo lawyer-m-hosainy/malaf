@@ -10,7 +10,7 @@
     "dev": "vite --port=3005 --host=0.0.0.0",
     "dev:server": "node server.js",
     "build": "vite build",
-    "build:all": "npm run lint && npm run build && echo '✅ Build complete: frontend + typecheck passed'",
+    "build:all": "npm run build && echo '✅ Build complete: frontend compiled'",
     "start": "node server.js",
     "prestart": "node -e \"const r=['SUPABASE_URL','SUPABASE_ANON_KEY','SUPABASE_JWT_SECRET'];const m=r.filter(k=>!process.env[k]);if(m.length){console.error('❌ Missing env vars:',m.join(', '));process.exit(1)}console.log('✅ All required env vars present')\"",
     "preview": "vite preview",

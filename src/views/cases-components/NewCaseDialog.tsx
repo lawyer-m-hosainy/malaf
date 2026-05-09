@@ -335,6 +335,9 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
                 <option value="مجلس الدولة">مجلس الدولة</option>
                 <option value="المحكمة الاقتصادية">المحكمة الاقتصادية</option>
                 <option value="محكمة الأسرة">محكمة الأسرة</option>
+                <option value="محكمة الجنايات">محكمة الجنايات</option>
+                <option value="الدائرة العمالية">الدائرة العمالية</option>
+                <option value="المحكمة التأديبية">المحكمة التأديبية</option>
               </select>
             </div>
             <div className="space-y-2">
@@ -352,6 +355,10 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
                 <option value="أحوال شخصية">أحوال شخصية</option>
                 <option value="إداري">إداري</option>
                 <option value="اقتصادي">اقتصادي</option>
+                <option value="عقاري">عقاري</option>
+                <option value="إيجارات">إيجارات</option>
+                <option value="ضرائب">ضرائب</option>
+                <option value="تأديبي">تأديبي</option>
               </select>
             </div>
           </div>
@@ -491,6 +498,10 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
               {caseToEdit && <option value="محفوظة">محفوظة</option>}
               {caseToEdit && <option value="مغلقة">مغلقة</option>}
               {caseToEdit && <option value="حكم نهائي">حكم نهائي (نقل للتنفيذ)</option>}
+              {caseToEdit && <option value="محكوم فيها">محكوم فيها</option>}
+              {caseToEdit && <option value="مستأنفة">مستأنفة</option>}
+              {caseToEdit && <option value="طعن">طعن بالنقض</option>}
+              {caseToEdit && <option value="تنفيذ">تحت التنفيذ</option>}
             </select>
           </div>
 

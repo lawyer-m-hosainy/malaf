@@ -3,6 +3,7 @@ import { Expense, Session, Task, Deadline } from "@/types";
 import { cn } from "@/lib/utils";
 import { Calendar, Clock, DollarSign, Timer } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { formatEGP } from "@/lib/formatEG";
 import { enrichDeadlineStatuses } from "@/domain/legalWorkflow";
 import { useFinanceStore } from "@/store/useFinanceStore";
 
@@ -41,7 +42,7 @@ export default function CaseSummaryCards({ caseId, totalExpenses, caseSessions, 
       <div className="grid grid-cols-2 gap-3">
         <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/20">
           <p className="text-[10px] font-bold text-emerald-600 mb-1">المصروفات</p>
-          <p className="text-lg font-bold text-emerald-700 dark:text-emerald-400">{totalExpenses.toLocaleString()} <span className="text-[10px]">ج.م</span></p>
+          <p className="text-lg font-bold text-emerald-700 dark:text-emerald-400">{formatEGP(totalExpenses)}</p>
         </div>
         <div className="p-4 rounded-xl bg-primary-50 dark:bg-primary-900/10 border border-primary-100 dark:border-primary-900/20">
           <p className="text-[10px] font-bold text-primary-600 mb-1">الجلسات</p>
@@ -83,7 +84,7 @@ export default function CaseSummaryCards({ caseId, totalExpenses, caseSessions, 
           </div>
           <div className="flex justify-between items-center text-xs">
             <span className="text-slate-500">إجمالي المصروفات</span>
-            <span className="font-bold text-red-600">-{totalExpenses.toLocaleString()} ج.م</span>
+            <span className="font-bold text-red-600">-{formatEGP(totalExpenses)}</span>
           </div>
           <div className="flex justify-between items-center text-xs">
             <span className="text-slate-500">قيمة ساعات العمل (مقدرة)</span>
@@ -91,7 +92,7 @@ export default function CaseSummaryCards({ caseId, totalExpenses, caseSessions, 
           </div>
           <div className="pt-2 border-t border-slate-200 dark:border-white/10 flex justify-between items-center">
             <span className="text-xs font-bold text-navy-900 dark:text-white">صافي الربح المتوقع</span>
-            <span className="font-bold text-emerald-600">{(10000 - totalExpenses - (totalExpenses > 0 ? 1500 : 0)).toLocaleString()} ج.م</span>
+            <span className="font-bold text-emerald-600">{formatEGP(10000 - totalExpenses - (totalExpenses > 0 ? 1500 : 0))}</span>
           </div>
         </div>
       </div>

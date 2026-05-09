@@ -10,6 +10,7 @@ import { useEnforcementStore } from '@/store/useEnforcementStore';
 import { useUIStore } from '@/store/useUIStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import NewEnforcementDialog from "./enforcement-components/NewEnforcementDialog";
+import { formatEGP, formatDateEG } from "@/lib/formatEG";
 
 function statusClass(status: string) {
   if (status === "مفتوح") return "bg-slate-100 text-slate-700 dark:bg-white/10 dark:text-slate-300";
@@ -131,12 +132,12 @@ export default function Enforcement() {
                   <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100 dark:border-slate-700">
                     <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
                       <HandCoins size={12} />
-                      {item.amountClaimed.toLocaleString()} ج.م
+                      {formatEGP(item.amountClaimed)}
                     </span>
                     {item.stageDeadline && (
                       <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
                         <CalendarClock size={12} />
-                        {new Date(item.stageDeadline).toLocaleDateString('ar-EG')}
+                        {formatDateEG(item.stageDeadline)}
                       </span>
                     )}
                   </div>
@@ -177,11 +178,11 @@ export default function Enforcement() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div className="p-3 rounded-md bg-slate-50 dark:bg-white/5">
                     <p className="text-xs text-slate-500 dark:text-slate-400">المطالبة</p>
-                    <p className="font-bold text-navy-900 dark:text-white">{selected.amountClaimed.toLocaleString()} ج.م</p>
+                    <p className="font-bold text-navy-900 dark:text-white">{formatEGP(selected.amountClaimed)}</p>
                   </div>
                   <div className="p-3 rounded-md bg-emerald-50 dark:bg-emerald-900/20">
                     <p className="text-xs text-emerald-600 dark:text-emerald-400">المحصل</p>
-                    <p className="font-bold text-emerald-700 dark:text-emerald-300">{selected.amountCollected.toLocaleString()} ج.م</p>
+                    <p className="font-bold text-emerald-700 dark:text-emerald-300">{formatEGP(selected.amountCollected)}</p>
                   </div>
                   <div className="p-3 rounded-md bg-blue-50 dark:bg-blue-900/20">
                     <p className="text-xs text-blue-600 dark:text-blue-400">نوع السند التنفيذي</p>
@@ -198,7 +199,7 @@ export default function Enforcement() {
                     </div>
                     <div className="p-3 rounded-md bg-purple-50 dark:bg-purple-900/20">
                       <p className="text-xs text-purple-600 dark:text-purple-400">تاريخ الحكم</p>
-                      <p className="font-bold text-purple-700 dark:text-purple-300">{selected.judgmentDate ? new Date(selected.judgmentDate).toLocaleDateString('ar-EG') : '-'}</p>
+                      <p className="font-bold text-purple-700 dark:text-purple-300">{formatDateEG(selected.judgmentDate)}</p>
                     </div>
                     <div className="p-3 rounded-md bg-purple-50 dark:bg-purple-900/20">
                       <p className="text-xs text-purple-600 dark:text-purple-400">المحكمة المُصدِرة</p>
@@ -211,7 +212,7 @@ export default function Enforcement() {
                 <div className="flex items-center gap-2 text-sm text-navy-900 dark:text-slate-300">
                   <CalendarClock size={16} />
                   <span>مهلة المرحلة:</span>
-                  <span className="font-bold">{selected.stageDeadline ? new Date(selected.stageDeadline).toLocaleDateString('ar-EG') : "-"}</span>
+                  <span className="font-bold">{formatDateEG(selected.stageDeadline)}</span>
                   {isSlaRisk(selected.stageDeadline) && (
                     <Badge className="bg-amber-100 text-amber-700 gap-1"><Bell size={12} /> تنبيه SLA</Badge>
                   )}
@@ -219,12 +220,12 @@ export default function Enforcement() {
 
                 {/* Timeline */}
                 <div>
-                  <h3 className="font-bold mb-2 flex items-center gap-2 text-navy-900 dark:text-white"><Scale size={16} /> Timeline الإجراءات</h3>
+                  <h3 className="font-bold mb-2 flex items-center gap-2 text-navy-900 dark:text-white"><Scale size={16} /> تسلسل الإجراءات</h3>
                   <div className="space-y-2 border-s ps-4 border-slate-100 dark:border-white/10">
                     {selected.actions.map((a) => (
                       <div key={a.id} className="p-2 rounded-md bg-slate-50 dark:bg-white/5">
                         <p className="text-sm font-bold text-navy-900 dark:text-white">{a.title}</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">{new Date(a.date).toLocaleDateString('ar-EG')} • {a.type} • بواسطة {a.performedBy}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">{formatDateEG(a.date)} • {a.type} • بواسطة {a.performedBy}</p>
                       </div>
                     ))}
                   </div>
@@ -241,7 +242,7 @@ export default function Enforcement() {
                         <div className="text-xs text-slate-500 dark:text-slate-400 grid grid-cols-3 gap-2">
                           <span>رقم الحكم: {selected.judgmentNumber || '-'}</span>
                           <span>المحكمة: {selected.judgmentCourt || '-'}</span>
-                          <span>تاريخ الصدور: {selected.judgmentDate ? new Date(selected.judgmentDate).toLocaleDateString('ar-EG') : '-'}</span>
+                          <span>تاريخ الصدور: {formatDateEG(selected.judgmentDate)}</span>
                         </div>
                       </div>
                       
@@ -250,7 +251,7 @@ export default function Enforcement() {
                         <p className="font-bold text-sm text-navy-900 dark:text-white mb-1">2. إعلان السند التنفيذي</p>
                         <div className="text-xs text-slate-500 dark:text-slate-400 grid grid-cols-3 gap-2">
                           <span>اسم المحضر: {selected.bailiffName || '-'}</span>
-                          <span>تاريخ الإعلان: {selected.announcementDate ? new Date(selected.announcementDate).toLocaleDateString('ar-EG') : '-'}</span>
+                          <span>تاريخ الإعلان: {formatDateEG(selected.announcementDate)}</span>
                           <span>رقم المحضر: {selected.bailiffRecordNumber || '-'}</span>
                         </div>
                       </div>
@@ -261,7 +262,7 @@ export default function Enforcement() {
                         <div className="text-xs text-slate-500 dark:text-slate-400 grid grid-cols-3 gap-2">
                           <span>اسم المحضر: {selected.bailiffName || '-'}</span>
                           <span>المحكمة: {selected.judgmentCourt || '-'}</span>
-                          <span>تاريخ الإيداع: {selected.poaDate ? new Date(selected.poaDate).toLocaleDateString('ar-EG') : '-'}</span>
+                          <span>تاريخ الإيداع: {formatDateEG(selected.poaDate)}</span>
                         </div>
                       </div>
 
@@ -271,7 +272,7 @@ export default function Enforcement() {
                         {selected.hasObjection && (
                           <div className="text-xs text-slate-500 dark:text-slate-400 grid grid-cols-3 gap-2">
                             <span>النوع: {selected.objectionType || '-'}</span>
-                            <span>جلسة الإشكال: {selected.objectionSessionDate ? new Date(selected.objectionSessionDate).toLocaleDateString('ar-EG') : '-'}</span>
+                            <span>جلسة الإشكال: {formatDateEG(selected.objectionSessionDate)}</span>
                             <span>الطرف المشكل: {selected.objectingParty || '-'}</span>
                           </div>
                         )}
@@ -282,7 +283,7 @@ export default function Enforcement() {
                         <p className="font-bold text-sm text-navy-900 dark:text-white mb-1">5. انتهاء التنفيذ</p>
                         <div className="text-xs text-slate-500 dark:text-slate-400 grid grid-cols-2 gap-2">
                           <span>نتيجة التنفيذ: {selected.executionResult || '-'}</span>
-                          <span>المبلغ المحصل: {selected.amountCollected?.toLocaleString() || 0} ج.م</span>
+                          <span>المبلغ المحصل: {formatEGP(selected.amountCollected)}</span>
                         </div>
                       </div>
                     </div>

@@ -8,11 +8,51 @@
 import express from 'express';
 import crypto from 'crypto';
 import { createClient } from '@supabase/supabase-js';
+import { z } from 'zod';
 import { parseCommand } from '../services/whatsapp/commandParser.js';
 import { handleWithAI } from '../services/whatsapp/aiHandler.js';
 import { formatMessage } from '../services/whatsapp/messageFormatter.js';
 
 const router = express.Router();
+
+// ═══════════════════════════════════════════════════════
+// R10-FIX: Zod Schemas for input validation
+// ═══════════════════════════════════════════════════════
+const SendMessageSchema = z.object({
+  phone: z.string()
+    .regex(/^\+?\d{10,15}$/, 'رقم الهاتف غير صحيح')
+    .transform(v => v.startsWith('+') ? v : '+' + v),
+  message: z.string()
+    .min(1, 'الرسالة مطلوبة')
+    .max(4096, 'الرسالة طويلة جداً (4096 حرف كحد أقصى)'),
+});
+
+const UpdateSettingsSchema = z.object({
+  wa_phone_number: z.string().regex(/^\+?\d{10,15}$/).optional(),
+  welcome_message: z.string().max(1000).optional(),
+  away_message: z.string().max(1000).optional(),
+  notifications: z.object({
+    session_reminder: z.boolean().optional(),
+    invoice_due: z.boolean().optional(),
+    case_update: z.boolean().optional(),
+  }).optional(),
+  is_active: z.boolean().optional(),
+  provider: z.enum(['360dialog', 'meta_cloud']).optional(),
+  api_token_encrypted: z.string().optional(),
+});
+
+// ═══════════════════════════════════════════════════════
+// R10-FIX: Input sanitization helper
+// ═══════════════════════════════════════════════════════
+function sanitizeMessage(text) {
+  if (!text) return '';
+  return text
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '') // Remove script tags
+    .replace(/<[^>]*>/g, '')                           // Remove all HTML tags
+    .replace(/javascript:/gi, '')                      // Remove javascript: URIs
+    .replace(/on\w+\s*=/gi, '')                        // Remove event handlers
+    .substring(0, 4096);                               // WhatsApp max message length
+}
 
 // ── Supabase Admin Client (server-side with service_role) ──
 const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
@@ -35,6 +75,44 @@ function verifyWebhookSignature(req, secret) {
   );
 }
 
+// ═══ R10-FIX: فك تشفير التوكن بنفس نمط crypto.js ═══
+const MASTER_ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
+const FALLBACK_KEY = crypto.randomBytes(32).toString('hex');
+
+function getTenantKey(tenantId) {
+  const key = MASTER_ENCRYPTION_KEY || FALLBACK_KEY;
+  return crypto.pbkdf2Sync(key, tenantId, 100000, 32, 'sha512');
+}
+
+function decryptToken(encryptedText, tenantId) {
+  if (!encryptedText) return null;
+  try {
+    const parts = encryptedText.split(':');
+    let ivHex, authTagHex, ciphertext;
+
+    if (parts[0].startsWith('v') && parts.length === 4) {
+      ivHex = parts[1]; authTagHex = parts[2]; ciphertext = parts[3];
+    } else if (parts.length === 3) {
+      ivHex = parts[0]; authTagHex = parts[1]; ciphertext = parts[2];
+    } else {
+      // Not encrypted — return as-is (plaintext legacy token)
+      return encryptedText;
+    }
+
+    const iv = Buffer.from(ivHex, 'hex');
+    const authTag = Buffer.from(authTagHex, 'hex');
+    const tenantKey = getTenantKey(tenantId);
+    const decipher = crypto.createDecipheriv('aes-256-gcm', tenantKey, iv);
+    decipher.setAuthTag(authTag);
+    let decrypted = decipher.update(ciphertext, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    return decrypted;
+  } catch (err) {
+    console.error('Token decryption failed:', err.message);
+    return encryptedText; // Fallback to raw value
+  }
+}
+
 // ── مساعد: إرسال رسالة واتساب عبر 360dialog API ──
 async function sendWhatsAppMessage(phone, message, settings) {
   if (!settings?.api_token_encrypted) {
@@ -42,8 +120,15 @@ async function sendWhatsAppMessage(phone, message, settings) {
     return false;
   }
 
-  // فك تشفير التوكن (نفس نمط /api/crypto/decrypt)
-  const apiToken = settings.api_token_encrypted; // TODO: decrypt via getTenantKey
+  // R10-FIX: فك تشفير التوكن بنمط getTenantKey
+  const apiToken = decryptToken(settings.api_token_encrypted, settings.org_id);
+  if (!apiToken) {
+    console.error('Failed to decrypt WhatsApp API token');
+    return false;
+  }
+
+  // R10-FIX: تنظيف الرسالة قبل الإرسال
+  const cleanMessage = sanitizeMessage(message);
 
   const provider = settings.provider || '360dialog';
   let apiUrl, headers, body;
@@ -55,7 +140,7 @@ async function sendWhatsAppMessage(phone, message, settings) {
       messaging_product: 'whatsapp',
       to: phone.replace('+', ''),
       type: 'text',
-      text: { body: message }
+      text: { body: cleanMessage }
     };
   } else if (provider === 'meta_cloud') {
     apiUrl = `https://graph.facebook.com/v18.0/${settings.wa_phone_number}/messages`;
@@ -64,7 +149,7 @@ async function sendWhatsAppMessage(phone, message, settings) {
       messaging_product: 'whatsapp',
       to: phone.replace('+', ''),
       type: 'text',
-      text: { body: message }
+      text: { body: cleanMessage }
     };
   }
 
@@ -278,9 +363,18 @@ router.post('/webhook', async (req, res) => {
 // ── 3. إرسال رسالة يدوية (من لوحة التحكم) ──
 router.post('/send', async (req, res) => {
   try {
-    const { orgId, phone, message } = req.body;
-    if (!orgId || !phone || !message) {
-      return res.status(400).json({ error: 'orgId, phone, message مطلوبين' });
+    // ✅ R2-FIX: استخدام tenantId من الـ auth middleware بدلاً من body
+    const orgId = req.tenantId;
+
+    // R10-FIX: Zod validation
+    const parsed = SendMessageSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: parsed.error.issues[0].message });
+    }
+    const { phone, message } = parsed.data;
+
+    if (!orgId) {
+      return res.status(400).json({ error: 'لم يتم تحديد المكتب' });
     }
 
     const { data: settings } = await supabase
@@ -293,9 +387,11 @@ router.post('/send', async (req, res) => {
       return res.status(400).json({ error: 'واتساب غير مفعّل لهذا المكتب' });
     }
 
-    const sent = await sendWhatsAppMessage(phone, message, settings);
+    // R10-FIX: Sanitize message content
+    const cleanMessage = sanitizeMessage(message);
+    const sent = await sendWhatsAppMessage(phone, cleanMessage, settings);
     if (sent) {
-      await logMessage(orgId, 'outbound', settings.wa_phone_number, phone, message);
+      await logMessage(orgId, 'outbound', settings.wa_phone_number, phone, cleanMessage);
       return res.json({ success: true });
     }
     return res.status(500).json({ error: 'فشل إرسال الرسالة' });
@@ -309,15 +405,20 @@ router.post('/send', async (req, res) => {
 // ── 4. إعدادات المكتب (CRUD) ──
 router.get('/settings/:orgId', async (req, res) => {
   try {
+    // ✅ R2-FIX: التحقق من أن المستخدم يطلب بيانات مكتبه فقط
+    const orgId = req.tenantId || req.params.orgId;
+    if (req.tenantId && req.params.orgId !== req.tenantId) {
+      return res.status(403).json({ error: 'غير مصرح بالوصول لبيانات مكتب آخر' });
+    }
+
     const { data, error } = await supabase
       .from('whatsapp_settings')
       .select('org_id, wa_phone_number, welcome_message, away_message, notifications, is_active, provider')
-      .eq('org_id', req.params.orgId)
+      .eq('org_id', orgId)
       .single();
 
     if (error && error.code === 'PGRST116') {
-      // لا توجد إعدادات بعد — أرجع القيم الافتراضية
-      return res.json({ org_id: req.params.orgId, is_active: false, notifications: {} });
+      return res.json({ org_id: orgId, is_active: false, notifications: {} });
     }
     return res.json(data);
   } catch (err) {
@@ -327,18 +428,50 @@ router.get('/settings/:orgId', async (req, res) => {
 
 router.put('/settings/:orgId', async (req, res) => {
   try {
-    const { wa_phone_number, welcome_message, away_message, notifications, is_active, provider } = req.body;
+    // ✅ R2-FIX: منع تعديل إعدادات مكتب آخر
+    const orgId = req.tenantId || req.params.orgId;
+    if (req.tenantId && req.params.orgId !== req.tenantId) {
+      return res.status(403).json({ error: 'غير مصرح بتعديل إعدادات مكتب آخر' });
+    }
+
+    // R10-FIX: Zod validation
+    const parsed = UpdateSettingsSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: parsed.error.issues[0].message });
+    }
+    const { wa_phone_number, welcome_message, away_message, notifications, is_active, provider, api_token_encrypted } = parsed.data;
+
+    // R10-FIX: إذا أرسل المستخدم توكن جديد — شفّره قبل التخزين
+    let encryptedToken = undefined;
+    if (api_token_encrypted) {
+      try {
+        const tenantKey = getTenantKey(orgId);
+        const iv = crypto.randomBytes(12);
+        const cipher = crypto.createCipheriv('aes-256-gcm', tenantKey, iv);
+        let encrypted = cipher.update(api_token_encrypted, 'utf8', 'hex');
+        encrypted += cipher.final('hex');
+        const authTag = cipher.getAuthTag().toString('hex');
+        encryptedToken = `v2:${iv.toString('hex')}:${authTag}:${encrypted}`;
+      } catch (err) {
+        console.error('Token encryption failed:', err.message);
+        return res.status(500).json({ error: 'فشل تشفير التوكن' });
+      }
+    }
+
+    const upsertData = {
+      org_id: orgId,
+      ...(wa_phone_number !== undefined && { wa_phone_number }),
+      ...(welcome_message !== undefined && { welcome_message: sanitizeMessage(welcome_message) }),
+      ...(away_message !== undefined && { away_message: sanitizeMessage(away_message) }),
+      ...(notifications !== undefined && { notifications }),
+      ...(is_active !== undefined && { is_active }),
+      ...(provider !== undefined && { provider }),
+      ...(encryptedToken !== undefined && { api_token_encrypted: encryptedToken }),
+    };
+
     const { error } = await supabase
       .from('whatsapp_settings')
-      .upsert({
-        org_id: req.params.orgId,
-        wa_phone_number,
-        welcome_message,
-        away_message,
-        notifications,
-        is_active,
-        provider,
-      });
+      .upsert(upsertData);
 
     if (error) throw error;
     return res.json({ success: true });
@@ -351,7 +484,12 @@ router.put('/settings/:orgId', async (req, res) => {
 // ── 5. إحصائيات الشهر ──
 router.get('/stats/:orgId', async (req, res) => {
   try {
-    const orgId = req.params.orgId;
+    // ✅ R2-FIX: التحقق من tenant isolation
+    const orgId = req.tenantId || req.params.orgId;
+    if (req.tenantId && req.params.orgId !== req.tenantId) {
+      return res.status(403).json({ error: 'غير مصرح بالوصول لإحصائيات مكتب آخر' });
+    }
+
     const startOfMonth = new Date();
     startOfMonth.setDate(1);
     startOfMonth.setHours(0, 0, 0, 0);
@@ -385,13 +523,19 @@ router.get('/stats/:orgId', async (req, res) => {
 // ── 6. سجل الرسائل (مع pagination) ──
 router.get('/messages/:orgId', async (req, res) => {
   try {
+    // ✅ R2-FIX: التحقق من tenant isolation
+    const orgId = req.tenantId || req.params.orgId;
+    if (req.tenantId && req.params.orgId !== req.tenantId) {
+      return res.status(403).json({ error: 'غير مصرح بالوصول لرسائل مكتب آخر' });
+    }
+
     const page = parseInt(req.query.page) || 0;
     const limit = parseInt(req.query.limit) || 50;
 
     const { data, count } = await supabase
       .from('whatsapp_messages')
-      .select('*', { count: 'exact' })
-      .eq('org_id', req.params.orgId)
+      .select('id, direction, from_number, to_number, content, message_type, command_detected, ai_handled, status, created_at', { count: 'exact' })
+      .eq('org_id', orgId)
       .order('created_at', { ascending: false })
       .range(page * limit, (page + 1) * limit - 1);
 

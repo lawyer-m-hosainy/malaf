@@ -54,7 +54,7 @@ export const StrictCaseSchema = z.object({
   court: EgyptCourtEnum,
   plaintiff: z.string().min(1),
   defendant: z.string().min(1),
-  status: z.enum(['متداولة', 'تحت الدراسة', 'مغلقة', 'محفوظة']),
+  status: z.enum(['متداولة', 'تحت الدراسة', 'مغلقة', 'محفوظة', 'حكم نهائي', 'محكوم فيها', 'مستأنفة', 'طعن', 'تنفيذ']),
   createdAt: z.string()
 });
 

@@ -10,6 +10,7 @@ import { useFinanceStore } from '@/store/useFinanceStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useUIStore } from '@/store/useUIStore';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { formatEGP, formatDateEG } from "@/lib/formatEG";
 
 function daysPastDue(dueDate: string) {
   const due = new Date(dueDate).getTime();
@@ -180,7 +181,7 @@ export default function Collections() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="border-none shadow-sm dark:bg-navy-800">
           <CardHeader><CardTitle className="text-sm flex items-center gap-2"><HandCoins size={16} /> إجمالي المتأخرات</CardTitle></CardHeader>
-          <CardContent><p className="text-2xl font-bold">{totalOutstanding.toLocaleString()} ج.م</p></CardContent>
+          <CardContent><p className="text-2xl font-bold">{formatEGP(totalOutstanding)}</p></CardContent>
         </Card>
         <Card className="border-none shadow-sm dark:bg-navy-800">
           <CardHeader><CardTitle className="text-sm flex items-center gap-2"><BarChart3 size={16} /> معدل التسوية</CardTitle></CardHeader>
@@ -198,7 +199,7 @@ export default function Collections() {
           {Object.entries(aging).map(([bucket, amount]) => (
             <div key={bucket} className="p-3 rounded-md bg-slate-50">
               <p className="text-xs text-slate-500">{bucket}</p>
-              <p className="font-bold">{amount.toLocaleString()} ج.م</p>
+              <p className="font-bold">{formatEGP(amount)}</p>
             </div>
           ))}
         </CardContent>
@@ -215,7 +216,7 @@ export default function Collections() {
                   {r.status}
                 </Badge>
               </div>
-              <p className="text-xs text-slate-500 mt-1">المتبقي: {r.outstandingAmount.toLocaleString()} ج.م • الاستحقاق: {new Date(r.dueDate).toLocaleDateString('ar-EG')}</p>
+              <p className="text-xs text-slate-500 mt-1">المتبقي: {formatEGP(r.outstandingAmount)} • الاستحقاق: {formatDateEG(r.dueDate)}</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 <Button size="sm" variant="outline" onClick={() => recordAction(r.id, "إصدار مطالبة")}>إصدار مطالبة</Button>
                 <Button size="sm" variant="outline" onClick={() => recordAction(r.id, "إنذار رسمي")}>إنذار قانوني</Button>

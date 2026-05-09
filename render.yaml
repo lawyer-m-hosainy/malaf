@@ -4,9 +4,9 @@ services:
     runtime: node
     plan: free
     region: frankfurt
-    buildCommand: npm install && npm run build
+    buildCommand: npm install && npm run build:all
     startCommand: node server.js
-    healthCheckPath: /api/health
+    healthCheckPath: /api/health/ping
     autoDeploy: true
     envVars:
       - key: NODE_ENV
@@ -17,11 +17,15 @@ services:
         value: https://zidejnagdyoimyhprxrt.supabase.co
       - key: VITE_SUPABASE_URL
         value: https://zidejnagdyoimyhprxrt.supabase.co
+      # ✅ R2-FIX: ANON_KEY moved to sync: false — يجب إدخاله يدوياً في Render Dashboard
       - key: SUPABASE_ANON_KEY
-        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InppZGVqbmFnZHlvaW15aHByeHJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxOTE3NzgsImV4cCI6MjA5Mzc2Nzc3OH0.OVOEHZmySQXdQNN-KYlDDijyoWYkYUBKzra6XlKRd_E
+        sync: false
       - key: VITE_SUPABASE_ANON_KEY
-        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InppZGVqbmFnZHlvaW15aHByeHJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxOTE3NzgsImV4cCI6MjA5Mzc2Nzc3OH0.OVOEHZmySQXdQNN-KYlDDijyoWYkYUBKzra6XlKRd_E
+        sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      # ✅ R2-FIX: JWT secret for token verification (get from Supabase → Settings → API → JWT Secret)
+      - key: SUPABASE_JWT_SECRET
         sync: false
       - key: GEMINI_API_KEY
         sync: false
@@ -29,9 +33,11 @@ services:
         sync: false
       - key: ENCRYPTION_KEY
         sync: false
+      # R6-FIX: For key rotation — set old key here when rotating ENCRYPTION_KEY
+      - key: ENCRYPTION_KEY_PREVIOUS
+        sync: false
       - key: DAILY_API_KEY
         sync: false
       - key: PRODUCTION_URL
         value: https://malaf-platform.onrender.com
-      - key: VITE_ENABLE_DEMO
-        value: "true"
+      # ✅ R2-FIX: VITE_ENABLE_DEMO removed from production — كانت تفتح كل الـ API بدون مصادقة

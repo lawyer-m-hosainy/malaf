@@ -297,7 +297,7 @@ export default function Login() {
                         type="email"
                         value={registerEmail}
                         onChange={(e) => setRegisterEmail(e.target.value)}
-                        placeholder="example@email.com"
+                        placeholder="name@lawfirm.eg — بريدك الإلكتروني"
                         className="dark:bg-white/5 dark:border-white/10"
                         dir="ltr"
                       />

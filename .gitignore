@@ -6,4 +6,7 @@ coverage/
 *.log
 .env*
 !.env.example
+# R11-FIX: Explicit entries for sensitive files (defense in depth)
+.env.local
+.env.production.local
 firebase-applet-config.json

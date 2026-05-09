@@ -87,6 +87,10 @@ export function Topbar() {
       useEnforcementStore.getState().setEnforcementCases([]);
       useNotificationsStore.getState().clearAll();
       
+      // R8-FIX: Clear decryption cache to prevent stale data
+      const { clearDecryptCache } = await import('@/lib/encryption');
+      clearDecryptCache();
+      
       // مسح localStorage لمنع استعادة بيانات قديمة
       localStorage.removeItem('auth-storage');
       

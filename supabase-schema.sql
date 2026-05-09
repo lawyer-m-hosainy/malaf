@@ -20,7 +20,7 @@ CREATE TABLE profiles (
   full_name TEXT NOT NULL,
   role TEXT NOT NULL, -- 'super_admin', 'org_admin', 'senior_lawyer', 'junior_lawyer', 'trainee', 'secretary', 'client'
   email TEXT UNIQUE NOT NULL,
-  linked_client_id UUID REFERENCES clients(id), -- For client portal users
+  -- R5-FIX: linked_client_id moved to ALTER TABLE below (after clients table exists)
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -39,6 +39,9 @@ CREATE TABLE clients (
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   deleted_at TIMESTAMPTZ
 );
+
+-- R5-FIX: Add linked_client_id AFTER clients table exists
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS linked_client_id UUID REFERENCES clients(id) ON DELETE SET NULL;
 
 -- 5. Cases Table
 CREATE TABLE cases (
@@ -186,9 +189,13 @@ CREATE TABLE audit_logs (
 -- 15. Expert Missions (مأموريات الخبراء)
 CREATE TABLE expert_missions (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  org_id UUID REFERENCES organizations(id) ON DELETE CASCADE, -- R5-FIX: added for direct tenant isolation
   case_id UUID REFERENCES cases(id) ON DELETE CASCADE,
   expert_name TEXT,
+  expert_type TEXT,
   mission_date DATE,
+  deposit_amount DECIMAL(12, 2) DEFAULT 0,
+  report_received BOOLEAN DEFAULT FALSE,
   status TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -380,9 +387,8 @@ CREATE POLICY "invoices_delete" ON invoices FOR DELETE USING (org_id = get_user_
 -- Indexes for Performance (Stage R4 Optimization)
 -- ═══════════════════════════════════════════════════════
 
-CREATE INDEX IF NOT EXISTS idx_sessions_case_date ON sessions(case_id, date);
-CREATE INDEX IF NOT EXISTS idx_invoices_org_status_due ON invoices(org_id, status, due_date);
-CREATE INDEX IF NOT EXISTS idx_audit_logs_org_created ON audit_logs(org_id, created_at DESC);
+-- R5-FIX: Duplicate indexes removed — these were duplicated by idx_sessions_composite, idx_invoices_composite, idx_audit_composite below
+-- (Previously: idx_sessions_case_date, idx_invoices_org_status_due, idx_audit_logs_org_created)
 CREATE INDEX IF NOT EXISTS idx_cases_org_status ON cases(org_id, status);
 CREATE INDEX IF NOT EXISTS idx_clients_org_name ON clients(org_id, name);
 
@@ -461,13 +467,18 @@ CREATE POLICY "enforcement_delete" ON enforcement FOR DELETE USING (org_id = get
 CREATE POLICY "audit_select" ON audit_logs FOR SELECT USING (org_id = get_user_org_id() OR is_super_admin());
 CREATE POLICY "audit_insert" ON audit_logs FOR INSERT WITH CHECK (org_id = get_user_org_id());
 
--- Expert Missions
+-- Expert Missions — R5-FIX: استخدام org_id المباشر بدلاً من JOIN عبر cases
 CREATE POLICY "expert_select" ON expert_missions FOR SELECT USING (
-  EXISTS (SELECT 1 FROM cases WHERE cases.id = expert_missions.case_id AND cases.org_id = get_user_org_id())
-  OR is_super_admin()
+  org_id = get_user_org_id() OR is_super_admin()
 );
 CREATE POLICY "expert_insert" ON expert_missions FOR INSERT WITH CHECK (
-  EXISTS (SELECT 1 FROM cases WHERE cases.id = expert_missions.case_id AND cases.org_id = get_user_org_id())
+  org_id = get_user_org_id()
+);
+CREATE POLICY "expert_update" ON expert_missions FOR UPDATE USING (
+  org_id = get_user_org_id()
+);
+CREATE POLICY "expert_delete" ON expert_missions FOR DELETE USING (
+  org_id = get_user_org_id()
 );
 
 -- Real Estate Registry
@@ -804,3 +815,65 @@ CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at_desc ON audit_logs(created_
 CREATE INDEX IF NOT EXISTS idx_expert_missions_org ON expert_missions(case_id);
 CREATE INDEX IF NOT EXISTS idx_real_estate_org ON real_estate_registry(org_id);
 
+
+-- ═══════════════════════════════════════════════════════
+-- 31-33. WhatsApp Tables
+-- ═══════════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS whatsapp_settings (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  org_id UUID REFERENCES organizations(id) ON DELETE CASCADE UNIQUE,
+  wa_phone_number TEXT,
+  api_token_encrypted TEXT,
+  webhook_secret TEXT,
+  welcome_message TEXT DEFAULT 'مرحباً بك في مكتبنا! أرسل رقم القضية للاستعلام.',
+  away_message TEXT DEFAULT 'شكراً لتواصلك. سنرد عليك في أقرب وقت.',
+  notifications JSONB DEFAULT '{"session_reminder": true, "invoice_due": true, "case_update": true}'::jsonb,
+  is_active BOOLEAN DEFAULT FALSE,
+  provider TEXT DEFAULT '360dialog',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS whatsapp_messages (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  org_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
+  direction TEXT NOT NULL CHECK (direction IN ('inbound', 'outbound')),
+  from_number TEXT NOT NULL,
+  to_number TEXT NOT NULL,
+  content TEXT,
+  message_type TEXT DEFAULT 'text',
+  case_id UUID REFERENCES cases(id) ON DELETE SET NULL,
+  client_id UUID REFERENCES clients(id) ON DELETE SET NULL,
+  command_detected TEXT,
+  ai_handled BOOLEAN DEFAULT FALSE,
+  status TEXT DEFAULT 'received',
+  media_url TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS whatsapp_contacts (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  org_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
+  phone_number TEXT NOT NULL,
+  contact_type TEXT NOT NULL CHECK (contact_type IN ('lawyer', 'staff', 'client', 'unknown')),
+  linked_id UUID,
+  name TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(org_id, phone_number)
+);
+
+ALTER TABLE whatsapp_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE whatsapp_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE whatsapp_contacts ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "wa_settings_tenant" ON whatsapp_settings FOR ALL USING (org_id = get_user_org_id() OR is_super_admin());
+CREATE POLICY "wa_messages_tenant" ON whatsapp_messages FOR ALL USING (org_id = get_user_org_id() OR is_super_admin());
+CREATE POLICY "wa_contacts_tenant" ON whatsapp_contacts FOR ALL USING (org_id = get_user_org_id() OR is_super_admin());
+
+CREATE INDEX IF NOT EXISTS idx_wa_messages_org ON whatsapp_messages(org_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_wa_contacts_phone ON whatsapp_contacts(org_id, phone_number);
+
+CREATE TRIGGER update_wa_settings_modtime BEFORE UPDATE ON whatsapp_settings FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+CREATE TRIGGER update_wa_contacts_modtime BEFORE UPDATE ON whatsapp_contacts FOR EACH ROW EXECUTE FUNCTION update_modified_column();

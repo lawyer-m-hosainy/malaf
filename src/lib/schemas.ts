@@ -49,7 +49,7 @@ export const poaSchema = z.object({
   poaLetter: z.string().min(1, { message: "حرف التوكيل مطلوب" }),
   poaYear: z.string().regex(/^\d{4}$/, { message: "سنة التوكيل يجب أن تكون 4 أرقام" }),
   office: z.string().min(1, { message: "مكتب التوثيق مطلوب" }),
-  type: z.enum(['عام', 'خاص', 'قضايا فقط', 'عقاري'], { message: "نوع التوكيل مطلوب" }),
+  type: z.enum(['عام', 'خاص', 'قضايا فقط', 'عقاري', 'إداري', 'بنكي'], { message: "نوع التوكيل مطلوب" }),
   issueDate: z.string().min(1, { message: "تاريخ التوثيق مطلوب" }),
   expiryDate: z.string().optional().or(z.literal('')),
   status: z.enum(['ساري', 'ملغي', 'منتهي']).default('ساري'),

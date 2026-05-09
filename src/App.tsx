@@ -87,13 +87,14 @@ export default function App() {
   const setEnforcementCases = useEnforcementStore(state => state.setEnforcementCases);
 
   useEffect(() => {
-    // Check if we need to seed demo data (if clients are empty)
+    // R8-FIX: Only seed demo data in explicit demo mode, not on every load
+    const isDemoMode = useAuthStore.getState().isDemoMode;
+    const isDemoEnv = (import.meta as any).env?.VITE_ENABLE_DEMO === 'true';
     const clients = useClientsStore.getState().clients;
-    if (clients.length === 0) {
+    
+    if (isDemoEnv && clients.length === 0 && isDemoMode) {
       seedDemoData();
     }
-    
-    // R9: Fetching only essential dashboard data will be handled by the Dashboard component
   }, []);
 
   return (

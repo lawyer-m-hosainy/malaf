@@ -2,11 +2,16 @@ import { Case, Deadline } from "@/types";
 
 export type CaseWorkflowStage = "intake" | "pleadings" | "hearing" | "judgment" | "closed";
 
-const allowedStatusTransitions: Record<Case["status"], Case["status"][]> = {
+const allowedStatusTransitions: Record<string, string[]> = {
   "تحت الدراسة": ["متداولة", "مغلقة"],
-  "متداولة": ["مغلقة", "محفوظة"],
+  "متداولة": ["مغلقة", "محفوظة", "محكوم فيها"],
+  "محكوم فيها": ["مستأنفة", "طعن", "تنفيذ", "حكم نهائي"],  // R7-FIX
+  "مستأنفة": ["محكوم فيها", "متداولة", "طعن"],              // R7-FIX
+  "طعن": ["متداولة", "حكم نهائي", "تنفيذ"],                 // R7-FIX
+  "تنفيذ": ["مغلقة"],                                        // R7-FIX
   "مغلقة": ["متداولة"],
-  "محفوظة": ["متداولة"]
+  "محفوظة": ["متداولة"],
+  "حكم نهائي": ["تنفيذ", "مغلقة"],
 };
 
 export function canTransitionCaseStatus(from: Case["status"], to: Case["status"]) {

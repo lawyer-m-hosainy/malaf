@@ -1,4 +1,5 @@
 import { motion } from "motion/react";
+import { formatEGP, formatDateEG } from "@/lib/formatEG";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Home, FileText, CheckCircle2, Clock, AlertTriangle, CheckCircle, Search, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -117,10 +118,10 @@ export default function RealEstateRegistry() {
                 <TableRow key={req.id}>
                   <TableCell className="font-bold text-navy-900 dark:text-white">{req.id}</TableCell>
                   <TableCell>{req.contractType}</TableCell>
-                  <TableCell>{new Date(req.depositDate).toLocaleDateString('ar-EG')}</TableCell>
+                  <TableCell>{formatDateEG(req.depositDate)}</TableCell>
                   <TableCell>{renderStageBadge(req.stage)}</TableCell>
-                  <TableCell className="font-mono text-sm">{req.expectedMonthDate !== '-' ? new Date(req.expectedMonthDate).toLocaleDateString('ar-EG') : '-'}</TableCell>
-                  <TableCell className="font-bold text-emerald-600">{req.fees.toLocaleString()} ج.م</TableCell>
+                  <TableCell className="font-mono text-sm">{req.expectedMonthDate !== '-' ? formatDateEG(req.expectedMonthDate) : '—'}</TableCell>
+                  <TableCell className="font-bold text-emerald-600">{formatEGP(req.fees)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

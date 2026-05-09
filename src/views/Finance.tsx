@@ -18,6 +18,7 @@ import { invoiceSchema } from "@/lib/schemas";
 import { ZodError } from "zod";
 
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatEGP, formatDateEG } from "@/lib/formatEG";
 
 // بيانات المكتب للفاتورة الإلكترونية المصرية (ETA)
 const SELLER_NAME = "مكتب الملف للمحاماة والاستشارات القانونية";
@@ -42,9 +43,9 @@ const MemoizedInvoiceRow = React.memo(({
   <TableRow className="hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors">
     <TableCell className="font-mono text-xs font-bold dark:text-slate-300">{inv.id}</TableCell>
     <TableCell className="font-bold text-navy-900 dark:text-white">{inv.clientName}</TableCell>
-    <TableCell className="text-sm dark:text-slate-300">{inv.base.toLocaleString()} ج.م</TableCell>
-    <TableCell className="text-sm text-primary-600 dark:text-primary-400">{inv.vat.toLocaleString()} ج.م</TableCell>
-    <TableCell className="font-bold text-navy-900 dark:text-white">{inv.total.toLocaleString()} ج.م</TableCell>
+    <TableCell className="text-sm dark:text-slate-300">{formatEGP(inv.base)}</TableCell>
+    <TableCell className="text-sm text-primary-600 dark:text-primary-400">{formatEGP(inv.vat)}</TableCell>
+    <TableCell className="font-bold text-navy-900 dark:text-white">{formatEGP(inv.total)}</TableCell>
     <TableCell>
       <Badge className={cn(
         "font-bold",
@@ -78,7 +79,7 @@ const MemoizedInvoiceRow = React.memo(({
               <div className="text-end space-y-1">
                 <h3 className="text-xl font-bold text-primary-600 dark:text-primary-400">فاتورة ضريبية</h3>
                 <p className="text-sm font-mono dark:text-slate-300">{inv.id}</p>
-                <p className="text-sm text-slate-500 dark:text-slate-400">{new Date(inv.date).toLocaleDateString('ar-EG')}</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">{formatDateEG(inv.date)}</p>
               </div>
             </div>
 
@@ -105,7 +106,7 @@ const MemoizedInvoiceRow = React.memo(({
               <TableBody>
                 <TableRow className="dark:border-white/10">
                   <TableCell className="font-medium dark:text-slate-300">أتعاب قانونية - تمثيل قضائي</TableCell>
-                  <TableCell className="text-end dark:text-white">{inv.base.toLocaleString()} ج.م</TableCell>
+                  <TableCell className="text-end dark:text-white">{formatEGP(inv.base)}</TableCell>
                 </TableRow>
               </TableBody>
             </Table>
@@ -121,15 +122,15 @@ const MemoizedInvoiceRow = React.memo(({
               <div className="w-64 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-500 dark:text-slate-400">المبلغ الخاضع للضريبة:</span>
-                  <span className="font-bold dark:text-white">{inv.base.toLocaleString()} ج.م</span>
+                  <span className="font-bold dark:text-white">{formatEGP(inv.base)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-500 dark:text-slate-400">ضريبة القيمة المضافة (14%):</span>
-                  <span className="font-bold text-primary-600 dark:text-primary-400">{inv.vat.toLocaleString()} ج.م</span>
+                  <span className="font-bold text-primary-600 dark:text-primary-400">{formatEGP(inv.vat)}</span>
                 </div>
                 <div className="flex justify-between text-lg border-t border-slate-100 dark:border-white/10 pt-2">
                   <span className="font-bold text-navy-900 dark:text-white">الإجمالي المستحق:</span>
-                  <span className="font-bold text-navy-900 dark:text-white">{inv.total.toLocaleString()} ج.م</span>
+                  <span className="font-bold text-navy-900 dark:text-white">{formatEGP(inv.total)}</span>
                 </div>
               </div>
             </div>
@@ -215,10 +216,10 @@ export default function Finance() {
   const netProfit = totalRevenue - totalVat; 
 
   const stats = [
-    { title: "إجمالي الإيرادات", value: `${totalRevenue.toLocaleString()} ج.م`, icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-50", trend: "فعلي", trendColor: "text-emerald-600" },
-    { title: "ضريبة القيمة المضافة (14%)", value: `${totalVat.toLocaleString()} ج.م`, icon: Calculator, color: "text-primary-500", bg: "bg-primary-50", trend: "مستحقة", trendColor: "text-primary-600" },
-    { title: "فواتير غير مدفوعة", value: `${unpaid.toLocaleString()} ج.م`, icon: Receipt, color: "text-amber-500", bg: "bg-amber-50", trend: `${unpaidCount} فواتير`, trendColor: "text-amber-600" },
-    { title: "صافي الربح", value: `${netProfit.toLocaleString()} ج.م`, icon: DollarSign, color: "text-blue-500", bg: "bg-blue-50", trend: "تقريبي", trendColor: "text-blue-600" },
+    { title: "إجمالي الإيرادات", value: formatEGP(totalRevenue), icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-50", trend: "فعلي", trendColor: "text-emerald-600" },
+    { title: "ضريبة القيمة المضافة (14%)", value: formatEGP(totalVat), icon: Calculator, color: "text-primary-500", bg: "bg-primary-50", trend: "مستحقة", trendColor: "text-primary-600" },
+    { title: "فواتير غير مدفوعة", value: formatEGP(unpaid), icon: Receipt, color: "text-amber-500", bg: "bg-amber-50", trend: `${unpaidCount} فواتير`, trendColor: "text-amber-600" },
+    { title: "صافي الربح", value: formatEGP(netProfit), icon: DollarSign, color: "text-blue-500", bg: "bg-blue-50", trend: "تقريبي", trendColor: "text-blue-600" },
   ];
 
   return (

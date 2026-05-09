@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { formatEGP, formatDateEG } from "@/lib/formatEG";
 import { motion } from "motion/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -128,11 +129,11 @@ export default function ExpertMissions() {
                   </div>
                   <div className="p-3 rounded-md bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5">
                     <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">تاريخ الإحالة</p>
-                    <p className="font-bold text-sm text-navy-900 dark:text-white">{new Date(selected.assignmentDate).toLocaleDateString('ar-EG')}</p>
+                    <p className="font-bold text-sm text-navy-900 dark:text-white">{formatDateEG(selected.assignmentDate)}</p>
                   </div>
                   <div className="p-3 rounded-md bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/30">
                     <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-1">أمانة الخبير</p>
-                    <p className="font-bold text-sm text-emerald-700 dark:text-emerald-300">{selected.depositAmount.toLocaleString()} ج.م</p>
+                    <p className="font-bold text-sm text-emerald-700 dark:text-emerald-300">{formatEGP(selected.depositAmount)}</p>
                   </div>
                   <div className="p-3 rounded-md bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5">
                     <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">استلام التقرير</p>
@@ -164,13 +165,13 @@ export default function ExpertMissions() {
                       {selected.sessions.map((s) => (
                         <div key={s.id} className="p-3 border dark:border-white/10 rounded-lg flex flex-col md:flex-row gap-4 items-start md:items-center justify-between bg-white dark:bg-navy-900">
                           <div>
-                            <p className="text-sm font-bold text-navy-900 dark:text-white mb-1">تاريخ الجلسة: {new Date(s.date).toLocaleDateString('ar-EG')}</p>
+                            <p className="text-sm font-bold text-navy-900 dark:text-white mb-1">تاريخ الجلسة: {formatDateEG(s.date)}</p>
                             <p className="text-xs text-slate-600 dark:text-slate-400">{s.result}</p>
                           </div>
                           {s.nextSession && (
                             <div className="text-start bg-slate-50 dark:bg-white/5 px-3 py-2 rounded">
                               <p className="text-[10px] text-slate-500 uppercase tracking-wider">الجلسة القادمة</p>
-                              <p className="text-sm font-bold text-primary-700 dark:text-primary-400">{new Date(s.nextSession).toLocaleDateString('ar-EG')}</p>
+                              <p className="text-sm font-bold text-primary-700 dark:text-primary-400">{formatDateEG(s.nextSession)}</p>
                             </div>
                           )}
                         </div>

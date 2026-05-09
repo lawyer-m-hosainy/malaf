@@ -233,7 +233,7 @@ export default function PortalManagement() {
                     type="email"
                     value={clientEmail}
                     onChange={(e) => setClientEmail(e.target.value)}
-                    placeholder="client@example.com"
+                    placeholder="client@lawfirm.eg — البريد الإلكتروني"
                     className="ps-10 dark:bg-white/5"
                     dir="ltr"
                   />

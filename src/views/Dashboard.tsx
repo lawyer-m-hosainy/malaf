@@ -30,6 +30,7 @@ import { toast } from "sonner";
 import { fetchCases, fetchClients, fetchEnforcement, fetchInvoices, fetchTasks, fetchTeam, fetchTrustAccounts } from "@/services/legalDataService";
 import { EGYPTIAN_LEGAL_TEMPLATES } from "@/services/ai/templates";
 import { useUsageStore } from "@/store/useUsageStore";
+import { formatDateEG } from "@/lib/formatEG";
 
 const CATEGORY_COLORS: Record<string, { color: string; bgClass: string }> = {
   'تجاري': { color: 'var(--color-primary-500)', bgClass: 'bg-primary-500' },
@@ -148,9 +149,7 @@ export default function Dashboard() {
     }
   };
 
-  const toIndicNumerals = (num: number | string) => {
-    return String(num).replace(/[0-9]/g, w => "٠١٢٣٤٥٦٧٨٩"[+w]);
-  };
+  // R3-FIX: تم نقل formatDateEG لـ lib/formatEG.ts — أرقام إنجليزية فقط
 
   const handleExportPDF = async () => {
     const element = document.getElementById("draft-result-content");
@@ -357,8 +356,8 @@ export default function Dashboard() {
 
                           {/* Footer */}
                           <div className="mt-20 pt-4 border-t border-slate-100 text-[10px] text-slate-400 flex justify-between items-center">
-                            <span>{toIndicNumerals(new Date().toLocaleDateString('ar-EG'))}</span>
-                            <span>صفحة {toIndicNumerals(1)} من {toIndicNumerals(1)}</span>
+                            <span>{formatDateEG(new Date())}</span>
+                            <span>صفحة 1 من 1</span>
                           </div>
                         </div>
                       ) : (

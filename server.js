@@ -25,7 +25,33 @@ import { authMiddleware } from './middleware/auth.js';
 // Load environment variables
 dotenv.config();
 
+// ═══════════════════════════════════════════════════════
+// R9-FIX: NODE_ENV detection + environment validation
+// ═══════════════════════════════════════════════════════
+const NODE_ENV = process.env.NODE_ENV || 'development';
+const IS_PROD = NODE_ENV === 'production';
+
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+// R9-FIX: Validate required env vars at startup (fail-fast in production)
+const REQUIRED_ENV_VARS = ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SUPABASE_JWT_SECRET'];
+const OPTIONAL_ENV_VARS = ['ENCRYPTION_KEY', 'DAILY_API_KEY', 'GEMINI_API_KEY', 'GROQ_API_KEY'];
+
+const missingRequired = REQUIRED_ENV_VARS.filter(key => !process.env[key]);
+const missingOptional = OPTIONAL_ENV_VARS.filter(key => !process.env[key]);
+
+if (missingRequired.length > 0) {
+    if (IS_PROD) {
+        console.error(`❌ [FATAL] Missing required env vars in production: ${missingRequired.join(', ')}`);
+        console.error('   → Set these in Render Dashboard → Environment');
+        process.exit(1);
+    } else {
+        console.warn(`⚠️  [DEV] Missing env vars (non-critical in dev): ${missingRequired.join(', ')}`);
+    }
+}
+if (missingOptional.length > 0 && IS_PROD) {
+    console.warn(`⚠️  [PROD] Optional env vars missing: ${missingOptional.join(', ')} — some features may be disabled`);
+}
 
 const logger = pino({
     level: process.env.LOG_LEVEL || 'info',
@@ -43,21 +69,53 @@ app.use(pinoHttp({ logger }));
 
 // Compression & Security
 app.use(compression());
+
+// ✅ R6-FIX: Security headers + tightened CSP
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+            // R6-FIX: unsafe-eval needed only by Vite dev HMR — production bundles don't need it
+            scriptSrc: process.env.NODE_ENV === 'production'
+                ? ["'self'", "'unsafe-inline'"]
+                : ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
             styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
             fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
-            imgSrc: ["'self'", "data:", "blob:", "https://*"],
-            connectSrc: ["'self'", "https://*.supabase.co", "wss://*.supabase.co", "https://accounts.google.com", "https://www.googleapis.com", "https://oauth2.googleapis.com", "https://*.googleapis.com", "https://*.daily.co"],
+            // R6-FIX: tightened imgSrc — no wildcard https://*
+            imgSrc: ["'self'", "data:", "blob:", "https://*.supabase.co"],
+            connectSrc: [
+                "'self'",
+                "https://*.supabase.co", "wss://*.supabase.co",
+                "https://accounts.google.com", "https://www.googleapis.com",
+                "https://oauth2.googleapis.com", "https://*.googleapis.com",
+                "https://*.daily.co"
+            ],
             frameSrc: ["'self'", "https://accounts.google.com", "https://*.supabase.co"],
             mediaSrc: ["'self'", "blob:"],
             workerSrc: ["'self'", "blob:"],
+            objectSrc: ["'none'"],
+            baseUri: ["'self'"],
+            formAction: ["'self'"],
+            frameAncestors: ["'none'"],
         }
-    }
+    },
+    // ✅ R6-FIX: Security headers
+    crossOriginEmbedderPolicy: false, // Required for Supabase/Daily.co
+    crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' }, // Google Auth popup
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+    xContentTypeOptions: true,        // X-Content-Type-Options: nosniff
+    xDnsPrefetchControl: { allow: false },
+    xFrameOptions: { action: 'deny' },
+    xPermittedCrossDomainPolicies: { permittedPolicies: 'none' },
+    xPoweredBy: false,
 }));
+
+// ✅ R6-FIX: Additional Permissions-Policy header (restrict dangerous APIs)
+app.use((req, res, next) => {
+    res.setHeader('Permissions-Policy', 'camera=(self), microphone=(self), geolocation=(), payment=(), usb=()');
+    next();
+});
 
 // CORS Configuration
 const allowedOrigins = process.env.NODE_ENV === 'production' 
@@ -66,12 +124,13 @@ const allowedOrigins = process.env.NODE_ENV === 'production'
 
 app.use(cors({
     origin: (origin, callback) => {
-        // Allow requests with no origin (same-origin, mobile, curl)
+        // Allow requests with no origin (same-origin, mobile apps, curl, server-to-server)
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
-            // In production, allow all origins for now (SPA serves from same domain)
-            callback(null, true);
+            // ✅ R2-FIX: رفض الأصول غير المعروفة بدلاً من السماح بها
+            logger.warn({ origin }, 'CORS: Blocked request from unknown origin');
+            callback(new Error('غير مسموح بالوصول من هذا المصدر (CORS)'));
         }
     },
     credentials: true
@@ -91,16 +150,37 @@ const globalApiLimiter = rateLimit({
 });
 app.use('/api', globalApiLimiter);
 
+// ✅ R4-FIX: Security Request Logger — تسجيل العمليات الحساسة
+const securityRequestLogger = (req, res, next) => {
+    // Log only write operations to sensitive routes
+    if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(req.method)) {
+        logger.info({
+            event: 'API_WRITE_OPERATION',
+            method: req.method,
+            path: req.originalUrl,
+            ip: req.ip,
+            userId: req.user?.uid || 'unauthenticated',
+            tenantId: req.tenantId || 'unknown',
+            contentLength: req.get('content-length') || 0,
+            userAgent: req.get('user-agent'),
+            timestamp: new Date().toISOString(),
+        }, `Security: ${req.method} ${req.originalUrl}`);
+    }
+    next();
+};
+
 // --- Routes Mounting ---
 
 // Public Routes
 app.use('/api/health', healthRouter);
 
-// Protected Routes
-app.use('/api/ai', authMiddleware, aiRouter);
-app.use('/api/crypto', authMiddleware, cryptoRouter);
-app.use('/api/video', authMiddleware, videoRouter);
-app.use('/api/whatsapp', whatsappRouter); // WhatsApp has its own internal auth/validation
+// Protected Routes — with security logging
+app.use('/api/ai', authMiddleware, securityRequestLogger, aiRouter);
+app.use('/api/crypto', authMiddleware, securityRequestLogger, cryptoRouter);
+app.use('/api/video', authMiddleware, securityRequestLogger, videoRouter);
+// ✅ R2-FIX: WhatsApp — webhook routes عامة (مطلوبة من Meta)، باقي الـ routes محمية
+app.use('/api/whatsapp/webhook', whatsappRouter); // GET/POST webhook — عامة
+app.use('/api/whatsapp', authMiddleware, securityRequestLogger, whatsappRouter); // /send, /settings, /stats, /messages — محمية
 
 // --- Frontend Serving ---
 const distPath = path.join(__dirname, 'dist');
@@ -135,7 +215,12 @@ app.use((err, req, res, next) => {
 
 // Start Server
 app.listen(PORT, () => {
-    logger.info(`🚀 Malaf Backend is running on port ${PORT} [${process.env.NODE_ENV || 'development'}]`);
+    logger.info(`🚀 Malaf Backend is running on port ${PORT} [${NODE_ENV}]`);
+    logger.info(`   Node ${process.version} | PID ${process.pid}`);
+    if (IS_PROD) {
+        logger.info(`   📡 Health: /api/health | Ping: /api/health/ping`);
+        logger.info(`   🌐 CORS: ${allowedOrigins.join(', ')}`);
+    }
 
     // Initialize WhatsApp session reminders & invoice notifications
     try {

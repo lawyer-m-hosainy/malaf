@@ -1,10 +1,29 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, memo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { useCasesStore } from "@/store/useCasesStore";
 import { Calendar, AlertCircle, Printer, Filter } from "lucide-react";
 import { toast } from "sonner";
+
+// R8-FIX: Memoized row component — prevents 100+ rows from re-rendering on filter change
+const SessionRollRow = memo(({ item }: { item: any }) => (
+  <TableRow className={item.isRecess ? 'bg-amber-50/50 dark:bg-amber-900/10' : ''}>
+    <TableCell className="font-bold whitespace-nowrap text-sm">
+      {new Date(item.date).toLocaleDateString('ar-EG', { weekday: 'short', month: 'short', day: 'numeric' })}
+      {item.isRecess && <AlertCircle size={12} className="inline ms-1 text-amber-500" title="إجازة قضائية" />}
+    </TableCell>
+    <TableCell className="font-bold text-navy-900 dark:text-white whitespace-nowrap text-sm">{item.caseId}</TableCell>
+    <TableCell className="text-sm">{item.court}</TableCell>
+    <TableCell className="text-sm">{item.circuit}</TableCell>
+    <TableCell className="text-sm font-medium">{item.opponent || '-'}</TableCell>
+    <TableCell className="text-sm text-slate-500 dark:text-slate-400">{item.previousDecision}</TableCell>
+    <TableCell className="text-sm text-slate-500 dark:text-slate-400">{item.postponementReason}</TableCell>
+    <TableCell className="text-sm font-medium text-slate-700 dark:text-slate-300">{item.nextSessionDate}</TableCell>
+    <TableCell className="text-sm font-medium text-primary-700 dark:text-primary-400">{item.responsibleLawyer}</TableCell>
+    <TableCell className="text-sm text-slate-500 dark:text-slate-400 max-w-[150px] truncate" title={item.notes}>{item.notes}</TableCell>
+  </TableRow>
+));
 
 export default function SessionsRoll() {
   const cases = useCasesStore(state => state.cases);
@@ -108,24 +127,8 @@ export default function SessionsRoll() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rollData.length > 0 ? rollData.map((item, idx) => (
-                <TableRow key={idx} className={item.isRecess ? 'bg-amber-50/50 dark:bg-amber-900/10' : ''}>
-                  <TableCell className="font-bold whitespace-nowrap text-sm">
-                    {new Date(item.date).toLocaleDateString('ar-EG', { weekday: 'short', month: 'short', day: 'numeric' })}
-                    {item.isRecess && <AlertCircle size={12} className="inline ms-1 text-amber-500" title="إجازة قضائية" />}
-                  </TableCell>
-                  <TableCell className="font-bold text-navy-900 dark:text-white whitespace-nowrap text-sm">
-                    {item.caseId}
-                  </TableCell>
-                  <TableCell className="text-sm">{item.court}</TableCell>
-                  <TableCell className="text-sm">{item.circuit}</TableCell>
-                  <TableCell className="text-sm font-medium">{item.opponent || '-'}</TableCell>
-                  <TableCell className="text-sm text-slate-500 dark:text-slate-400">{item.previousDecision}</TableCell>
-                  <TableCell className="text-sm text-slate-500 dark:text-slate-400">{item.postponementReason}</TableCell>
-                  <TableCell className="text-sm font-medium text-slate-700 dark:text-slate-300">{item.nextSessionDate}</TableCell>
-                  <TableCell className="text-sm font-medium text-primary-700 dark:text-primary-400">{item.responsibleLawyer}</TableCell>
-                  <TableCell className="text-sm text-slate-500 dark:text-slate-400 max-w-[150px] truncate" title={item.notes}>{item.notes}</TableCell>
-                </TableRow>
+              {rollData.length > 0 ? rollData.map((item) => (
+                <SessionRollRow key={item.id} item={item} />
               )) : (
                 <TableRow>
                   <TableCell colSpan={10} className="text-center py-8 text-slate-500">

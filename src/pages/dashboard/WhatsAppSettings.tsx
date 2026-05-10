@@ -30,6 +30,8 @@ export function WhatsAppSettings() {
     wa_phone_number: '',
     welcome_message: '',
     away_message: '',
+    provider: 'meta_cloud',
+    api_token_encrypted: '',
     notifications: {
       session_reminder_24h: true,
       session_reminder_3h: true,
@@ -152,15 +154,42 @@ export function WhatsAppSettings() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="provider">مزود الخدمة</Label>
+              <select 
+                id="provider"
+                className="w-full h-10 rounded-md border border-slate-200 dark:border-white/10 bg-transparent px-3 py-2 text-sm"
+                value={settings.provider || 'meta_cloud'}
+                onChange={(e) => setSettings({ ...settings, provider: e.target.value })}
+              >
+                <option value="meta_cloud">Meta Cloud API (Official)</option>
+                <option value="360dialog">360dialog</option>
+              </select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="waPhone">معرف رقم الهاتف (Phone Number ID)</Label>
+              <Input 
+                id="waPhone" 
+                placeholder="مثال: 1019595217914857" 
+                value={settings.wa_phone_number || ''}
+                onChange={(e) => setSettings({ ...settings, wa_phone_number: e.target.value })}
+                dir="ltr"
+              />
+            </div>
+          </div>
+
           <div className="grid gap-2">
-            <Label htmlFor="waPhone">رقم الواتساب (بدون +)</Label>
+            <Label htmlFor="accessToken">رمز وصول ميتا (Access Token)</Label>
             <Input 
-              id="waPhone" 
-              placeholder="201012345678" 
-              value={settings.wa_phone_number || ''}
-              onChange={(e) => setSettings({ ...settings, wa_phone_number: e.target.value })}
+              id="accessToken" 
+              type="password"
+              placeholder="انسخ الرمز الذي حصلت عليه من Meta Developers" 
+              value={settings.api_token_encrypted || ''}
+              onChange={(e) => setSettings({ ...settings, api_token_encrypted: e.target.value })}
               dir="ltr"
             />
+            <p className="text-[10px] text-muted-foreground">سيتم تشفير هذا الرمز تلقائياً قبل حفظه في قاعدة البيانات لأمانك.</p>
           </div>
 
           <div className="grid gap-2">

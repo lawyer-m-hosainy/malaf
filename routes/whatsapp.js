@@ -203,7 +203,7 @@ async function logMessage(orgId, direction, from, to, content, extra = {}) {
 // ═══════════════════════════════════════════════════════
 
 // ── 1. Webhook Verification (GET) — مطلوب من Meta/360dialog ──
-router.get('/webhook', (req, res) => {
+router.get(['/', '/webhook'], (req, res) => {
   const mode = req.query['hub.mode'];
   const token = req.query['hub.verify_token'];
   const challenge = req.query['hub.challenge'];
@@ -218,7 +218,7 @@ router.get('/webhook', (req, res) => {
 
 
 // ── 2. Webhook Receiver (POST) — استقبال الرسائل الواردة ──
-router.post('/webhook', async (req, res) => {
+router.post(['/', '/webhook'], async (req, res) => {
   // الرد فوراً بـ 200 (مطلوب من Meta خلال 5 ثوانٍ)
   res.sendStatus(200);
 

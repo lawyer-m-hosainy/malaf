@@ -242,11 +242,42 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
             </div>
             <div className="space-y-2">
               <Label>رقم التوكيل (بالشهر العقاري)</Label>
-              <Input 
-                placeholder="رقم / حرف / سنة" 
-                value={newCaseData.powerOfAttorneyRef}
-                onChange={e => setNewCaseData(p => ({ ...p, powerOfAttorneyRef: e.target.value }))}
-              />
+              <div className="flex gap-2">
+                <Input 
+                  placeholder="رقم" 
+                  className="w-1/3 text-center"
+                  value={newCaseData.powerOfAttorneyRef?.includes(' / ') ? newCaseData.powerOfAttorneyRef.split(' / ')[0] : newCaseData.powerOfAttorneyRef || ''}
+                  onChange={e => {
+                    const parts = newCaseData.powerOfAttorneyRef?.includes(' / ') ? newCaseData.powerOfAttorneyRef.split(' / ') : [newCaseData.powerOfAttorneyRef || '', '', ''];
+                    parts[0] = e.target.value;
+                    setNewCaseData(p => ({ ...p, powerOfAttorneyRef: parts.every(x => !x) ? "" : parts.join(' / ') }));
+                  }}
+                />
+                <select 
+                  className="w-1/3 h-10 rounded-md border border-slate-200 dark:border-white/10 bg-transparent px-2 py-2 text-sm text-center"
+                  value={newCaseData.powerOfAttorneyRef?.includes(' / ') ? newCaseData.powerOfAttorneyRef.split(' / ')[1] : ''}
+                  onChange={e => {
+                    const parts = newCaseData.powerOfAttorneyRef?.includes(' / ') ? newCaseData.powerOfAttorneyRef.split(' / ') : [newCaseData.powerOfAttorneyRef || '', '', ''];
+                    parts[1] = e.target.value;
+                    setNewCaseData(p => ({ ...p, powerOfAttorneyRef: parts.every(x => !x) ? "" : parts.join(' / ') }));
+                  }}
+                >
+                  <option value="">حرف</option>
+                  {['أ', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'هـ', 'و', 'ي'].map(letter => (
+                    <option key={letter} value={letter}>{letter}</option>
+                  ))}
+                </select>
+                <Input 
+                  placeholder="سنة" 
+                  className="w-1/3 text-center"
+                  value={newCaseData.powerOfAttorneyRef?.includes(' / ') ? newCaseData.powerOfAttorneyRef.split(' / ')[2] : ''}
+                  onChange={e => {
+                    const parts = newCaseData.powerOfAttorneyRef?.includes(' / ') ? newCaseData.powerOfAttorneyRef.split(' / ') : [newCaseData.powerOfAttorneyRef || '', '', ''];
+                    parts[2] = e.target.value;
+                    setNewCaseData(p => ({ ...p, powerOfAttorneyRef: parts.every(x => !x) ? "" : parts.join(' / ') }));
+                  }}
+                />
+              </div>
             </div>
           </div>
 

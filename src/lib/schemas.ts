@@ -25,6 +25,9 @@ export const caseSchema = z.object({
   powerOfAttorneyRef: z.string().min(1, { message: "رقم الوكالة مطلوب" }),
   status: z.string().optional(),
   type: z.string().optional(),
+  court_category: z.string().min(1, 'نوع القضية مطلوب').optional().or(z.literal('')),
+  court_sub_type: z.string().min(1, 'التصنيف مطلوب').optional().or(z.literal('')),
+  court_location: z.string().min(1, 'المحكمة مطلوبة').optional().or(z.literal('')),
 });
 
 export const invoiceSchema = z.object({

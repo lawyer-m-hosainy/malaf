@@ -9,6 +9,7 @@ import { useClientsStore } from '@/store/useClientsStore';
 import { caseSchema } from '@/lib/schemas';
 import { getNextCounter, saveCases } from '@/services/legalDataService';
 import { ZodError } from 'zod';
+import { CourtSelector } from '@/components/cases/CourtSelector';
 
 interface NewCaseDialogProps {
   open: boolean;
@@ -28,7 +29,10 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
     title: "",
     automatedNumber: "",
     clientRole: "مدعي" as any,
-    type: "تجاري" as any,
+    type: "" as any,
+    court_category: "",
+    court_sub_type: "",
+    court_location: "",
     plaintiff: "",
     defendant: "",
     powerOfAttorneyRef: "",
@@ -57,7 +61,10 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
           title: caseToEdit.title || "",
           automatedNumber: caseToEdit.automatedNumber || "",
           clientRole: caseToEdit.clientRole || "مدعي",
-          type: caseToEdit.type || "تجاري",
+          type: caseToEdit.type || caseToEdit.court_category || "",
+          court_category: caseToEdit.court_category || caseToEdit.type || "",
+          court_sub_type: caseToEdit.court_sub_type || "",
+          court_location: caseToEdit.court_location || caseToEdit.court || "",
           plaintiff: caseToEdit.plaintiff || "",
           defendant: caseToEdit.defendant || "",
           powerOfAttorneyRef: caseToEdit.powerOfAttorneyRef || "",
@@ -83,7 +90,10 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
           title: "",
           automatedNumber: "",
           clientRole: "مدعي",
-          type: "تجاري",
+          type: "",
+          court_category: "",
+          court_sub_type: "",
+          court_location: "",
           plaintiff: "",
           defendant: "",
           powerOfAttorneyRef: "",
@@ -108,6 +118,10 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
     e.preventDefault();
     
     try {
+      if (!newCaseData.court_category || !newCaseData.court_sub_type || !newCaseData.court_location) {
+        toast.error("يرجى اختيار نوع القضية والتصنيف والمحكمة");
+        return;
+      }
       caseSchema.parse(newCaseData);
       
       let finalCaseData = { ...newCaseData } as any;
@@ -174,12 +188,15 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
       setNewCaseData({
         id: "",
         clientId: "",
-        court: "المحكمة التجارية",
+        court: "",
         circuit: "",
         title: "",
         automatedNumber: "",
         clientRole: "مدعي",
-        type: "تجاري",
+        type: "",
+        court_category: "",
+        court_sub_type: "",
+        court_location: "",
         plaintiff: "",
         defendant: "",
         powerOfAttorneyRef: "",
@@ -350,49 +367,21 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>المحكمة</Label>
-              <select 
-                title="المحكمة"
-                className="w-full h-10 rounded-md border border-slate-200 dark:border-white/10 bg-transparent px-3 py-2 text-sm"
-                value={newCaseData.court}
-                onChange={e => setNewCaseData(p => ({ ...p, court: e.target.value as any }))}
-              >
-                <option value="الجزئية">الجزئية</option>
-                <option value="الابتدائية">الابتدائية</option>
-                <option value="الاستئناف">الاستئناف</option>
-                <option value="النقض">النقض</option>
-                <option value="مجلس الدولة">مجلس الدولة</option>
-                <option value="المحكمة الاقتصادية">المحكمة الاقتصادية</option>
-                <option value="محكمة الأسرة">محكمة الأسرة</option>
-                <option value="محكمة الجنايات">محكمة الجنايات</option>
-                <option value="الدائرة العمالية">الدائرة العمالية</option>
-                <option value="المحكمة التأديبية">المحكمة التأديبية</option>
-              </select>
-            </div>
-            <div className="space-y-2">
-              <Label>نوع القضية</Label>
-              <select 
-                title="نوع القضية"
-                className="w-full h-10 rounded-md border border-slate-200 dark:border-white/10 bg-transparent px-3 py-2 text-sm"
-                value={newCaseData.type}
-                onChange={e => setNewCaseData(p => ({ ...p, type: e.target.value as any }))}
-              >
-                <option value="مدني">مدني</option>
-                <option value="تجاري">تجاري</option>
-                <option value="عمالي">عمالي</option>
-                <option value="جنائي">جنائي</option>
-                <option value="أحوال شخصية">أحوال شخصية</option>
-                <option value="إداري">إداري</option>
-                <option value="اقتصادي">اقتصادي</option>
-                <option value="عقاري">عقاري</option>
-                <option value="إيجارات">إيجارات</option>
-                <option value="ضرائب">ضرائب</option>
-                <option value="تأديبي">تأديبي</option>
-              </select>
-            </div>
-          </div>
+          <CourtSelector 
+            value={{
+              category: newCaseData.court_category || "",
+              subType: newCaseData.court_sub_type || "",
+              location: newCaseData.court_location || ""
+            }}
+            onChange={(val) => setNewCaseData(p => ({
+              ...p,
+              court_category: val.category,
+              court_sub_type: val.subType,
+              court_location: val.location,
+              type: val.category as any,
+              court: val.location as any
+            }))}
+          />
 
           {/* Dynamic Fields based on Case Type */}
           {newCaseData.type === 'جنائي' && (
@@ -436,7 +425,7 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
               </div>
             </div>
           )}
-          {newCaseData.type === 'أحوال شخصية' && (
+          {(newCaseData.type === 'أحوال شخصية' || newCaseData.type === 'أسرة') && (
             <div className="p-3 bg-purple-50 dark:bg-purple-900/10 rounded-md space-y-2 border border-purple-100 dark:border-purple-900/30">
               <Label className="text-purple-800 dark:text-purple-400 font-bold">نوع نزاع الأسرة</Label>
               <select 

@@ -61,6 +61,9 @@ export interface Case {
   memorandums: string[]; // مذكرات وصحائف دعوى
   documents?: Document[];
   powerOfAttorneyRef: string; // رقم التوكيل (مشهر بالشهر العقاري)
+  court_category?: string;
+  court_sub_type?: string;
+  court_location?: string;
   status: 'متداولة' | 'مغلقة' | 'تحت الدراسة' | 'محفوظة' | 'حكم نهائي'
     // R7-FIX: حالات مفقودة — المصطلحات الرسمية
     | 'محكوم فيها'  // صدر حكم ولم يُطعن عليه بعد

@@ -31,9 +31,10 @@ export function ProtectedRoute({
 
     if (Date.now() - demoStartedAt > DEMO_TIMEOUT_MS) {
       // Demo session expired
-      const setDemoMode = useAuthStore.getState().setDemoMode;
-      setDemoMode(false);
-      localStorage.removeItem("demoStartedAt");
+      setTimeout(() => {
+        useAuthStore.getState().setDemoMode(false);
+        localStorage.removeItem("demoStartedAt");
+      }, 0);
       return <Navigate to="/login" state={{ from: location }} replace />;
     }
   }

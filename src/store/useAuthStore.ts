@@ -35,7 +35,7 @@ export const useAuthStore = create<AuthState>()(
     const permissions: Record<string, string[]> = {
       'محامي شريك': ['*'], // صلاحية كاملة
       'مدير مكتب':  ['*'], // صلاحية كاملة
-      'محامي': ['view_cases', 'edit_cases', 'view_clients', 'legal_qa', 'conflict_check'],
+      'محامي': ['view_cases', 'edit_cases', 'view_clients', 'legal_qa', 'conflict_check', 'org_admin'],
       'محامي مستشار': ['view_cases', 'view_clients', 'legal_qa', 'conflict_check', 'view_reports'],
       'سكرتير': ['view_clients', 'edit_clients', 'view_cases', 'documents', 'finance_basic'],
       'محامي متدرب': ['view_cases', 'training_portal', 'view_wiki'],

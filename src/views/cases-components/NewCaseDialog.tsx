@@ -318,7 +318,7 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
               />
             </div>
             <div className="space-y-2">
-              <Label>مسمى القضية</Label>
+              <Label>موضوع القضية</Label>
               <Input 
                 placeholder="مثل: مطالبة مالية" 
                 value={newCaseData.title}

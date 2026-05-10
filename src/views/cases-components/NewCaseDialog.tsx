@@ -283,7 +283,7 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
 
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label>رقم الحصر (ابتدائي)</Label>
+              <Label>رقم اول درجة</Label>
               <Input 
                 placeholder="سنة/رقم" 
                 value={newCaseData.firstInstanceNumber}
@@ -291,7 +291,7 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
               />
             </div>
             <div className="space-y-2">
-              <Label>رقم الاستئناف</Label>
+              <Label>رقم ثاني درجة</Label>
               <Input 
                 placeholder="سنة/رقم" 
                 value={newCaseData.appealNumber}

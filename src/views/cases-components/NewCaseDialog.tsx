@@ -214,21 +214,35 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleCreateCase} className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label>الموكل (إجباري)</Label>
-            <select 
-              title="الموكل"
-              className="w-full h-10 rounded-md border border-slate-200 dark:border-white/10 bg-transparent px-3 py-2 text-sm text-navy-900 dark:text-white"
-              value={newCaseData.clientId}
-              onChange={e => setNewCaseData(p => ({ ...p, clientId: e.target.value }))}
-            >
-              <option value="" className="dark:bg-navy-900">— اختر موكلاً —</option>
-              {clients.map(client => (
-                <option key={client.id} value={client.id} className="dark:bg-navy-900">
-                  {client.name} ({client.type})
-                </option>
-              ))}
-            </select>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>الموكل الأساسي (إجباري)</Label>
+              <select 
+                title="الموكل"
+                className="w-full h-10 rounded-md border border-slate-200 dark:border-white/10 bg-transparent px-3 py-2 text-sm text-navy-900 dark:text-white"
+                value={newCaseData.clientId}
+                onChange={e => setNewCaseData(p => ({ ...p, clientId: e.target.value }))}
+              >
+                <option value="" className="dark:bg-navy-900">— اختر موكلاً —</option>
+                {clients.map(client => (
+                  <option key={client.id} value={client.id} className="dark:bg-navy-900">
+                    {client.name} ({client.type})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label>صفة الموكل</Label>
+              <select 
+                title="صفة الموكل"
+                className="w-full h-10 rounded-md border border-slate-200 dark:border-white/10 bg-transparent px-3 py-2 text-sm"
+                value={newCaseData.clientRole}
+                onChange={e => setNewCaseData(p => ({ ...p, clientRole: e.target.value as any }))}
+              >
+                <option value="مدعي">مدعي</option>
+                <option value="مدعى عليه">مدعى عليه</option>
+              </select>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -327,27 +341,13 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>الرقم الآلي</Label>
-              <Input 
-                placeholder="الرقم الآلي للقضية" 
-                value={newCaseData.automatedNumber}
-                onChange={e => setNewCaseData(p => ({ ...p, automatedNumber: e.target.value }))}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>صفة الموكل</Label>
-              <select 
-                title="صفة الموكل"
-                className="w-full h-10 rounded-md border border-slate-200 dark:border-white/10 bg-transparent px-3 py-2 text-sm"
-                value={newCaseData.clientRole}
-                onChange={e => setNewCaseData(p => ({ ...p, clientRole: e.target.value as any }))}
-              >
-                <option value="مدعي">مدعي</option>
-                <option value="مدعى عليه">مدعى عليه</option>
-              </select>
-            </div>
+          <div className="space-y-2">
+            <Label>الرقم الآلي</Label>
+            <Input 
+              placeholder="الرقم الآلي للقضية" 
+              value={newCaseData.automatedNumber}
+              onChange={e => setNewCaseData(p => ({ ...p, automatedNumber: e.target.value }))}
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -498,22 +498,47 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
           )}
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>المدعي</Label>
-              <Input 
-                placeholder="اسم المدعي" 
-                value={newCaseData.plaintiff}
-                onChange={e => setNewCaseData(p => ({ ...p, plaintiff: e.target.value }))}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>المدعى عليه</Label>
-              <Input 
-                placeholder="اسم المدعى عليه" 
-                value={newCaseData.defendant}
-                onChange={e => setNewCaseData(p => ({ ...p, defendant: e.target.value }))}
-              />
-            </div>
+            {newCaseData.clientRole === 'مدعي' ? (
+              <>
+                <div className="space-y-2">
+                  <Label>باقي المدعين (موكلين آخرين معك)</Label>
+                  <Input 
+                    placeholder="أسماء الموكلين الإضافيين (إن وجد)" 
+                    value={newCaseData.plaintiff}
+                    onChange={e => setNewCaseData(p => ({ ...p, plaintiff: e.target.value }))}
+                  />
+                  <p className="text-[10px] text-slate-400">يمكنك كتابة أكثر من اسم مفصولين بفاصلة</p>
+                </div>
+                <div className="space-y-2">
+                  <Label>الخصوم (المدعى عليهم)</Label>
+                  <Input 
+                    placeholder="أسماء الخصوم المدعى عليهم" 
+                    value={newCaseData.defendant}
+                    onChange={e => setNewCaseData(p => ({ ...p, defendant: e.target.value }))}
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="space-y-2">
+                  <Label>الخصوم (المدعون)</Label>
+                  <Input 
+                    placeholder="أسماء الخصوم المدعين" 
+                    value={newCaseData.plaintiff}
+                    onChange={e => setNewCaseData(p => ({ ...p, plaintiff: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>باقي المدعى عليهم (موكلين آخرين معك)</Label>
+                  <Input 
+                    placeholder="أسماء الموكلين الإضافيين (إن وجد)" 
+                    value={newCaseData.defendant}
+                    onChange={e => setNewCaseData(p => ({ ...p, defendant: e.target.value }))}
+                  />
+                  <p className="text-[10px] text-slate-400">يمكنك كتابة أكثر من اسم مفصولين بفاصلة</p>
+                </div>
+              </>
+            )}
           </div>
 
           <div className="space-y-2">

@@ -1,7 +1,7 @@
 import { motion } from "motion/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Receipt, CheckCircle2, AlertCircle, Clock, FileText, Plus, Search, Filter, Send, X, Eye } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -48,37 +48,35 @@ export default function ETAInvoicing() {
   const [isLoading, setIsLoading] = useState(true);
   const clients = useClientsStore(s => s.clients);
 
-  import("react").then((react) => {
-    react.useEffect(() => {
-      const loadData = async () => {
-        setIsLoading(true);
-        try {
-          const data = await fetchETAInvoices();
-          setInvoices(data.map((d: any) => ({
-            id: d.id,
-            client: d.client_name,
-            clientTaxId: d.client_tax_id,
-            issuerTaxReg: d.issuer_tax_reg,
-            etaCode: d.eta_code,
-            amount: d.amount,
-            vatAmount: d.vat_amount,
-            scheduleTax: d.schedule_tax,
-            stampDuty: d.stamp_duty,
-            total: d.total,
-            status: d.status,
-            uuid: d.uuid,
-            date: d.date,
-            description: d.description,
-          })) as ETAInvoice[]);
-        } catch (e) {
-          console.error(e);
-        } finally {
-          setIsLoading(false);
-        }
-      };
-      loadData();
-    }, []);
-  });
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true);
+      try {
+        const data = await fetchETAInvoices();
+        setInvoices(data.map((d: any) => ({
+          id: d.id,
+          client: d.client_name,
+          clientTaxId: d.client_tax_id,
+          issuerTaxReg: d.issuer_tax_reg,
+          etaCode: d.eta_code,
+          amount: d.amount,
+          vatAmount: d.vat_amount,
+          scheduleTax: d.schedule_tax,
+          stampDuty: d.stamp_duty,
+          total: d.total,
+          status: d.status,
+          uuid: d.uuid,
+          date: d.date,
+          description: d.description,
+        })) as ETAInvoice[]);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadData();
+  }, []);
 
   // فلترة الفواتير
   const filtered = useMemo(() => {

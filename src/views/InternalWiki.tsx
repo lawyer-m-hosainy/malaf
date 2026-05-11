@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Search, BookOpen, Plus, FileText, Bookmark, Tag, ChevronLeft, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useUIStore } from '@/store/useUIStore';
 import { useComplianceStore } from '@/store/useComplianceStore';
@@ -20,11 +20,9 @@ export default function InternalWiki() {
   const [wikiArticles, setWikiArticles] = useState<any[]>([]);
   const knowledgeAssets = useComplianceStore((state) => state.knowledgeAssets);
 
-  import("react").then((react) => {
-    react.useEffect(() => {
-      fetchWikiArticles().then(data => setWikiArticles(data));
-    }, []);
-  });
+  useEffect(() => {
+    fetchWikiArticles().then(data => setWikiArticles(data));
+  }, []);
   const currentUser = useAuthStore((state) => state.currentUser);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<'wiki' | 'assets'>('assets');

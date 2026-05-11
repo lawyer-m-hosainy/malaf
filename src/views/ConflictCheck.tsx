@@ -11,7 +11,7 @@ import {
   UserCircle, ExternalLink, Printer
 } from "lucide-react";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useAnalyticsStore } from '@/store/useAnalyticsStore';
 import { useComplianceStore } from '@/store/useComplianceStore';
@@ -31,11 +31,9 @@ export default function ConflictCheck() {
   const isPartner = hasPermission('*');
   const [dbHistory, setDbHistory] = useState<any[]>([]);
 
-  import("react").then((react) => {
-    react.useEffect(() => {
-      fetchConflictChecks().then(data => setDbHistory(data));
-    }, []);
-  });
+  useEffect(() => {
+    fetchConflictChecks().then(data => setDbHistory(data));
+  }, []);
 
   const handleCheck = () => {
     if (!query.trim()) return;

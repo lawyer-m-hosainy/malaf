@@ -28,17 +28,13 @@ const SendMessageSchema = z.object({
 });
 
 const UpdateSettingsSchema = z.object({
-  wa_phone_number: z.string().regex(/^\+?\d{10,15}$/).optional(),
-  welcome_message: z.string().max(1000).optional(),
-  away_message: z.string().max(1000).optional(),
-  notifications: z.object({
-    session_reminder: z.boolean().optional(),
-    invoice_due: z.boolean().optional(),
-    case_update: z.boolean().optional(),
-  }).optional(),
+  wa_phone_number: z.string().regex(/^\+?\d{10,15}$/, 'رقم الهاتف يجب أن يكون بالصيغة الدولية').optional().or(z.literal('')),
+  welcome_message: z.string().max(1000).optional().or(z.literal('')),
+  away_message: z.string().max(1000).optional().or(z.literal('')),
+  notifications: z.any().optional(), // R10-FIX: Allow any shape of notifications to match frontend
   is_active: z.boolean().optional(),
   provider: z.enum(['360dialog', 'meta_cloud']).optional(),
-  api_token_encrypted: z.string().optional(),
+  api_token_encrypted: z.string().optional().or(z.literal('')),
 });
 
 // ═══════════════════════════════════════════════════════

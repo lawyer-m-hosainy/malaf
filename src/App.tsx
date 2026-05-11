@@ -18,6 +18,7 @@ import { checkAppHealth } from "@/observability/health";
 import { logEvent } from "@/observability/logger";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { Toaster } from "@/components/ui/sonner";
+import { OfflineIndicator } from "@/components/OfflineIndicator";
 
 const Login = lazy(() => import("./views/Login"));
 const Landing = lazy(() => import("./views/Landing"));
@@ -107,6 +108,7 @@ export default function App() {
               بيئة العرض التجريبي - مَلَف (لأغراض الاستعراض فقط)
             </div>
           )}
+          <OfflineIndicator />
           <Toaster richColors position="top-center" />
           <BrowserRouter>
             <Suspense fallback={<RouteLoadingFallback />}>

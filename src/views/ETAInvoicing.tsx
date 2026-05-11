@@ -22,6 +22,7 @@ interface ETAInvoice {
   etaCode: string;          // R7-FIX: كود النشاط بمنظومة ETA
   amount: number;
   vatAmount: number;
+  scheduleTax: number;      // R7-FIX: ضريبة جدول 10%
   stampDuty: number;        // R7-FIX: رسم دمغة محاماة
   total: number;
   status: 'مسودة' | 'مرسلة' | 'مقبولة' | 'مرفوضة';
@@ -31,10 +32,10 @@ interface ETAInvoice {
 }
 
 const initialInvoices: ETAInvoice[] = [
-  { id: 'ETA-001', client: 'شركة النيل للتجارة والتوريدات', clientTaxId: '123-456-789', issuerTaxReg: OFFICE_TAX_REG, etaCode: ETA_ACTIVITY_CODE, amount: 25000, vatAmount: 3500, stampDuty: 20, total: 28520, status: 'مرسلة', uuid: 'ETA-UUID-001', date: '2026-04-01', description: 'أتعاب قضية مدنية' },
-  { id: 'ETA-002', client: 'مؤسسة الأهرام الرقمية', clientTaxId: '987-654-321', issuerTaxReg: OFFICE_TAX_REG, etaCode: ETA_ACTIVITY_CODE, amount: 15000, vatAmount: 2100, stampDuty: 20, total: 17120, status: 'مقبولة', uuid: 'ETA-UUID-002', date: '2026-04-05', description: 'استشارة قانونية' },
-  { id: 'ETA-003', client: 'شركة بيراميدز للمقاولات', clientTaxId: '555-123-456', issuerTaxReg: OFFICE_TAX_REG, etaCode: ETA_ACTIVITY_CODE, amount: 45000, vatAmount: 6300, stampDuty: 20, total: 51320, status: 'مرفوضة', uuid: null, date: '2026-04-10', description: 'أتعاب قضية عقود' },
-  { id: 'ETA-004', client: 'مكتب المستقبل للاستيراد', clientTaxId: '444-789-123', issuerTaxReg: OFFICE_TAX_REG, etaCode: ETA_ACTIVITY_CODE, amount: 8000, vatAmount: 1120, stampDuty: 20, total: 9140, status: 'مسودة', uuid: null, date: '2026-04-15', description: 'إعداد عقد تأسيس' },
+  { id: 'ETA-001', client: 'شركة النيل للتجارة والتوريدات', clientTaxId: '123-456-789', issuerTaxReg: OFFICE_TAX_REG, etaCode: ETA_ACTIVITY_CODE, amount: 25000, vatAmount: 3500, scheduleTax: 2500, stampDuty: 20, total: 31020, status: 'مرسلة', uuid: 'ETA-UUID-001', date: '2026-04-01', description: 'أتعاب قضية مدنية' },
+  { id: 'ETA-002', client: 'مؤسسة الأهرام الرقمية', clientTaxId: '987-654-321', issuerTaxReg: OFFICE_TAX_REG, etaCode: ETA_ACTIVITY_CODE, amount: 15000, vatAmount: 2100, scheduleTax: 0, stampDuty: 20, total: 17120, status: 'مقبولة', uuid: 'ETA-UUID-002', date: '2026-04-05', description: 'استشارة قانونية' },
+  { id: 'ETA-003', client: 'شركة بيراميدز للمقاولات', clientTaxId: '555-123-456', issuerTaxReg: OFFICE_TAX_REG, etaCode: ETA_ACTIVITY_CODE, amount: 45000, vatAmount: 6300, scheduleTax: 4500, stampDuty: 20, total: 55820, status: 'مرفوضة', uuid: null, date: '2026-04-10', description: 'أتعاب قضية عقود' },
+  { id: 'ETA-004', client: 'مكتب المستقبل للاستيراد', clientTaxId: '444-789-123', issuerTaxReg: OFFICE_TAX_REG, etaCode: ETA_ACTIVITY_CODE, amount: 8000, vatAmount: 1120, scheduleTax: 0, stampDuty: 20, total: 9140, status: 'مسودة', uuid: null, date: '2026-04-15', description: 'إعداد عقد تأسيس' },
 ];
 
 export default function ETAInvoicing() {
@@ -73,7 +74,9 @@ export default function ETAInvoicing() {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
     const amount = parseFloat(form.get('amount') as string) || 0;
+    const applyScheduleTax = form.get('scheduleTax') === 'on';
     const vatAmount = amount * 0.14;
+    const scheduleTax = applyScheduleTax ? amount * 0.10 : 0;
     const newInvoice: ETAInvoice = {
       id: `ETA-${String(invoices.length + 1).padStart(3, '0')}`,
       client: form.get('client') as string,
@@ -82,8 +85,9 @@ export default function ETAInvoicing() {
       etaCode: ETA_ACTIVITY_CODE,
       amount,
       vatAmount,
+      scheduleTax,
       stampDuty: 20, // R7-FIX: دمغة محاماة ثابتة
-      total: amount + vatAmount + 20,
+      total: amount + vatAmount + scheduleTax + 20,
       status: 'مسودة',
       uuid: null,
       date: new Date().toISOString().split('T')[0],
@@ -145,6 +149,7 @@ export default function ETAInvoicing() {
                 <th className="text-right p-4 font-medium">الرقم الضريبي</th>
                 <th className="text-right p-4 font-medium">المبلغ (ج.م)</th>
                 <th className="text-right p-4 font-medium">الضريبة 14%</th>
+                <th className="text-right p-4 font-medium">ضريبة جدول 10%</th>
                 <th className="text-right p-4 font-medium">الإجمالي</th>
                 <th className="text-right p-4 font-medium">التاريخ</th>
                 <th className="text-right p-4 font-medium">الحالة</th>
@@ -158,6 +163,7 @@ export default function ETAInvoicing() {
                     <td className="p-4 font-mono text-xs text-slate-500">{inv.clientTaxId}</td>
                     <td className="p-4">{inv.amount.toLocaleString('ar-EG')}</td>
                     <td className="p-4 text-amber-600">{inv.vatAmount.toLocaleString('ar-EG')}</td>
+                    <td className="p-4 text-purple-600">{inv.scheduleTax > 0 ? inv.scheduleTax.toLocaleString('ar-EG') : '-'}</td>
                     <td className="p-4 font-bold">{inv.total.toLocaleString('ar-EG')}</td>
                     <td className="p-4 text-slate-500">{formatDateEG(inv.date)}</td>
                     <td className="p-4">
@@ -206,6 +212,10 @@ export default function ETAInvoicing() {
               </div>
               <div><Label>المبلغ الأساسي (ج.م)</Label><Input name="amount" type="number" required min="1" placeholder="25000" /></div>
               <div><Label>وصف الخدمة</Label><Input name="description" required placeholder="أتعاب قضية مدنية" /></div>
+              <div className="flex items-center gap-2">
+                <input type="checkbox" id="scheduleTax" name="scheduleTax" className="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500" />
+                <Label htmlFor="scheduleTax">تطبيق ضريبة جدول 10% (استشارات وخدمات قانونية)</Label>
+              </div>
               <p className="text-xs text-slate-500">* ضريبة القيمة المضافة 14% + دمغة محاماة 20 ج.م ستُحسب تلقائياً</p>
               <div className="flex gap-2 justify-end">
                 <Button type="button" variant="outline" onClick={() => setShowAddDialog(false)}>إلغاء</Button>
@@ -231,6 +241,7 @@ export default function ETAInvoicing() {
               <div className="flex justify-between"><span className="text-slate-500">كود النشاط (ETA):</span><span className="font-mono">{selectedInvoice.etaCode}</span></div>
               <div className="flex justify-between"><span className="text-slate-500">المبلغ الأساسي:</span><span>{selectedInvoice.amount.toLocaleString('ar-EG')} ج.م</span></div>
               <div className="flex justify-between"><span className="text-slate-500">ضريبة 14%:</span><span className="text-amber-600">{selectedInvoice.vatAmount.toLocaleString('ar-EG')} ج.م</span></div>
+              {selectedInvoice.scheduleTax > 0 && <div className="flex justify-between"><span className="text-slate-500">ضريبة جدول 10%:</span><span className="text-purple-600">{selectedInvoice.scheduleTax.toLocaleString('ar-EG')} ج.م</span></div>}
               <div className="flex justify-between"><span className="text-slate-500">دمغة محاماة:</span><span>{selectedInvoice.stampDuty} ج.م</span></div>
               <div className="flex justify-between border-t pt-2"><span className="font-bold">الإجمالي:</span><span className="font-bold text-lg">{selectedInvoice.total.toLocaleString('ar-EG')} ج.م</span></div>
               <div className="flex justify-between"><span className="text-slate-500">الوصف:</span><span>{selectedInvoice.description}</span></div>

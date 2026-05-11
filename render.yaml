@@ -38,6 +38,8 @@ services:
         sync: false
       - key: DAILY_API_KEY
         sync: false
+      - key: WA_VERIFY_TOKEN
+        sync: false
       - key: PRODUCTION_URL
         value: https://malaf-platform.onrender.com
       # ✅ R2-FIX: VITE_ENABLE_DEMO removed from production — كانت تفتح كل الـ API بدون مصادقة

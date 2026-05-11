@@ -3,6 +3,8 @@ import { Beaker, Send, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { apiPost } from '@/lib/apiClient';
+import { useAuthStore } from '@/store/useAuthStore';
 
 
 interface TestResult {
@@ -12,8 +14,10 @@ interface TestResult {
 
 export default function BotTester() {
   const [testMessage, setTestMessage] = useState("");
+  const [testPhone, setTestPhone] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [testResult, setTestResult] = useState<TestResult | null>(null);
+  const { currentUser } = useAuthStore();
 
   const handleTest = async () => {
     if (!testMessage.trim()) return;
@@ -22,18 +26,24 @@ export default function BotTester() {
     setTestResult(null);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // ✅ BUG-006 FIX: استخدام API حقيقي بدلاً من setTimeout وهمي
+      const phone = testPhone.trim() || currentUser?.phone || '+201000000000';
+      await apiPost('/api/whatsapp/send', {
+        phone,
+        message: testMessage,
+      });
       
       setTestResult({ 
         success: true, 
-        message: 'تم إرسال الرسالة التجريبية بنجاح! تحقق من واتساب.' 
+        message: `تم إرسال الرسالة التجريبية بنجاح إلى ${phone}! تحقق من واتساب.` 
       });
       setTestMessage("");
-    } catch (error) {
+    } catch (error: any) {
       setTestResult({ 
         success: false, 
-        message: 'خطأ: تأكد من إعدادات البوت والاتصال بالشبكة.' 
+        message: error?.message?.includes('401') || error?.message?.includes('403')
+          ? 'خطأ: يرجى تسجيل الدخول أولاً.'
+          : 'خطأ: تأكد من إعدادات البوت والاتصال بالشبكة.' 
       });
     } finally {
       setIsSending(false);
@@ -54,9 +64,19 @@ export default function BotTester() {
       
       <CardContent className="space-y-4 px-0 pb-0">
         <div className="flex gap-3">
+          <div className="w-40">
+            <Input 
+              placeholder="رقم الهاتف (اختياري)" 
+              value={testPhone}
+              onChange={(e) => setTestPhone(e.target.value)}
+              disabled={isSending}
+              dir="ltr"
+              className="text-sm"
+            />
+          </div>
           <div className="flex-1">
             <Input 
-              placeholder="اكتب رسالة تجريبية... مثلاً: موعد جلستي القادمة متى؟" 
+              placeholder="اكتب رسالة تجريبية... مثلاً: اليوم" 
               value={testMessage}
               onChange={(e) => setTestMessage(e.target.value)}
               disabled={isSending}
@@ -104,3 +124,4 @@ export default function BotTester() {
     </Card>
   );
 }
+

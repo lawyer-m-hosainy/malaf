@@ -154,19 +154,25 @@ router.post('/end-session', async (req, res) => {
       });
     }
 
-    const { sessionId } = parsed.data;
+    const { sessionId, notes, chatLog, durationSeconds } = parsed.data;
     // ✅ عزل المستأجر
     const orgId = req.tenantId;
 
     // ✅ R4-FIX: تسجيل العملية الحساسة
     logSecurityEvent(req, 'VIDEO_SESSION_END', { sessionId, orgId });
 
+    // ✅ BUG-007 FIX: حفظ الملاحظات وسجل الدردشة ومدة الجلسة
+    const updateData = {
+      status: 'ended',
+      updated_at: new Date().toISOString(),
+    };
+    if (notes) updateData.notes = notes;
+    if (chatLog) updateData.chat_log = chatLog;
+    if (durationSeconds !== undefined) updateData.duration_seconds = durationSeconds;
+
     const { error } = await supabase
       .from('video_rooms')
-      .update({
-        status: 'ended',
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('id', sessionId)
       .eq('org_id', orgId); // ✅ tenant isolation
 
@@ -176,6 +182,45 @@ router.post('/end-session', async (req, res) => {
   } catch (err) {
     logger.error({ err: err.message, path: req.originalUrl }, 'Video session end error');
     res.status(500).json({ success: false, error: 'فشل إنهاء الجلسة' });
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+// ✅ BUG-002 FIX: جلب جميع جلسات المكتب
+// ═══════════════════════════════════════════════════════
+router.get('/sessions/all', async (req, res) => {
+  try {
+    const orgId = req.tenantId;
+    if (!orgId) {
+      return res.status(400).json({ success: false, error: 'معرّف المكتب مطلوب' });
+    }
+
+    const { data, error } = await supabase
+      .from('video_rooms')
+      .select('id, org_id, case_id, room_name, room_url, lawyer_id, client_id, status, notes, duration_seconds, scheduled_at, created_at, updated_at')
+      .eq('org_id', orgId)
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (error) throw error;
+
+    // تحويل البيانات لتتوافق مع الـ frontend interface
+    const sessions = (data || []).map(s => ({
+      id: s.id,
+      caseId: s.case_id,
+      caseName: `قضية مرتبطة`,
+      clientName: 'غير محدد',
+      status: s.status || 'ended',
+      startedAt: s.scheduled_at || s.created_at,
+      duration: s.duration_seconds || undefined,
+      notes: s.notes || undefined,
+      roomUrl: s.room_url || undefined,
+    }));
+
+    res.json({ success: true, sessions });
+  } catch (err) {
+    logger.error({ err: err.message, path: req.originalUrl }, 'All video sessions fetch error');
+    res.status(500).json({ success: false, error: 'فشل جلب الجلسات' });
   }
 });
 

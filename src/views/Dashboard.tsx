@@ -44,8 +44,8 @@ const CATEGORY_COLORS: Record<string, { color: string; bgClass: string }> = {
 };
 
 const MemoizedBarChart = React.memo(({ data }: { data: any[] }) => (
-  <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><Loader2 className="animate-spin text-primary-500" /></div>}>
-    <ResponsiveContainer width="100%" height="100%">
+  <Suspense fallback={<div className="h-[250px] w-full flex items-center justify-center"><Loader2 className="animate-spin text-primary-500" /></div>}>
+    <ResponsiveContainer width="99%" height={250}>
       <BarChart data={data}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
         <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b'}} />
@@ -61,8 +61,8 @@ const MemoizedBarChart = React.memo(({ data }: { data: any[] }) => (
 ));
 
 const MemoizedPieChart = React.memo(({ data }: { data: any[] }) => (
-  <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><Loader2 className="animate-spin text-primary-500" /></div>}>
-    <ResponsiveContainer width="100%" height="100%">
+  <Suspense fallback={<div className="h-[250px] w-full flex items-center justify-center"><Loader2 className="animate-spin text-primary-500" /></div>}>
+    <ResponsiveContainer width="99%" height={250}>
       <PieChart>
         <Pie
           data={data}

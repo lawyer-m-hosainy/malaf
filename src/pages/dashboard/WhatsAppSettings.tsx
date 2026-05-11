@@ -17,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Save, Bot } from "lucide-react";
+import { apiGet, apiPut } from '@/lib/apiClient';
 
 export function WhatsAppSettings() {
   const { currentUser } = useAuthStore();
@@ -53,11 +54,9 @@ export function WhatsAppSettings() {
 
   const fetchSettings = async () => {
     try {
-      const res = await fetch(`/api/whatsapp/settings/${orgId}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.org_id) setSettings(data);
-      }
+      // ✅ BUG-003 FIX: استخدام apiGet مع Authorization header
+      const data = await apiGet(`/api/whatsapp/settings/${orgId}`);
+      if (data.org_id) setSettings(data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -67,8 +66,8 @@ export function WhatsAppSettings() {
 
   const fetchStats = async () => {
     try {
-      const res = await fetch(`/api/whatsapp/stats/${orgId}`);
-      if (res.ok) setStats(await res.json());
+      const data = await apiGet(`/api/whatsapp/stats/${orgId}`);
+      setStats(data);
     } catch (err) {
       console.error(err);
     }
@@ -76,11 +75,8 @@ export function WhatsAppSettings() {
 
   const fetchMessages = async () => {
     try {
-      const res = await fetch(`/api/whatsapp/messages/${orgId}?limit=10`);
-      if (res.ok) {
-        const data = await res.json();
-        setMessages(data.data || []);
-      }
+      const data = await apiGet(`/api/whatsapp/messages/${orgId}?limit=10`);
+      setMessages(data.data || []);
     } catch (err) {
       console.error(err);
     }
@@ -89,16 +85,8 @@ export function WhatsAppSettings() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const res = await fetch(`/api/whatsapp/settings/${orgId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settings)
-      });
-      if (res.ok) {
-        toast.success("تم حفظ إعدادات الواتساب بنجاح");
-      } else {
-        toast.error("حدث خطأ أثناء الحفظ");
-      }
+      await apiPut(`/api/whatsapp/settings/${orgId}`, settings);
+      toast.success("تم حفظ إعدادات الواتساب بنجاح");
     } catch (err) {
       toast.error("حدث خطأ أثناء الحفظ");
     } finally {

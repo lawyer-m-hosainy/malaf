@@ -155,7 +155,7 @@ export default function Analytics() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6 h-[350px]">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="99%" height={300}>
               <AreaChart data={revenueData}>
                 <defs>
                   <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
@@ -189,7 +189,7 @@ export default function Analytics() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6 h-[350px] flex flex-col items-center">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="99%" height={300}>
               <PieChart>
                 <Pie
                   data={caseSuccessData}
@@ -219,7 +219,7 @@ export default function Analytics() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6 h-[350px]">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="99%" height={300}>
               <BarChart data={attorneyPerformance} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
                 <XAxis type="number" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b'}} />
@@ -243,7 +243,7 @@ export default function Analytics() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6 h-[350px]">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="99%" height={300}>
               <LineChart data={revenueData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b'}} />

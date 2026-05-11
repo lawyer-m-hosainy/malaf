@@ -10,6 +10,7 @@ import {
   Mic, MicOff, Video, VideoOff, MonitorUp, StopCircle, 
   PhoneOff, Circle, FileText, MessageSquare, Save, Send
 } from 'lucide-react';
+import { apiGet, apiPost } from '@/lib/apiClient';
 
 export default function VideoRoom() {
   const { caseId } = useParams();
@@ -40,9 +41,8 @@ export default function VideoRoom() {
     const fetchSessionData = async () => {
       try {
         if (!roomUrl && sessionId) {
-           // We would fetch session data from Supabase here to get the room_url
-           const res = await fetch(`/api/video/sessions/${caseId}`);
-           const data = await res.json();
+           // ✅ BUG-001 FIX: استخدام apiGet مع Authorization header
+           const data = await apiGet(`/api/video/sessions/${caseId}`);
            const session = data.sessions?.find((s: any) => s.id === sessionId);
            if (session && session.room_url) {
              initDaily(session.room_url);
@@ -176,15 +176,12 @@ export default function VideoRoom() {
 
     if (sessionId) {
       try {
-        await fetch('/api/video/end-session', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            sessionId,
-            notes,
-            chatLog: messages,
-            durationSeconds: duration
-          })
+        // ✅ BUG-001 FIX: استخدام apiPost مع Authorization header
+        await apiPost('/api/video/end-session', {
+          sessionId,
+          notes,
+          chatLog: JSON.stringify(messages),
+          durationSeconds: duration
         });
       } catch (err) {
         console.error("Failed to save session data:", err);

@@ -12,6 +12,7 @@ import { useCasesStore } from '@/store/useCasesStore';
 import { useClientsStore } from '@/store/useClientsStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { motion } from 'motion/react';
+import { apiGet, apiPost } from '@/lib/apiClient';
 
 interface VideoSession {
   id: string;
@@ -44,32 +45,26 @@ export function VideoRoomManager() {
   const loadSessions = async () => {
     setIsLoading(true);
     try {
-      // Try to fetch from API, fallback to demo data
-      const res = await fetch(`/api/video/sessions/all?orgId=${orgId}`);
-      if (res.ok) {
-        const data = await res.json();
-        setSessions(data.sessions || []);
-      } else {
-        // Populate with demo data from existing cases
-        const demoSessions: VideoSession[] = cases.slice(0, 5).map((c, i) => {
-          const client = clients.find(cl => cl.id === c.clientId);
-          const statuses: ('active' | 'scheduled' | 'ended')[] = ['ended', 'ended', 'scheduled', 'ended', 'ended'];
-          return {
-            id: `vs-${i + 1}`,
-            caseId: c.id,
-            caseName: `${c.plaintiff || 'المدعي'} ضد ${c.defendant || 'المدعى عليه'}`,
-            clientName: client?.name || 'غير محدد',
-            status: statuses[i],
-            startedAt: new Date(Date.now() - (i * 86400000 + Math.random() * 86400000)).toISOString(),
-            duration: statuses[i] === 'ended' ? Math.floor(Math.random() * 3600) + 600 : undefined,
-            notes: statuses[i] === 'ended' ? 'تم مناقشة آخر المستجدات في القضية' : undefined,
-          };
-        });
-        setSessions(demoSessions);
-      }
+      // ✅ BUG-002 FIX: استخدام apiGet مع Authorization header
+      const data = await apiGet('/api/video/sessions/all');
+      setSessions(data.sessions || []);
     } catch {
-      // Fallback demo data
-      setSessions([]);
+      // Populate with demo data from existing cases
+      const demoSessions: VideoSession[] = cases.slice(0, 5).map((c, i) => {
+        const client = clients.find(cl => cl.id === c.clientId);
+        const statuses: ('active' | 'scheduled' | 'ended')[] = ['ended', 'ended', 'scheduled', 'ended', 'ended'];
+        return {
+          id: `vs-${i + 1}`,
+          caseId: c.id,
+          caseName: `${c.plaintiff || 'المدعي'} ضد ${c.defendant || 'المدعى عليه'}`,
+          clientName: client?.name || 'غير محدد',
+          status: statuses[i],
+          startedAt: new Date(Date.now() - (i * 86400000 + Math.random() * 86400000)).toISOString(),
+          duration: statuses[i] === 'ended' ? Math.floor(Math.random() * 3600) + 600 : undefined,
+          notes: statuses[i] === 'ended' ? 'تم مناقشة آخر المستجدات في القضية' : undefined,
+        };
+      });
+      setSessions(demoSessions);
     }
     setIsLoading(false);
   };
@@ -78,18 +73,9 @@ export function VideoRoomManager() {
     if (!selectedCaseId) return;
     setIsCreating(true);
     try {
-      const res = await fetch('/api/video/create-room', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ caseId: selectedCaseId, orgId }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        navigate(`/dashboard/video/${selectedCaseId}?session=${data.sessionId}&url=${encodeURIComponent(data.roomUrl)}`);
-      } else {
-        // Fallback: navigate directly
-        navigate(`/dashboard/video/${selectedCaseId}`);
-      }
+      // ✅ BUG-002 FIX: استخدام apiPost مع Authorization header
+      const data = await apiPost('/api/video/create-room', { caseId: selectedCaseId });
+      navigate(`/dashboard/video/${selectedCaseId}?session=${data.sessionId}&url=${encodeURIComponent(data.roomUrl)}`);
     } catch {
       navigate(`/dashboard/video/${selectedCaseId}`);
     }

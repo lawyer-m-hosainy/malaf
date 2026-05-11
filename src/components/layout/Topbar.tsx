@@ -201,14 +201,16 @@ export function Topbar() {
           {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
         </Button>
         <DropdownMenu>
-          <DropdownMenuTrigger>
-            <button aria-label="فتح الإشعارات" className="relative p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors group">
-              <Bell size={20} className="group-hover:text-primary-500 transition-colors" />
-              {unreadCountDisplay > 0 && (
-                <span className="absolute top-1.5 end-1.5 w-2 h-2 bg-destructive rounded-full border-2 border-white dark:border-navy-900"></span>
-              )}
-            </button>
-          </DropdownMenuTrigger>
+          <DropdownMenuTrigger 
+            render={
+              <button aria-label="فتح الإشعارات" className="relative p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors group">
+                <Bell size={20} className="group-hover:text-primary-500 transition-colors" />
+                {unreadCountDisplay > 0 && (
+                  <span className="absolute top-1.5 end-1.5 w-2 h-2 bg-destructive rounded-full border-2 border-white dark:border-navy-900"></span>
+                )}
+              </button>
+            }
+          />
           <DropdownMenuContent align="end" className="w-80 p-0 overflow-hidden">
             <DropdownMenuGroup>
               <div className="p-4 border-b border-slate-50 dark:border-white/5 flex items-center justify-between">
@@ -264,23 +266,25 @@ export function Topbar() {
         <div className="h-8 w-px bg-slate-200 dark:bg-white/10 mx-2"></div>
 
         <DropdownMenu>
-          <DropdownMenuTrigger>
-            <button aria-label="فتح قائمة الحساب" className="flex items-center gap-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 p-1.5 rounded-md transition-colors">
-              <div className="text-end hidden sm:block">
-                <p className="text-sm font-bold text-navy-900 dark:text-white">{currentUser?.name}</p>
-                <div className="flex items-center justify-end gap-1">
-                  <ShieldCheck size={12} className="text-primary-500" />
-                  <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">{currentUser?.role}</p>
+          <DropdownMenuTrigger 
+            render={
+              <button aria-label="فتح قائمة الحساب" className="flex items-center gap-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 p-1.5 rounded-md transition-colors">
+                <div className="text-end hidden sm:block">
+                  <p className="text-sm font-bold text-navy-900 dark:text-white">{currentUser?.name}</p>
+                  <div className="flex items-center justify-end gap-1">
+                    <ShieldCheck size={12} className="text-primary-500" />
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">{currentUser?.role}</p>
+                  </div>
                 </div>
-              </div>
-              <Avatar className="h-9 w-9 border-2 border-primary-50 dark:border-white/10">
-                <AvatarImage src={currentUser?.avatar} />
-                <AvatarFallback className="bg-primary-500 text-white font-bold">
-                  {currentUser?.name?.substring(0, 2)}
-                </AvatarFallback>
-              </Avatar>
-            </button>
-          </DropdownMenuTrigger>
+                <Avatar className="h-9 w-9 border-2 border-primary-50 dark:border-white/10">
+                  <AvatarImage src={currentUser?.avatar} />
+                  <AvatarFallback className="bg-primary-500 text-white font-bold">
+                    {currentUser?.name?.substring(0, 2)}
+                  </AvatarFallback>
+                </Avatar>
+              </button>
+            }
+          />
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuGroup>
               <DropdownMenuLabel>حسابي</DropdownMenuLabel>

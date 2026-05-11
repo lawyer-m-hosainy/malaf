@@ -410,9 +410,9 @@ router.post('/send', async (req, res) => {
 router.get('/settings/:orgId', async (req, res) => {
   try {
     // ✅ R2-FIX: التحقق من أن المستخدم يطلب بيانات مكتبه فقط
-    const orgId = req.tenantId || req.params.orgId;
-    if (req.tenantId && req.params.orgId !== req.tenantId) {
-      return res.status(403).json({ error: 'غير مصرح بالوصول لبيانات مكتب آخر' });
+    const orgId = req.tenantId;
+    if (!orgId) {
+      return res.status(403).json({ error: 'غير مصرح بالوصول بدون توكن صالح' });
     }
 
     const { data, error } = await supabase
@@ -433,9 +433,9 @@ router.get('/settings/:orgId', async (req, res) => {
 router.put('/settings/:orgId', async (req, res) => {
   try {
     // ✅ R2-FIX: منع تعديل إعدادات مكتب آخر
-    const orgId = req.tenantId || req.params.orgId;
-    if (req.tenantId && req.params.orgId !== req.tenantId) {
-      return res.status(403).json({ error: 'غير مصرح بتعديل إعدادات مكتب آخر' });
+    const orgId = req.tenantId;
+    if (!orgId) {
+      return res.status(403).json({ error: 'غير مصرح بالوصول بدون توكن صالح' });
     }
 
     // R10-FIX: Zod validation
@@ -489,9 +489,9 @@ router.put('/settings/:orgId', async (req, res) => {
 router.get('/stats/:orgId', async (req, res) => {
   try {
     // ✅ R2-FIX: التحقق من tenant isolation
-    const orgId = req.tenantId || req.params.orgId;
-    if (req.tenantId && req.params.orgId !== req.tenantId) {
-      return res.status(403).json({ error: 'غير مصرح بالوصول لإحصائيات مكتب آخر' });
+    const orgId = req.tenantId;
+    if (!orgId) {
+      return res.status(403).json({ error: 'غير مصرح بالوصول بدون توكن صالح' });
     }
 
     const startOfMonth = new Date();
@@ -528,9 +528,9 @@ router.get('/stats/:orgId', async (req, res) => {
 router.get('/messages/:orgId', async (req, res) => {
   try {
     // ✅ R2-FIX: التحقق من tenant isolation
-    const orgId = req.tenantId || req.params.orgId;
-    if (req.tenantId && req.params.orgId !== req.tenantId) {
-      return res.status(403).json({ error: 'غير مصرح بالوصول لرسائل مكتب آخر' });
+    const orgId = req.tenantId;
+    if (!orgId) {
+      return res.status(403).json({ error: 'غير مصرح بالوصول بدون توكن صالح' });
     }
 
     const page = parseInt(req.query.page) || 0;

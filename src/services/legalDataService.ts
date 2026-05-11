@@ -355,8 +355,8 @@ export async function fetchSessions(caseId?: string): Promise<any[]> {
   try {
     let query = supabase
       .from("sessions")
-      .select("id, case_id, date, time, court_room, notes, created_at, cases!inner(org_id)")
-      .eq("cases.org_id", orgId) // ✅ عزل عبر العلاقة مع القضايا
+      .select("id, case_id, org_id, date, time, court_room, notes, created_at")
+      .eq("org_id", orgId) // ✅ عزل مباشر باستخدام org_id
       .order("date", { ascending: false })
       .limit(200);
 
@@ -450,5 +450,125 @@ export async function getNextCounter(
     console.error("خطأ في العداد التسلسلي:", error);
     const random = Math.floor(1000 + Math.random() * 9000);
     return type === "circulation" ? `T-${random}` : `H-${random}`;
+  }
+}
+
+// ─── الفاتورة الإلكترونية (ETA Invoices) ───────────────────────
+export async function fetchETAInvoices(): Promise<any[]> {
+  const orgId = requireOrgId();
+  try {
+    const { data, error } = await supabase
+      .from("eta_invoices")
+      .select("*")
+      .eq("org_id", orgId)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error("خطأ في جلب فواتير ETA:", error);
+    return [];
+  }
+}
+
+export async function saveETAInvoice(invoice: any): Promise<void> {
+  const orgId = requireOrgId();
+  try {
+    const { error } = await supabase
+      .from("eta_invoices")
+      .upsert({ ...invoice, org_id: orgId });
+    if (error) throw error;
+  } catch (error) {
+    console.error("خطأ في حفظ فاتورة ETA:", error);
+    throw error;
+  }
+}
+
+// ─── فحص التعارض (Conflict Checks) ─────────────────────────────
+export async function fetchConflictChecks(): Promise<any[]> {
+  const orgId = requireOrgId();
+  try {
+    const { data, error } = await supabase
+      .from("conflict_checks")
+      .select("*")
+      .eq("org_id", orgId)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error("خطأ في جلب سجلات التعارض:", error);
+    return [];
+  }
+}
+
+export async function saveConflictCheck(record: any): Promise<void> {
+  const orgId = requireOrgId();
+  try {
+    const { error } = await supabase
+      .from("conflict_checks")
+      .upsert({ ...record, org_id: orgId });
+    if (error) throw error;
+  } catch (error) {
+    console.error("خطأ في حفظ سجل التعارض:", error);
+    throw error;
+  }
+}
+
+// ─── المقالات المعرفية (Wiki Articles) ──────────────────────────
+export async function fetchWikiArticles(): Promise<any[]> {
+  const orgId = requireOrgId();
+  try {
+    const { data, error } = await supabase
+      .from("wiki_articles")
+      .select("*")
+      .eq("org_id", orgId)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error("خطأ في جلب المقالات:", error);
+    return [];
+  }
+}
+
+export async function saveWikiArticle(article: any): Promise<void> {
+  const orgId = requireOrgId();
+  try {
+    const { error } = await supabase
+      .from("wiki_articles")
+      .upsert({ ...article, org_id: orgId });
+    if (error) throw error;
+  } catch (error) {
+    console.error("خطأ في حفظ المقال:", error);
+    throw error;
+  }
+}
+
+// ─── المحاكم المتخصصة والقضايا الجنائية ──────────────────────────
+export async function saveSpecializedCase(table: string, record: any): Promise<void> {
+  const orgId = requireOrgId();
+  try {
+    const { error } = await supabase
+      .from(table)
+      .upsert({ ...record, org_id: orgId });
+    if (error) throw error;
+  } catch (error) {
+    console.error(`خطأ في حفظ سجل ${table}:`, error);
+    throw error;
+  }
+}
+
+export async function fetchSpecializedCases(table: string): Promise<any[]> {
+  const orgId = requireOrgId();
+  try {
+    const { data, error } = await supabase
+      .from(table)
+      .select("*")
+      .eq("org_id", orgId)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error(`خطأ في جلب سجلات ${table}:`, error);
+    return [];
   }
 }

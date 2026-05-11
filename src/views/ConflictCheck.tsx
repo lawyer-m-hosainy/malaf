@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { useAnalyticsStore } from '@/store/useAnalyticsStore';
 import { useComplianceStore } from '@/store/useComplianceStore';
 import { useAuthStore } from '@/store/useAuthStore';
+import { fetchConflictChecks, saveConflictCheck } from "@/services/legalDataService";
 
 export default function ConflictCheck() {
   const [query, setQuery] = useState("");
@@ -28,6 +29,13 @@ export default function ConflictCheck() {
   const hasPermission = useAuthStore((state) => state.hasPermission);
   const currentUser = useAuthStore((state) => state.currentUser);
   const isPartner = hasPermission('*');
+  const [dbHistory, setDbHistory] = useState<any[]>([]);
+
+  import("react").then((react) => {
+    react.useEffect(() => {
+      fetchConflictChecks().then(data => setDbHistory(data));
+    }, []);
+  });
 
   const handleCheck = () => {
     if (!query.trim()) return;
@@ -39,6 +47,16 @@ export default function ConflictCheck() {
       const result = executeConflictCheck(query);
       setCurrentResult(result);
       addConflictRecord(result);
+      
+      saveConflictCheck({
+        query: result.query || query,
+        status: result.status,
+        matches: result.matches || [],
+        checked_at: result.checkedAt || new Date().toISOString()
+      }).then(() => {
+        fetchConflictChecks().then(data => setDbHistory(data));
+      });
+      
       setIsChecking(false);
     }, 2000);
   };
@@ -111,6 +129,19 @@ export default function ConflictCheck() {
 
     addConflictRecord(updatedRecord);
     setCurrentResult(updatedRecord);
+    
+    saveConflictCheck({
+      query: updatedRecord.query || query,
+      status: updatedRecord.status,
+      matches: updatedRecord.matches || [],
+      checked_at: updatedRecord.checkedAt || new Date().toISOString(),
+      resolution_notes: updatedRecord.resolutionNotes,
+      resolution_date: updatedRecord.resolutionDate,
+      resolved_by: updatedRecord.resolvedBy
+    }).then(() => {
+       fetchConflictChecks().then(data => setDbHistory(data));
+    });
+
     toast.success("تم حفظ القرار المهني بنجاح");
   };
 
@@ -329,13 +360,13 @@ export default function ConflictCheck() {
                   </CardHeader>
                   <CardContent className="p-0">
                     <div className="divide-y divide-slate-50 dark:divide-white/5">
-                      {conflictHistory.slice(0, 3).map((record: any) => (
+                      {dbHistory.slice(0, 3).map((record: any) => (
                         <div key={record.id} className="p-4 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors cursor-pointer group">
                            <div className="flex items-center justify-between mb-1">
                              <h5 className="text-xs font-bold truncate pr-2">{record.query}</h5>
                              {getStatusBadge(record.status)}
                            </div>
-                           <p className="text-[10px] text-slate-400">{new Date(record.checkedAt).toLocaleString('ar-EG')}</p>
+                           <p className="text-[10px] text-slate-400">{new Date(record.checked_at || record.created_at).toLocaleString('ar-EG')}</p>
                         </div>
                       ))}
                     </div>

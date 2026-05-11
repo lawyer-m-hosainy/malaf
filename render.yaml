@@ -40,6 +40,13 @@ services:
         sync: false
       - key: WA_VERIFY_TOKEN
         sync: false
+      # Facebook Messenger Bot
+      - key: FB_PAGE_ACCESS_TOKEN
+        sync: false
+      - key: FB_VERIFY_TOKEN
+        value: malaf_messenger_verify
+      - key: FB_APP_SECRET
+        sync: false
       - key: PRODUCTION_URL
         value: https://malaf-platform.onrender.com
       # ✅ R2-FIX: VITE_ENABLE_DEMO removed from production — كانت تفتح كل الـ API بدون مصادقة

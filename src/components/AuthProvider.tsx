@@ -20,6 +20,7 @@ import { useUIStore } from "@/store/useUIStore";
 import { UserRole } from "@/types";
 import { setTenantIdCache } from "@/lib/tenant";
 import { toast } from "sonner";
+import { clearDecryptCache } from "@/lib/encryption";
 
 /** مسح جميع بيانات الجلسة عند تسجيل الخروج */
 function resetAllStores() {
@@ -40,6 +41,9 @@ function resetAllStores() {
   useUsageStore.getState().reset();
   useUIStore.getState().reset();
   setTenantIdCache(null);
+  clearDecryptCache();
+  localStorage.removeItem('malaf-auth-storage');
+  localStorage.removeItem('malaf-ui-storage');
 }
 
 interface AuthContextType {

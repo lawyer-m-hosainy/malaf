@@ -14,11 +14,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { fetchWikiArticles, saveWikiArticle } from "@/services/legalDataService";
 
 export default function InternalWiki() {
-  const wikiArticles = useUIStore((state) => state.wikiArticles);
-  const addWikiArticle = useUIStore((state) => state.addWikiArticle);
+  const [wikiArticles, setWikiArticles] = useState<any[]>([]);
   const knowledgeAssets = useComplianceStore((state) => state.knowledgeAssets);
+
+  import("react").then((react) => {
+    react.useEffect(() => {
+      fetchWikiArticles().then(data => setWikiArticles(data));
+    }, []);
+  });
   const currentUser = useAuthStore((state) => state.currentUser);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<'wiki' | 'assets'>('assets');
@@ -67,15 +73,15 @@ export default function InternalWiki() {
                 return;
               }
               const tags = tagsRaw ? tagsRaw.split(/[,،]/).map((t) => t.trim()).filter(Boolean) : ["wiki"];
-              addWikiArticle({
-                id: `W-${Date.now()}`,
+              
+              saveWikiArticle({
                 title,
                 content,
                 category: wikiCategory,
                 author: currentUser?.name || "المكتب",
-                lastUpdated: new Date().toISOString().slice(0, 10),
                 tags,
-              });
+              }).then(() => fetchWikiArticles().then(data => setWikiArticles(data)));
+              
               toast.success("تم نشر المقال");
               setArticleOpen(false);
             }}

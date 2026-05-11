@@ -86,9 +86,18 @@ export function WhatsAppSettings() {
     setSaving(true);
     try {
       await apiPut(`/api/whatsapp/settings/${orgId}`, settings);
-      toast.success("تم حفظ إعدادات الواتساب بنجاح");
-    } catch (err) {
-      toast.error("حدث خطأ أثناء الحفظ");
+      toast.success("تم حفظ إعدادات الواتساب بنجاح ✅");
+      // تحديث الإعدادات بعد الحفظ
+      fetchSettings();
+    } catch (err: any) {
+      const errorMsg = err?.message || '';
+      if (errorMsg.includes('500')) {
+        toast.error("خطأ في الخادم — تأكد من تنفيذ migration جداول الواتساب في Supabase", { duration: 6000 });
+      } else if (errorMsg.includes('401') || errorMsg.includes('403')) {
+        toast.error("مطلوب تسجيل دخول — يرجى تسجيل الدخول مرة أخرى");
+      } else {
+        toast.error("حدث خطأ أثناء الحفظ — تحقق من اتصال الإنترنت والخادم");
+      }
     } finally {
       setSaving(false);
     }

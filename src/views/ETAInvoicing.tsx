@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { useClientsStore } from "@/store/useClientsStore";
 import { formatDateEG, formatEGP } from "@/lib/formatEG";
 import { QRCodeSVG } from "qrcode.react";
+import { fetchETAInvoices, saveETAInvoice } from "@/services/legalDataService";
 
 // R7-FIX: بيانات المكتب الضريبية (يمكن تغييرها من الإعدادات)
 const OFFICE_TAX_REG = '100-234-567'; // رقم التسجيل الضريبي للمكتب
@@ -39,12 +40,45 @@ const initialInvoices: ETAInvoice[] = [
 ];
 
 export default function ETAInvoicing() {
-  const [invoices, setInvoices] = useState<ETAInvoice[]>(initialInvoices);
+  const [invoices, setInvoices] = useState<ETAInvoice[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('الكل');
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<ETAInvoice | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const clients = useClientsStore(s => s.clients);
+
+  import("react").then((react) => {
+    react.useEffect(() => {
+      const loadData = async () => {
+        setIsLoading(true);
+        try {
+          const data = await fetchETAInvoices();
+          setInvoices(data.map((d: any) => ({
+            id: d.id,
+            client: d.client_name,
+            clientTaxId: d.client_tax_id,
+            issuerTaxReg: d.issuer_tax_reg,
+            etaCode: d.eta_code,
+            amount: d.amount,
+            vatAmount: d.vat_amount,
+            scheduleTax: d.schedule_tax,
+            stampDuty: d.stamp_duty,
+            total: d.total,
+            status: d.status,
+            uuid: d.uuid,
+            date: d.date,
+            description: d.description,
+          })) as ETAInvoice[]);
+        } catch (e) {
+          console.error(e);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      loadData();
+    }, []);
+  });
 
   // فلترة الفواتير
   const filtered = useMemo(() => {
@@ -63,39 +97,77 @@ export default function ETAInvoicing() {
     totalAmount: invoices.reduce((s, i) => s + i.total, 0),
   }), [invoices]);
 
-  const handleSendToETA = (id: string) => {
-    setInvoices(prev => prev.map(inv =>
-      inv.id === id ? { ...inv, status: 'مرسلة' as const, uuid: `ETA-UUID-${Date.now().toString(36)}` } : inv
-    ));
-    toast.success('تم إرسال الفاتورة لمنظومة الضرائب المصرية بنجاح');
+  const handleSendToETA = async (id: string) => {
+    try {
+      const invoice = invoices.find(inv => inv.id === id);
+      if (!invoice) return;
+      
+      const updatedUuid = `ETA-UUID-${Date.now().toString(36)}`;
+      
+      await saveETAInvoice({
+        id: invoice.id,
+        status: 'مرسلة',
+        uuid: updatedUuid
+      });
+      
+      setInvoices(prev => prev.map(inv =>
+        inv.id === id ? { ...inv, status: 'مرسلة' as const, uuid: updatedUuid } : inv
+      ));
+      toast.success('تم إرسال الفاتورة لمنظومة الضرائب المصرية بنجاح');
+    } catch (e) {
+      toast.error('حدث خطأ أثناء الإرسال');
+    }
   };
 
-  const handleAddInvoice = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleAddInvoice = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
     const amount = parseFloat(form.get('amount') as string) || 0;
     const applyScheduleTax = form.get('scheduleTax') === 'on';
     const vatAmount = amount * 0.14;
     const scheduleTax = applyScheduleTax ? amount * 0.10 : 0;
-    const newInvoice: ETAInvoice = {
-      id: `ETA-${String(invoices.length + 1).padStart(3, '0')}`,
-      client: form.get('client') as string,
-      clientTaxId: form.get('taxId') as string,
-      issuerTaxReg: OFFICE_TAX_REG,
-      etaCode: ETA_ACTIVITY_CODE,
+    const total = amount + vatAmount + scheduleTax + 20;
+
+    const dbInvoice = {
+      client_name: form.get('client') as string,
+      client_tax_id: form.get('taxId') as string,
+      issuer_tax_reg: OFFICE_TAX_REG,
+      eta_code: ETA_ACTIVITY_CODE,
       amount,
-      vatAmount,
-      scheduleTax,
-      stampDuty: 20, // R7-FIX: دمغة محاماة ثابتة
-      total: amount + vatAmount + scheduleTax + 20,
+      vat_amount: vatAmount,
+      schedule_tax: scheduleTax,
+      stamp_duty: 20,
+      total,
       status: 'مسودة',
       uuid: null,
       date: new Date().toISOString().split('T')[0],
       description: form.get('description') as string,
     };
-    setInvoices(prev => [newInvoice, ...prev]);
-    setShowAddDialog(false);
-    toast.success('تم إنشاء فاتورة إلكترونية جديدة');
+
+    try {
+      await saveETAInvoice(dbInvoice);
+      const data = await fetchETAInvoices();
+      setInvoices(data.map((d: any) => ({
+        id: d.id,
+        client: d.client_name,
+        clientTaxId: d.client_tax_id,
+        issuerTaxReg: d.issuer_tax_reg,
+        etaCode: d.eta_code,
+        amount: d.amount,
+        vatAmount: d.vat_amount,
+        scheduleTax: d.schedule_tax,
+        stampDuty: d.stamp_duty,
+        total: d.total,
+        status: d.status,
+        uuid: d.uuid,
+        date: d.date,
+        description: d.description,
+      })) as ETAInvoice[]);
+      setShowAddDialog(false);
+      toast.success('تم إنشاء فاتورة إلكترونية جديدة');
+    } catch (err) {
+      toast.error('حدث خطأ أثناء الحفظ');
+    }
   };
 
   return (

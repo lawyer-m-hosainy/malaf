@@ -9,6 +9,7 @@ import fs from 'fs';
 import compression from 'compression';
 import { pinoHttp } from 'pino-http';
 import pino from 'pino';
+import { randomUUID } from 'crypto';
 
 // Import Routes
 import healthRouter from './routes/health.js';
@@ -68,7 +69,15 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Structured Logging
-app.use(pinoHttp({ logger }));
+app.use(pinoHttp({ 
+    logger,
+    genReqId: function (req, res) {
+        const id = req.get('x-request-id') || randomUUID()
+        res.setHeader('x-request-id', id)
+        req.id = id
+        return id
+    }
+}));
 
 // Compression & Security
 app.use(compression());
@@ -166,6 +175,7 @@ const securityRequestLogger = (req, res, next) => {
             tenantId: req.tenantId || 'unknown',
             contentLength: req.get('content-length') || 0,
             userAgent: req.get('user-agent'),
+            requestId: req.id,
             timestamp: new Date().toISOString(),
         }, `Security: ${req.method} ${req.originalUrl}`);
     }
@@ -240,7 +250,7 @@ app.listen(PORT, () => {
         initSubscriptionCron(async (phone, message, orgId) => {
             if (!supabaseServiceKey) return false;
             const { createClient } = await import('@supabase/supabase-js');
-            const sb = createClient(process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL, supabaseServiceKey);
+            const sb = createClient(process.env.SUPABASE_URL, supabaseServiceKey);
             const { data: settings } = await sb
                 .from('whatsapp_settings')
                 .select('*')
@@ -275,7 +285,7 @@ app.listen(PORT, () => {
             // Fetch org's WhatsApp settings to send via correct provider
             if (!supabaseServiceKey) return false;
             const { createClient } = await import('@supabase/supabase-js');
-            const sb = createClient(process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL, supabaseServiceKey);
+            const sb = createClient(process.env.SUPABASE_URL, supabaseServiceKey);
             const { data: settings } = await sb
                 .from('whatsapp_settings')
                 .select('*')

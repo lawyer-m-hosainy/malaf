@@ -70,6 +70,11 @@ router.post('/create-room', async (req, res) => {
       });
     }
 
+    // ✅ R4-FIX: Graceful fallback
+    if (!DAILY_API_KEY) {
+      return res.status(503).json({ success: false, error: 'خدمة غرف الفيديو غير مفعلة حالياً (يرجى تزويد مفتاح Daily.co)' });
+    }
+
     const { caseId, caseName, clientName, officeId, lawyerId } = parsed.data;
     // ✅ استخدام tenantId من الـ auth middleware
     const orgId = req.tenantId || officeId;

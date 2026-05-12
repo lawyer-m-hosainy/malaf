@@ -51,7 +51,7 @@ function sanitizeMessage(text) {
 }
 
 // ── Supabase Admin Client (server-side with service_role) ──
-const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const supabase = supabaseServiceKey
   ? createClient(supabaseUrl, supabaseServiceKey)

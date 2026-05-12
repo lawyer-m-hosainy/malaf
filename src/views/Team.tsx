@@ -194,15 +194,15 @@ export default function Team() {
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div className="space-y-1">
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">قضايا</p>
-                  <p className="text-lg font-bold text-navy-900 dark:text-white">{member.activeCases.toLocaleString('ar-EG')}</p>
+                  <p className="text-lg font-bold text-navy-900 dark:text-white">{(member.activeCases || 0).toLocaleString('ar-EG')}</p>
                 </div>
                 <div className="space-y-1 border-x border-slate-50 dark:border-white/5">
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">مهام</p>
-                  <p className="text-lg font-bold text-navy-900 dark:text-white">{member.pendingTasks.toLocaleString('ar-EG')}</p>
+                  <p className="text-lg font-bold text-navy-900 dark:text-white">{(member.pendingTasks || 0).toLocaleString('ar-EG')}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">مكتملة</p>
-                  <p className="text-lg font-bold text-navy-900 dark:text-white">{member.completedTasks.toLocaleString('ar-EG')}</p>
+                  <p className="text-lg font-bold text-navy-900 dark:text-white">{(member.completedTasks || 0).toLocaleString('ar-EG')}</p>
                 </div>
               </div>
 
@@ -210,11 +210,11 @@ export default function Team() {
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-500 dark:text-slate-400">معدل الإنجاز</span>
                   <span className="font-bold text-navy-900 dark:text-white">
-                    {Math.round((member.completedTasks / Math.max(1, member.completedTasks + member.pendingTasks)) * 100).toLocaleString('ar-EG')}%
+                    {Math.round(((member.completedTasks || 0) / Math.max(1, (member.completedTasks || 0) + (member.pendingTasks || 0))) * 100).toLocaleString('ar-EG')}%
                   </span>
                 </div>
                 <Progress 
-                  value={(member.completedTasks / Math.max(1, member.completedTasks + member.pendingTasks)) * 100} 
+                  value={((member.completedTasks || 0) / Math.max(1, (member.completedTasks || 0) + (member.pendingTasks || 0))) * 100} 
                   className="h-2 bg-slate-100 dark:bg-white/5"
                 />
               </div>

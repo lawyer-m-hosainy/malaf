@@ -14,12 +14,14 @@ import { useFinanceStore } from '@/store/useFinanceStore';
 import { useCasesStore } from '@/store/useCasesStore';
 import { useTeamStore } from '@/store/useTeamStore';
 import { cn } from "@/lib/utils";
+import { fetchTimeEntries, saveTimeEntry, deleteTimeEntryRecord } from "@/services/legalDataService";
 export default function TimeTracking() {
   const timeEntries = useFinanceStore((state) => state.timeEntries);
-  const addTimeEntry = useFinanceStore((state) => state.addTimeEntry);
-  const updateTimeEntry = useFinanceStore((state) => state.updateTimeEntry);
-  const deleteTimeEntry = useFinanceStore((state) => state.deleteTimeEntry);
-  const toggleTimeEntryBilledStatus = useFinanceStore((state) => state.toggleTimeEntryBilledStatus);
+  const setTimeEntries = useFinanceStore((state) => state.setTimeEntries);
+  const addTimeEntryStore = useFinanceStore((state) => state.addTimeEntry);
+  const updateTimeEntryStore = useFinanceStore((state) => state.updateTimeEntry);
+  const deleteTimeEntryStore = useFinanceStore((state) => state.deleteTimeEntry);
+  const toggleTimeEntryBilledStatusStore = useFinanceStore((state) => state.toggleTimeEntryBilledStatus);
   const cases = useCasesStore((state) => state.cases) ?? [];
   const teamMembers = useTeamStore((state) => state.teamMembers) ?? [];
   const [isTracking, setIsTracking] = useState(false);
@@ -51,6 +53,24 @@ export default function TimeTracking() {
       }
     };
   }, [isTracking]);
+
+  useEffect(() => {
+    loadTimeEntries();
+  }, []);
+
+  const loadTimeEntries = async () => {
+    const data = await fetchTimeEntries();
+    setTimeEntries(data.map((d: any) => ({
+      id: d.id,
+      caseId: d.case_id,
+      lawyerId: d.lawyer_id,
+      description: d.description,
+      duration: d.duration_minutes,
+      date: d.date,
+      billable: d.billable,
+      isBilled: d.is_billed
+    })));
+  };
 
   const formatTime = (totalSeconds: number) => {
     const h = Math.floor(totalSeconds / 3600);
@@ -158,7 +178,7 @@ export default function TimeTracking() {
             </DialogHeader>
           <form
             className="space-y-4 py-2"
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault();
               if (!manualCaseId || !manualLawyerId) {
                 toast.error("اختر القضية والمحامي");
@@ -172,31 +192,56 @@ export default function TimeTracking() {
                 return;
               }
               
-              if (editEntryId) {
-                updateTimeEntry(editEntryId, {
-                  caseId: manualCaseId,
-                  lawyerId: manualLawyerId,
-                  description: manualDesc.trim() || "عمل يدوي",
-                  duration: durationMin,
-                  date: manualDate,
-                });
-                toast.success("تم تعديل السجل بنجاح");
-              } else {
-                addTimeEntry({
-                  id: `TE-${Date.now()}`,
-                  caseId: manualCaseId,
-                  lawyerId: manualLawyerId,
-                  description: manualDesc.trim() || "عمل يدوي",
-                  duration: durationMin,
-                  date: manualDate,
-                  billable: true,
-                  isBilled: false,
-                });
-                toast.success("تم تسجيل الوقت");
+              const loadingToast = toast.loading("جاري الحفظ...");
+              try {
+                if (editEntryId) {
+                  const updates = {
+                    caseId: manualCaseId,
+                    lawyerId: manualLawyerId,
+                    description: manualDesc.trim() || "عمل يدوي",
+                    duration: durationMin,
+                    date: manualDate,
+                  };
+                  updateTimeEntryStore(editEntryId, updates);
+                  await saveTimeEntry({
+                    id: editEntryId,
+                    case_id: updates.caseId,
+                    lawyer_id: updates.lawyerId,
+                    description: updates.description,
+                    duration_minutes: updates.duration,
+                    date: updates.date,
+                  });
+                  toast.success("تم تعديل السجل بنجاح", { id: loadingToast });
+                } else {
+                  const newEntry = {
+                    id: `TE-${Date.now()}`,
+                    caseId: manualCaseId,
+                    lawyerId: manualLawyerId,
+                    description: manualDesc.trim() || "عمل يدوي",
+                    duration: durationMin,
+                    date: manualDate,
+                    billable: true,
+                    isBilled: false,
+                  };
+                  addTimeEntryStore(newEntry);
+                  await saveTimeEntry({
+                    case_id: newEntry.caseId,
+                    lawyer_id: newEntry.lawyerId,
+                    description: newEntry.description,
+                    duration_minutes: newEntry.duration,
+                    date: newEntry.date,
+                    billable: newEntry.billable,
+                    is_billed: newEntry.isBilled
+                  });
+                  toast.success("تم تسجيل الوقت", { id: loadingToast });
+                }
+                
+                setManualOpen(false);
+                setManualDesc("");
+                loadTimeEntries();
+              } catch (err) {
+                toast.error("فشل الحفظ", { id: loadingToast });
               }
-              
-              setManualOpen(false);
-              setManualDesc("");
             }}
           >
             <div className="space-y-2">
@@ -332,9 +377,16 @@ export default function TimeTracking() {
                       <Badge 
                         variant={entry.isBilled ? "secondary" : "outline"} 
                         className={cn("cursor-pointer select-none transition-colors", entry.isBilled ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:hover:bg-emerald-900/40" : "hover:bg-slate-100 dark:hover:bg-white/10")}
-                        onClick={() => {
-                          toggleTimeEntryBilledStatus(entry.id);
-                          toast.success(entry.isBilled ? 'تم تغيير الحالة إلى: بانتظار الفوترة' : 'تم تغيير الحالة إلى: تمت الفوترة');
+                        onClick={async () => {
+                          toggleTimeEntryBilledStatusStore(entry.id);
+                          try {
+                            if (!entry.id.startsWith("TE-")) {
+                              await saveTimeEntry({ id: entry.id, is_billed: !entry.isBilled });
+                            }
+                            toast.success(!entry.isBilled ? 'تم تغيير الحالة إلى: تمت الفوترة' : 'تم تغيير الحالة إلى: بانتظار الفوترة');
+                          } catch (e) {
+                            toast.error("فشل التحديث");
+                          }
                         }}
                       >
                         {entry.isBilled ? 'تمت الفوترة' : 'بانتظار الفوترة'}
@@ -362,10 +414,17 @@ export default function TimeTracking() {
                           variant="ghost" 
                           size="sm"
                           className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-                          onClick={() => {
+                          onClick={async () => {
                             if (window.confirm("هل أنت متأكد من حذف هذا السجل؟")) {
-                              deleteTimeEntry(entry.id);
-                              toast.success("تم حذف السجل بنجاح");
+                              deleteTimeEntryStore(entry.id);
+                              try {
+                                if (!entry.id.startsWith("TE-")) {
+                                  await deleteTimeEntryRecord(entry.id);
+                                }
+                                toast.success("تم حذف السجل بنجاح");
+                              } catch (e) {
+                                toast.error("فشل החذف");
+                              }
                             }
                           }}
                         >

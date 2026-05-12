@@ -26,6 +26,8 @@ import { useClientsLogic } from "@/hooks/useClientsLogic";
 import { useCasesStore } from "@/store/useCasesStore";
 import { useClientsStore } from "@/store/useClientsStore";
 import { useState } from "react";
+import { CSVImporter } from "@/components/CSVImporter";
+import { saveClient } from "@/services/legalDataService";
 
 import { useUsageStore } from "@/store/useUsageStore";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -137,6 +139,39 @@ export default function Clients() {
     loadData();
   }, [hasLoaded]);
 
+  const handleImportClients = async (data: any[]) => {
+    for (const row of data) {
+      const name = row['اسم العميل'] || row['name'] || row['Name'];
+      if (!name) continue;
+      
+      const newClient = {
+        name,
+        type: row['النوع'] || row['type'] || 'فرد',
+        nationalId: row['الرقم القومي'] || row['nationalId'] || '',
+        commercialRegistration: row['السجل التجاري'] || row['cr'] || '',
+        vatNumber: row['التسجيل الضريبي'] || row['vat'] || '',
+        phone: row['رقم الهاتف'] || row['phone'] || '',
+      };
+      
+      try {
+        await saveClient({
+          id: `C-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+          name: newClient.name,
+          type: newClient.type as 'فرد' | 'منشأة',
+          nationalId: newClient.nationalId,
+          commercialRegistration: newClient.commercialRegistration,
+          vatNumber: newClient.vatNumber,
+          phone: newClient.phone,
+        });
+      } catch (err) {
+        console.error("Failed to import client:", newClient.name);
+      }
+    }
+    // Reload clients after import
+    const newClients = await fetchClients();
+    if (newClients?.length > 0) useClientsStore.getState().setClients(newClients);
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0, x: -20 }}
@@ -148,14 +183,15 @@ export default function Clients() {
           <h1 className="text-2xl font-bold text-navy-900 dark:text-white">الموكلون والتوكيلات</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">إدارة بيانات الأفراد والمنشآت وتوكيلات الشهر العقاري.</p>
         </div>
-        
-        <Dialog open={isOpen} onOpenChange={(open) => {
-          setIsOpen(open);
-        }}>
-          <Button type="button" className="bg-primary-500 hover:bg-primary-600 text-white gap-2" onClick={openNewClientDialog}>
-            <UserPlus size={18} />
-            إضافة عميل جديد
-          </Button>
+        <div className="flex items-center gap-2">
+          <CSVImporter onImport={handleImportClients} label="استيراد موكلين (CSV)" />
+          <Dialog open={isOpen} onOpenChange={(open) => {
+            setIsOpen(open);
+          }}>
+            <Button type="button" className="bg-primary-500 hover:bg-primary-600 text-white gap-2" onClick={openNewClientDialog}>
+              <UserPlus size={18} />
+              إضافة عميل جديد
+            </Button>
           <DialogContent className="sm:max-w-[500px] border-none shadow-2xl dark:bg-navy-900">
             <DialogHeader>
               <DialogTitle className="text-navy-900 dark:text-white">
@@ -250,6 +286,7 @@ export default function Clients() {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       <Card className="border-none shadow-sm dark:bg-navy-800">

@@ -11,6 +11,8 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useUIStore } from '@/store/useUIStore';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { formatEGP, formatDateEG } from "@/lib/formatEG";
+import { fetchReceivables, saveReceivable, saveCollectionAction } from "@/services/legalDataService";
+import { useEffect } from "react";
 
 function daysPastDue(dueDate: string) {
   const due = new Date(dueDate).getTime();
@@ -31,10 +33,33 @@ export default function Collections() {
   const receivables = useFinanceStore((state) => state.receivables);
   const currentUser = useAuthStore((state) => state.currentUser);
   const addCollectionAction = useFinanceStore((state) => state.addCollectionAction);
-  const reconcileReceivable = useFinanceStore((state) => state.reconcileReceivable);
-  const closeReceivable = useFinanceStore((state) => state.closeReceivable);
-  const addReceivable = useFinanceStore((state) => state.addReceivable);
+  const reconcileReceivableStore = useFinanceStore((state) => state.reconcileReceivable);
+  const closeReceivableStore = useFinanceStore((state) => state.closeReceivable);
+  const addReceivableStore = useFinanceStore((state) => state.addReceivable);
+  const setReceivablesStore = useFinanceStore((state) => state.setReceivables);
   const addAuditLog = useUIStore((state) => state.addAuditLog);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    const data = await fetchReceivables();
+    setReceivablesStore(data.map((d: any) => ({
+      id: d.id,
+      clientId: d.client_id,
+      clientName: d.client_name,
+      caseId: d.case_id,
+      totalAmount: d.total_amount,
+      collectedAmount: d.collected_amount,
+      outstandingAmount: d.outstanding_amount,
+      dueDate: d.due_date,
+      status: d.status,
+      isReconciled: d.is_reconciled,
+      createdAt: d.created_at,
+      actions: []
+    })));
+  };
 
   // Form State
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -57,15 +82,29 @@ export default function Collections() {
   const totalOutstanding = receivables.reduce((s, r) => s + r.outstandingAmount, 0);
   const settledCount = receivables.filter((r) => r.status === "مسوى" || r.status === "مغلق").length;
 
-  const recordAction = (receivableId: string, type: "إصدار مطالبة" | "إنذار رسمي" | "جدولة سداد" | "تسوية" | "متابعة") => {
+  const recordAction = async (receivableId: string, type: "إصدار مطالبة" | "إنذار رسمي" | "جدولة سداد" | "تسوية" | "متابعة") => {
+    const actionId = `CA-${Date.now()}`;
     addCollectionAction(receivableId, {
-      id: `CA-${Date.now()}`,
+      id: actionId,
       receivableId,
       type,
       createdAt: new Date().toISOString(),
       createdBy: currentUser?.id || "unknown",
       notes: `تم تنفيذ إجراء ${type} من لوحة التحصيل`,
     });
+    
+    try {
+      await saveCollectionAction({
+        id: actionId,
+        receivable_id: receivableId,
+        type: type,
+        notes: `تم تنفيذ إجراء ${type} من لوحة التحصيل`,
+        created_by: currentUser?.id || "unknown",
+      });
+    } catch (e) {
+      console.error("Failed to save action to DB");
+    }
+
     addAuditLog({
       id: `AL-COL-${Date.now()}`,
       userId: currentUser?.id || "unknown",
@@ -78,14 +117,23 @@ export default function Collections() {
     toast.success(`تم تسجيل إجراء: ${type}`);
   };
 
-  const tryClose = (receivableId: string) => {
+  const tryClose = async (receivableId: string) => {
     const item = receivables.find((r) => r.id === receivableId);
     if (!item) return;
     if (!item.isReconciled) {
       toast.error("لا يمكن إغلاق الملف المالي قبل إتمام المطابقة المحاسبية");
       return;
     }
-    closeReceivable(receivableId);
+    closeReceivableStore(receivableId);
+    
+    try {
+      if (!receivableId.startsWith("REC-")) {
+        await saveReceivable({ id: receivableId, status: "مغلق" });
+      }
+    } catch (e) {
+      console.error("Failed to save close status");
+    }
+
     addAuditLog({
       id: `AL-COL-CLOSE-${Date.now()}`,
       userId: currentUser?.id || "unknown",
@@ -98,14 +146,15 @@ export default function Collections() {
     toast.success("تم إغلاق الملف المالي");
   };
 
-  const handleAddSubmit = (e: React.FormEvent) => {
+  const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newRec.clientName || !newRec.amount || !newRec.dueDate) {
       toast.error("يرجى تعبئة جميع الحقول المطلوبة");
       return;
     }
     
-    addReceivable({
+    const loadingToast = toast.loading("جاري الإضافة...");
+    const newReceivable = {
       id: `REC-${Math.floor(Math.random() * 90000)}`,
       clientId: `C-${Math.floor(Math.random() * 90000)}`,
       clientName: newRec.clientName,
@@ -118,11 +167,27 @@ export default function Collections() {
       status: "مفتوح",
       isReconciled: false,
       actions: []
-    });
+    };
     
-    toast.success("تم إضافة المطالبة بنجاح");
-    setIsAddOpen(false);
-    setNewRec({ clientName: "", amount: "", dueDate: "" });
+    try {
+      await saveReceivable({
+        client_id: newReceivable.clientId,
+        client_name: newReceivable.clientName,
+        case_id: newReceivable.caseId,
+        total_amount: newReceivable.totalAmount,
+        collected_amount: newReceivable.collectedAmount,
+        outstanding_amount: newReceivable.outstandingAmount,
+        due_date: newReceivable.dueDate,
+        status: newReceivable.status,
+        is_reconciled: newReceivable.isReconciled
+      });
+      loadData();
+      toast.success("تم إضافة المطالبة بنجاح", { id: loadingToast });
+      setIsAddOpen(false);
+      setNewRec({ clientName: "", amount: "", dueDate: "" });
+    } catch (err) {
+      toast.error("فشل إضافة المطالبة", { id: loadingToast });
+    }
   };
 
   return (
@@ -222,7 +287,17 @@ export default function Collections() {
                 <Button size="sm" variant="outline" onClick={() => recordAction(r.id, "إنذار رسمي")}>إنذار قانوني</Button>
                 <Button size="sm" variant="outline" onClick={() => recordAction(r.id, "جدولة سداد")}>جدولة سداد</Button>
                 <Button size="sm" variant="outline" onClick={() => recordAction(r.id, "تسوية")}>تسوية</Button>
-                <Button size="sm" variant="outline" onClick={() => { reconcileReceivable(r.id); toast.success("تمت المطابقة المحاسبية"); }}>مطابقة محاسبية</Button>
+                <Button size="sm" variant="outline" onClick={async () => { 
+                  reconcileReceivableStore(r.id); 
+                  try {
+                    if (!r.id.startsWith("REC-")) {
+                      await saveReceivable({ id: r.id, is_reconciled: true });
+                    }
+                    toast.success("تمت المطابقة المحاسبية");
+                  } catch (e) {
+                    toast.error("فشل التحديث");
+                  }
+                }}>مطابقة محاسبية</Button>
                 <Button size="sm" onClick={() => tryClose(r.id)}>إغلاق مالي</Button>
               </div>
             </div>

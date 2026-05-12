@@ -9,6 +9,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { draftLegalDocument } from "@/services/ai";
 import { useCLMStore } from "@/store/useCLMStore";
+import { saveContractTemplate } from "@/services/legalDataService";
 
 export default function Contracts() {
   const addContractTemplate = useCLMStore((s) => s.addContractTemplate);
@@ -36,20 +37,36 @@ export default function Contracts() {
     }
   };
 
-  const handleSaveAsTemplate = () => {
+  const handleSaveAsTemplate = async () => {
     if (!generatedContent.trim()) {
       toast.error("لا يوجد نص لحفظه — ولّد مسودة أولاً أو الصق نصاً في المحرر");
       return;
     }
     const cat = category as "تجاري" | "عمالي" | "عقاري" | "أحوال شخصية";
+    const templateId = `TMPL-${Date.now()}`;
+    const title = `نموذج ${cat} — ${new Date().toLocaleDateString("ar-EG")}`;
+    const desc = prompt.slice(0, 200) || "نموذج محفوظ من صانع العقود";
+
     addContractTemplate({
-      id: `TMPL-${Date.now()}`,
-      title: `نموذج ${cat} — ${new Date().toLocaleDateString("ar-EG")}`,
-      description: prompt.slice(0, 200) || "نموذج محفوظ من صانع العقود",
+      id: templateId,
+      title: title,
+      description: desc,
       content: generatedContent,
       category: cat,
     });
-    toast.success("تم حفظ النموذج في مكتبة العقود");
+    
+    try {
+      await saveContractTemplate({
+        title: title,
+        category: cat,
+        content: generatedContent,
+        is_system: false
+      });
+      toast.success("تم حفظ النموذج في مكتبة العقود");
+    } catch (e) {
+      console.error(e);
+      toast.error("حدث خطأ أثناء الحفظ في قاعدة البيانات");
+    }
   };
 
   return (

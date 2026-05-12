@@ -5,7 +5,8 @@ import { useCasesStore } from "@/store/useCasesStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { fetchELitigationCases, saveELitigationCase, deleteELitigationCase } from "@/services/legalDataService";
 
 export default function ELitigation() {
   const cases = useCasesStore(state => state.cases);
@@ -14,22 +15,62 @@ export default function ELitigation() {
   const [statusFilter, setStatusFilter] = useState<string>('الكل');
   const [selectedCase, setSelectedCase] = useState<string | null>(null);
 
-  const linked = cases.filter(c => c.eLitigationStatus === 'مربوط ببوابة التقاضي');
-  const unlinked = cases.filter(c => !c.eLitigationStatus || c.eLitigationStatus === 'غير مربوط');
+  const [linkedCaseIds, setLinkedCaseIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    loadLinks();
+  }, []);
+
+  const loadLinks = async () => {
+    const data = await fetchELitigationCases();
+    setLinkedCaseIds(new Set(data.map((d: any) => d.case_id)));
+  };
+
+  const casesWithStatus = cases.map(c => ({
+    ...c,
+    eLitigationStatus: linkedCaseIds.has(c.id) ? 'مربوط ببوابة التقاضي' : 'غير مربوط'
+  }));
+
+  const linked = casesWithStatus.filter(c => c.eLitigationStatus === 'مربوط ببوابة التقاضي');
+  const unlinked = casesWithStatus.filter(c => c.eLitigationStatus === 'غير مربوط');
 
   const filteredCases = useMemo(() => {
-    return cases.filter(c => {
+    return casesWithStatus.filter(c => {
       const matchesSearch = `${c.plaintiff} ${c.defendant} ${c.court}`.includes(searchTerm);
       if (statusFilter === 'مربوط') return matchesSearch && c.eLitigationStatus === 'مربوط ببوابة التقاضي';
-      if (statusFilter === 'غير مربوط') return matchesSearch && (!c.eLitigationStatus || c.eLitigationStatus === 'غير مربوط');
+      if (statusFilter === 'غير مربوط') return matchesSearch && c.eLitigationStatus === 'غير مربوط';
       return matchesSearch;
     });
-  }, [cases, searchTerm, statusFilter]);
+  }, [casesWithStatus, searchTerm, statusFilter]);
 
-  const handleToggleLink = (caseId: string, currentStatus?: string) => {
+  const handleToggleLink = async (caseId: string, currentStatus?: string) => {
     const newStatus = currentStatus === 'مربوط ببوابة التقاضي' ? 'غير مربوط' : 'مربوط ببوابة التقاضي';
-    updateCase(caseId, { eLitigationStatus: newStatus as any });
-    toast.success(newStatus === 'مربوط ببوابة التقاضي' ? 'تم ربط القضية ببوابة التقاضي' : 'تم فك ربط القضية');
+    
+    try {
+      if (newStatus === 'مربوط ببوابة التقاضي') {
+        await saveELitigationCase({
+          case_id: caseId,
+          portal_ref: `PR-${Date.now()}`,
+          portal_status: "نشط",
+          last_sync: new Date().toISOString()
+        });
+      } else {
+        await deleteELitigationCase(caseId);
+      }
+      
+      // Update local state temporarily
+      updateCase(caseId, { eLitigationStatus: newStatus as any });
+      setLinkedCaseIds(prev => {
+        const next = new Set(prev);
+        if (newStatus === 'مربوط ببوابة التقاضي') next.add(caseId);
+        else next.delete(caseId);
+        return next;
+      });
+      
+      toast.success(newStatus === 'مربوط ببوابة التقاضي' ? 'تم ربط القضية ببوابة التقاضي' : 'تم فك ربط القضية');
+    } catch (e) {
+      toast.error("حدث خطأ أثناء تحديث حالة الربط");
+    }
   };
 
   return (

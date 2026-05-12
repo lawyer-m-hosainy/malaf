@@ -12,6 +12,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useTeamStore } from '@/store/useTeamStore';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
+import { fetchFieldCheckins, saveFieldCheckin } from '@/services/legalDataService';
 
 interface CheckIn {
   id: string;
@@ -81,6 +82,28 @@ export default function FieldCheckins() {
   const loadData = async () => {
     setIsLoading(true);
     // Demo data since we can't connect to Supabase directly from frontend without setup
+    let dbCheckins: any[] = [];
+    try {
+      dbCheckins = await fetchFieldCheckins();
+    } catch (e) {
+      console.error("Failed to fetch checkins");
+    }
+
+    const formattedCheckins: CheckIn[] = dbCheckins.map(d => ({
+      id: d.id,
+      user_name: d.lawyer_id || 'مستخدم', // Using lawyer_id as name for now
+      user_role: 'lawyer',
+      latitude: d.location_lat || 0,
+      longitude: d.location_lng || 0,
+      matched_location_name: d.location_name || null,
+      distance_meters: 0,
+      is_verified: !!d.location_name,
+      checkin_type: 'arrival',
+      source: 'app',
+      notes: d.notes || null,
+      created_at: d.checkin_time || d.created_at
+    }));
+
     const demoCheckins: CheckIn[] = [
       { id: '1', user_name: 'أحمد محمد', user_role: 'lawyer', latitude: 30.0444, longitude: 31.2357, matched_location_name: 'محكمة شمال القاهرة', distance_meters: 45, is_verified: true, checkin_type: 'arrival', source: 'app', notes: 'جلسة الاستئناف', created_at: new Date(Date.now() - 1800000).toISOString() },
       { id: '2', user_name: 'سارة علي', user_role: 'secretary', latitude: 30.0500, longitude: 31.2400, matched_location_name: 'المكتب الرئيسي', distance_meters: 12, is_verified: true, checkin_type: 'arrival', source: 'whatsapp', notes: null, created_at: new Date(Date.now() - 10800000).toISOString() },
@@ -95,7 +118,7 @@ export default function FieldCheckins() {
       { id: 'loc4', name: 'الشهر العقاري — مصر الجديدة', type: 'registry', latitude: 30.0800, longitude: 31.3200, radius_meters: 150, address: 'شارع الحجاز' },
     ];
 
-    setCheckins(demoCheckins);
+    setCheckins([...formattedCheckins, ...demoCheckins]);
     setLocations(demoLocations);
     setIsLoading(false);
   };
@@ -136,6 +159,15 @@ export default function FieldCheckins() {
           notes: isVerified ? null : `أقرب موقع: ${nearest?.name || 'غير محدد'} (${Math.round(minDist)} متر)`,
           created_at: new Date().toISOString(),
         };
+
+        saveFieldCheckin({
+          lawyer_id: 'أنت',
+          location_lat: latitude,
+          location_lng: longitude,
+          location_name: isVerified ? nearest!.name : null,
+          notes: newCheckin.notes,
+          checkin_time: newCheckin.created_at
+        }).catch(console.error);
 
         setCheckins(prev => [newCheckin, ...prev]);
         toast.success(isVerified 

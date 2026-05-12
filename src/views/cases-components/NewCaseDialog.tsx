@@ -285,6 +285,7 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
                   }}
                 />
                 <select 
+                  title="حرف التوكيل"
                   className="w-1/3 h-10 rounded-md border border-slate-200 dark:border-white/10 bg-transparent px-2 py-2 text-sm text-center"
                   value={newCaseData.powerOfAttorneyRef?.includes(' / ') ? newCaseData.powerOfAttorneyRef.split(' / ')[1] : ''}
                   onChange={e => {
@@ -370,6 +371,7 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
             <div className="space-y-2">
               <Label>درجة التقاضي</Label>
               <select 
+                title="درجة التقاضي"
                 className="w-full h-10 rounded-md border border-slate-200 dark:border-white/10 bg-transparent px-3 py-2 text-sm text-navy-900 dark:text-white"
                 value={newCaseData.currentTier}
                 onChange={e => setNewCaseData(p => ({ ...p, currentTier: e.target.value as any }))}
@@ -407,6 +409,7 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
                 <div className="space-y-1">
                   <Label className="text-xs">درجة الجريمة</Label>
                   <select 
+                    title="درجة الجريمة"
                     className="w-full h-9 rounded-md border border-red-200 dark:border-red-900/50 bg-white dark:bg-black px-2 py-1 text-xs"
                     value={newCaseData.criminalTier}
                     onChange={e => setNewCaseData(p => ({ ...p, criminalTier: e.target.value as any }))}
@@ -419,6 +422,7 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
                 <div className="space-y-1">
                   <Label className="text-xs">المرحلة الحالية</Label>
                   <select 
+                    title="المرحلة الحالية"
                     className="w-full h-9 rounded-md border border-red-200 dark:border-red-900/50 bg-white dark:bg-black px-2 py-1 text-xs"
                     value={newCaseData.criminalStage}
                     onChange={e => setNewCaseData(p => ({ ...p, criminalStage: e.target.value as any }))}
@@ -445,6 +449,7 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
             <div className="p-3 bg-purple-50 dark:bg-purple-900/10 rounded-md space-y-2 border border-purple-100 dark:border-purple-900/30">
               <Label className="text-purple-800 dark:text-purple-400 font-bold">نوع نزاع الأسرة</Label>
               <select 
+                title="نوع نزاع الأسرة"
                 className="w-full h-10 rounded-md border border-purple-200 dark:border-purple-900/50 bg-white dark:bg-black px-3 py-2 text-sm"
                 value={newCaseData.familyCaseType}
                 onChange={e => setNewCaseData(p => ({ ...p, familyCaseType: e.target.value as any }))}

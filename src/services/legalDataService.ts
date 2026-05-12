@@ -180,6 +180,17 @@ export async function saveCases(cases: Case[]): Promise<void> {
   }
 }
 
+export async function saveCase(caseData: Partial<Case>): Promise<void> {
+  const orgId = requireOrgId();
+  try {
+    const { error } = await supabase.from(CASES_TABLE).upsert({ ...caseData, org_id: orgId });
+    if (error) throw error;
+  } catch (error) {
+    console.error("خطأ في حفظ القضية:", error);
+    throw error;
+  }
+}
+
 export async function deleteCase(caseId: string): Promise<void> {
   const orgId = requireOrgId();
   const { error } = await supabase
@@ -572,3 +583,422 @@ export async function fetchSpecializedCases(table: string): Promise<any[]> {
     return [];
   }
 }
+
+// ─── المستندات (Documents) ──────────────────────────────────────
+export async function fetchDocuments(): Promise<any[]> {
+  const orgId = requireOrgId();
+  try {
+    const { data, error } = await supabase
+      .from("documents")
+      .select("*")
+      .eq("org_id", orgId)
+      .is("deleted_at", null)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error("خطأ في جلب المستندات:", error);
+    return [];
+  }
+}
+
+export async function saveDocument(doc: any): Promise<void> {
+  const orgId = requireOrgId();
+  try {
+    const { error } = await supabase
+      .from("documents")
+      .upsert({ ...doc, org_id: orgId });
+    if (error) throw error;
+    await logAuditAction("CREATE/UPDATE", "documents", doc.id, `حفظ مستند: ${doc.name}`);
+  } catch (error) {
+    console.error("خطأ في حفظ المستند:", error);
+    throw error;
+  }
+}
+
+export async function deleteDocumentRecord(id: string): Promise<void> {
+  const orgId = requireOrgId();
+  const { error } = await supabase
+    .from("documents")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", id)
+    .eq("org_id", orgId);
+  if (error) throw error;
+  await logAuditAction("DELETE_SOFT", "documents", id, "حذف مستند (ناعم)");
+}
+
+export async function uploadDocumentFile(file: File, caseId: string): Promise<{path: string, url: string}> {
+  const orgId = requireOrgId();
+  const timestamp = Date.now();
+  // Safe filename
+  const safeName = file.name.replace(/[^a-zA-Z0-9.\-_أ-ي]/g, "_");
+  const path = `${orgId}/${caseId || 'general'}/${timestamp}_${safeName}`;
+  
+  const { data, error } = await supabase.storage
+    .from("documents")
+    .upload(path, file);
+    
+  if (error) throw error;
+  
+  const { data: urlData } = supabase.storage
+    .from("documents")
+    .getPublicUrl(path);
+    
+  return { path: data.path, url: urlData.publicUrl };
+}
+
+export async function downloadDocumentFile(path: string): Promise<Blob> {
+  const { data, error } = await supabase.storage
+    .from("documents")
+    .download(path);
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteDocumentFile(path: string): Promise<void> {
+  const { error } = await supabase.storage
+    .from("documents")
+    .remove([path]);
+  if (error) throw error;
+}
+
+// ─── تتبع الوقت (Time Tracking) ──────────────────────────────────
+export async function fetchTimeEntries(): Promise<any[]> {
+  const orgId = requireOrgId();
+  try {
+    const { data, error } = await supabase
+      .from("time_entries")
+      .select("*")
+      .eq("org_id", orgId)
+      .is("deleted_at", null)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error("خطأ في جلب سجلات الوقت:", error);
+    return [];
+  }
+}
+
+export async function saveTimeEntry(entry: any): Promise<void> {
+  const orgId = requireOrgId();
+  try {
+    const { error } = await supabase
+      .from("time_entries")
+      .upsert({ ...entry, org_id: orgId });
+    if (error) throw error;
+  } catch (error) {
+    console.error("خطأ في حفظ سجل الوقت:", error);
+    throw error;
+  }
+}
+
+export async function deleteTimeEntryRecord(id: string): Promise<void> {
+  const orgId = requireOrgId();
+  const { error } = await supabase
+    .from("time_entries")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", id)
+    .eq("org_id", orgId);
+  if (error) throw error;
+}
+
+// ─── التحصيل (Collections) ───────────────────────────────────────
+export async function fetchReceivables(): Promise<any[]> {
+  const orgId = requireOrgId();
+  try {
+    const { data, error } = await supabase
+      .from("receivables")
+      .select("*")
+      .eq("org_id", orgId)
+      .is("deleted_at", null)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error("خطأ في جلب المطالبات:", error);
+    return [];
+  }
+}
+
+export async function saveReceivable(rec: any): Promise<void> {
+  const orgId = requireOrgId();
+  try {
+    const { error } = await supabase
+      .from("receivables")
+      .upsert({ ...rec, org_id: orgId });
+    if (error) throw error;
+  } catch (error) {
+    console.error("خطأ في حفظ المطالبة:", error);
+    throw error;
+  }
+}
+
+export async function deleteReceivableRecord(id: string): Promise<void> {
+  const orgId = requireOrgId();
+  const { error } = await supabase
+    .from("receivables")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", id)
+    .eq("org_id", orgId);
+  if (error) throw error;
+}
+
+export async function fetchCollectionActions(receivableId: string): Promise<any[]> {
+  const orgId = requireOrgId();
+  try {
+    const { data, error } = await supabase
+      .from("collection_actions")
+      .select("*")
+      .eq("org_id", orgId)
+      .eq("receivable_id", receivableId)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error("خطأ في جلب إجراءات التحصيل:", error);
+    return [];
+  }
+}
+
+export async function saveCollectionAction(action: any): Promise<void> {
+  const orgId = requireOrgId();
+  try {
+    const { error } = await supabase
+      .from("collection_actions")
+      .upsert({ ...action, org_id: orgId });
+    if (error) throw error;
+  } catch (error) {
+    console.error("خطأ في حفظ إجراء التحصيل:", error);
+    throw error;
+  }
+}
+
+// ─── الخبراء (Expert Missions) ───────────────────────────────────
+export async function fetchExpertMissions(): Promise<any[]> {
+  const orgId = requireOrgId();
+  try {
+    const { data, error } = await supabase
+      .from("expert_missions")
+      .select("*")
+      .eq("org_id", orgId)
+      .is("deleted_at", null)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error("خطأ في جلب المأموريات:", error);
+    return [];
+  }
+}
+
+export async function saveExpertMission(mission: any): Promise<void> {
+  const orgId = requireOrgId();
+  try {
+    const { error } = await supabase
+      .from("expert_missions")
+      .upsert({ ...mission, org_id: orgId });
+    if (error) throw error;
+  } catch (error) {
+    console.error("خطأ في حفظ المأمورية:", error);
+    throw error;
+  }
+}
+
+export async function deleteExpertMissionRecord(id: string): Promise<void> {
+  const orgId = requireOrgId();
+  const { error } = await supabase
+    .from("expert_missions")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", id)
+    .eq("org_id", orgId);
+  if (error) throw error;
+}
+
+export async function fetchExpertSessions(missionId: string): Promise<any[]> {
+  const orgId = requireOrgId();
+  try {
+    const { data, error } = await supabase
+      .from("expert_sessions")
+      .select("*")
+      .eq("org_id", orgId)
+      .eq("mission_id", missionId)
+      .order("date", { ascending: false });
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error("خطأ في جلب جلسات الخبير:", error);
+    return [];
+  }
+}
+
+export async function saveExpertSession(session: any): Promise<void> {
+  const orgId = requireOrgId();
+  try {
+    const { error } = await supabase
+      .from("expert_sessions")
+      .upsert({ ...session, org_id: orgId });
+    if (error) throw error;
+  } catch (error) {
+    console.error("خطأ في حفظ جلسة الخبير:", error);
+    throw error;
+  }
+}
+
+// ─── التقاضي الإلكتروني (E-Litigation) ───────────────────────────
+export async function fetchELitigationCases(): Promise<any[]> {
+  const orgId = requireOrgId();
+  try {
+    const { data, error } = await supabase
+      .from("e_litigation_cases")
+      .select("*")
+      .eq("org_id", orgId)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error("خطأ في جلب قضايا التقاضي الإلكتروني:", error);
+    return [];
+  }
+}
+
+export async function saveELitigationCase(caseRef: any): Promise<void> {
+  const orgId = requireOrgId();
+  try {
+    const { error } = await supabase
+      .from("e_litigation_cases")
+      .upsert({ ...caseRef, org_id: orgId });
+    if (error) throw error;
+  } catch (error) {
+    console.error("خطأ في حفظ قضية التقاضي الإلكتروني:", error);
+    throw error;
+  }
+}
+
+export async function deleteELitigationCase(caseId: string): Promise<void> {
+  const orgId = requireOrgId();
+  const { error } = await supabase
+    .from("e_litigation_cases")
+    .delete()
+    .eq("case_id", caseId)
+    .eq("org_id", orgId);
+  if (error) throw error;
+}
+
+export async function deleteFieldCheckin(id: string): Promise<void> {
+  const orgId = requireOrgId();
+  const { error } = await supabase
+    .from("field_checkins")
+    .delete()
+    .eq("id", id)
+    .eq("org_id", orgId);
+  if (error) throw error;
+}
+
+// ─── نماذج العقود (Contract Templates) ─────────────────────────
+export async function fetchContractTemplates(): Promise<any[]> {
+  const orgId = requireOrgId();
+  const { data, error } = await supabase
+    .from("contract_templates")
+    .select("*")
+    .eq("org_id", orgId)
+    .is("deleted_at", null)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+
+export async function saveContractTemplate(templateData: any): Promise<void> {
+  const orgId = requireOrgId();
+  try {
+    const { error } = await supabase
+      .from("contract_templates")
+      .upsert({ ...templateData, org_id: orgId });
+    if (error) throw error;
+  } catch (error) {
+    console.error("خطأ في حفظ نموذج العقد:", error);
+    throw error;
+  }
+}
+
+export async function deleteContractTemplate(id: string): Promise<void> {
+  const orgId = requireOrgId();
+  const { error } = await supabase
+    .from("contract_templates")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", id)
+    .eq("org_id", orgId);
+  if (error) throw error;
+}
+
+// ─── الزيارات الميدانية (Field Checkins) ─────────────────────────
+export async function fetchFieldCheckins(): Promise<any[]> {
+  const orgId = requireOrgId();
+  try {
+    const { data, error } = await supabase
+      .from("field_checkins")
+      .select("*")
+      .eq("org_id", orgId)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error("خطأ في جلب الزيارات الميدانية:", error);
+    return [];
+  }
+}
+
+export async function saveFieldCheckin(checkin: any): Promise<void> {
+  const orgId = requireOrgId();
+  try {
+    const { error } = await supabase
+      .from("field_checkins")
+      .upsert({ ...checkin, org_id: orgId });
+    if (error) throw error;
+  } catch (error) {
+    console.error("خطأ في حفظ الزيارة الميدانية:", error);
+    throw error;
+  }
+}
+
+// ─── العقود (Contracts) ──────────────────────────────────────────
+export async function fetchContracts(): Promise<any[]> {
+  const orgId = requireOrgId();
+  try {
+    const { data, error } = await supabase
+      .from("contracts")
+      .select("*")
+      .eq("org_id", orgId)
+      .is("deleted_at", null)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error("خطأ في جلب العقود:", error);
+    return [];
+  }
+}
+
+export async function saveContract(contract: any): Promise<void> {
+  const orgId = requireOrgId();
+  try {
+    const { error } = await supabase
+      .from("contracts")
+      .upsert({ ...contract, org_id: orgId });
+    if (error) throw error;
+  } catch (error) {
+    console.error("خطأ في حفظ العقد:", error);
+    throw error;
+  }
+}
+
+export async function deleteContractRecord(id: string): Promise<void> {
+  const orgId = requireOrgId();
+  const { error } = await supabase
+    .from("contracts")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", id)
+    .eq("org_id", orgId);
+  if (error) throw error;
+}
+

@@ -22,6 +22,7 @@ import paymentRouter from './routes/payment.js';
 import messengerRouter from './routes/messenger.js';
 import { initScheduler } from './services/whatsapp/notificationScheduler.js';
 import { initSubscriptionCron } from './services/subscription/subscriptionCron.js';
+import { sendWhatsAppMessage } from './services/whatsapp/messageSender.js';
 
 // Import Middlewares
 import { authMiddleware } from './middleware/auth.js';
@@ -247,33 +248,7 @@ app.listen(PORT, () => {
 
     // Initialize Subscription Cron Jobs (renewal reminders, expiration, win-back)
     try {
-        initSubscriptionCron(async (phone, message, orgId) => {
-            if (!supabaseServiceKey) return false;
-            const { createClient } = await import('@supabase/supabase-js');
-            const sb = createClient(process.env.SUPABASE_URL, supabaseServiceKey);
-            const { data: settings } = await sb
-                .from('whatsapp_settings')
-                .select('*')
-                .eq('org_id', orgId)
-                .eq('is_active', true)
-                .single();
-            if (!settings) return false;
-            const apiToken = settings.api_token_encrypted;
-            const provider = settings.provider || '360dialog';
-            let apiUrl, headers, body;
-            if (provider === '360dialog') {
-                apiUrl = 'https://waba.360dialog.io/v1/messages';
-                headers = { 'D360-API-KEY': apiToken, 'Content-Type': 'application/json' };
-            } else {
-                apiUrl = `https://graph.facebook.com/v18.0/${settings.wa_phone_number}/messages`;
-                headers = { 'Authorization': `Bearer ${apiToken}`, 'Content-Type': 'application/json' };
-            }
-            body = { messaging_product: 'whatsapp', to: phone.replace('+', ''), type: 'text', text: { body: message } };
-            try {
-                const resp = await fetch(apiUrl, { method: 'POST', headers, body: JSON.stringify(body) });
-                return resp.ok;
-            } catch { return false; }
-        });
+        initSubscriptionCron(sendWhatsAppMessage);
         logger.info('📅 Subscription Cron Jobs activated');
     } catch (err) {
         logger.warn({ err: err.message }, 'Subscription Cron init skipped (non-critical)');
@@ -281,35 +256,7 @@ app.listen(PORT, () => {
 
     // Initialize WhatsApp session reminders & invoice notifications
     try {
-        initScheduler(async (phone, message, orgId) => {
-            // Fetch org's WhatsApp settings to send via correct provider
-            if (!supabaseServiceKey) return false;
-            const { createClient } = await import('@supabase/supabase-js');
-            const sb = createClient(process.env.SUPABASE_URL, supabaseServiceKey);
-            const { data: settings } = await sb
-                .from('whatsapp_settings')
-                .select('*')
-                .eq('org_id', orgId)
-                .eq('is_active', true)
-                .single();
-            if (!settings) return false;
-
-            const apiToken = settings.api_token_encrypted;
-            const provider = settings.provider || '360dialog';
-            let apiUrl, headers, body;
-            if (provider === '360dialog') {
-                apiUrl = 'https://waba.360dialog.io/v1/messages';
-                headers = { 'D360-API-KEY': apiToken, 'Content-Type': 'application/json' };
-            } else {
-                apiUrl = `https://graph.facebook.com/v18.0/${settings.wa_phone_number}/messages`;
-                headers = { 'Authorization': `Bearer ${apiToken}`, 'Content-Type': 'application/json' };
-            }
-            body = { messaging_product: 'whatsapp', to: phone.replace('+', ''), type: 'text', text: { body: message } };
-            try {
-                const resp = await fetch(apiUrl, { method: 'POST', headers, body: JSON.stringify(body) });
-                return resp.ok;
-            } catch { return false; }
-        });
+        initScheduler(sendWhatsAppMessage);
         logger.info('📅 WhatsApp Notification Scheduler activated');
     } catch (err) {
         logger.warn({ err: err.message }, 'WhatsApp Scheduler init skipped (non-critical)');

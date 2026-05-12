@@ -7,11 +7,47 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Plus, CalendarClock, Briefcase, Hash, AlertTriangle, CheckCircle, Clock } from "lucide-react";
 import { useExpertStore } from "@/store/useExpertStore";
+import { useEffect } from "react";
+import { fetchExpertMissions, fetchExpertSessions } from "@/services/legalDataService";
 
 export default function ExpertMissions() {
   const missions = useExpertStore(state => state.missions);
+  const setMissions = useExpertStore(state => state.setMissions);
   const [query, setQuery] = useState("");
-  const [selectedId, setSelectedId] = useState<string | null>(missions[0]?.id || null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadMissions = async () => {
+      const dbMissions = await fetchExpertMissions();
+      const fullMissions = await Promise.all(dbMissions.map(async (m: any) => {
+        const sessions = await fetchExpertSessions(m.id);
+        return {
+          id: m.id,
+          caseId: m.case_id,
+          caseName: m.case_id || "غير محدد", // Should join cases for real name
+          expertType: m.expert_type,
+          expertName: m.expert_name,
+          missionNumber: m.mission_number,
+          assignmentDate: m.assignment_date,
+          depositAmount: m.deposit_amount,
+          reportReceived: m.report_received,
+          objectionFiled: m.objection_filed,
+          status: m.status,
+          sessions: sessions.map((s: any) => ({
+            id: s.id,
+            date: s.date,
+            result: s.result,
+            nextSession: s.next_session
+          }))
+        };
+      }));
+      setMissions(fullMissions);
+      if (fullMissions.length > 0 && !selectedId) {
+        setSelectedId(fullMissions[0].id);
+      }
+    };
+    loadMissions();
+  }, []);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();

@@ -13,7 +13,8 @@ import { useClientsStore } from "@/store/useClientsStore";
 import { useEnforcementStore } from "@/store/useEnforcementStore";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
-import { fetchCases, fetchClients, fetchEnforcement, fetchTasks, fetchTeam, fetchTrustAccounts } from "@/services/legalDataService";
+import { fetchCases, fetchClients, fetchEnforcement, fetchTasks, fetchTeam, fetchTrustAccounts, saveCase } from "@/services/legalDataService";
+import { CSVImporter } from "@/components/CSVImporter";
 
 import { 
   DropdownMenu, 
@@ -230,6 +231,28 @@ export default function Cases() {
   
   const { handleLinkToELitigation } = useCaseActions();
 
+  const handleImportCases = async (data: any[]) => {
+    for (const row of data) {
+      const title = row['اسم القضية'] || row['title'] || row['Title'];
+      if (!title) continue;
+      
+      try {
+        await saveCase({
+          title,
+          court: row['المحكمة'] || row['court'] || '',
+          plaintiff: row['المدعي'] || row['plaintiff'] || '',
+          defendant: row['المدعى عليه'] || row['defendant'] || '',
+          status: row['الحالة'] || row['status'] || 'متداولة',
+          type: row['النوع'] || row['type'] || 'مدني',
+        });
+      } catch (err) {
+        console.error("Failed to import case:", title);
+      }
+    }
+    const newCases = await fetchCases();
+    if (newCases?.length > 0) useCasesStore.getState().setCases(newCases);
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0, x: -20 }}
@@ -241,15 +264,17 @@ export default function Cases() {
           <h1 className="text-2xl font-bold text-navy-900 dark:text-white">إدارة القضايا</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">متابعة القضايا، المذكرات، والربط مع بوابة التقاضي الإلكتروني.</p>
         </div>
-        
-        <Button
-          type="button"
-          className="bg-primary-500 hover:bg-primary-600 text-white gap-2 shadow-lg shadow-primary-500/20"
-          onClick={() => setIsNewCaseOpen(true)}
-        >
-          <Plus size={18} />
-          قضية جديدة
-        </Button>
+        <div className="flex items-center gap-2">
+          <CSVImporter onImport={handleImportCases} label="استيراد قضايا (CSV)" />
+          <Button
+            type="button"
+            className="bg-primary-500 hover:bg-primary-600 text-white gap-2 shadow-lg shadow-primary-500/20"
+            onClick={() => setIsNewCaseOpen(true)}
+          >
+            <Plus size={18} />
+            قضية جديدة
+          </Button>
+        </div>
         <NewCaseDialog 
           open={isNewCaseOpen} 
           onOpenChange={(open) => {

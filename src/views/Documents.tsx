@@ -9,10 +9,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Upload, Search, Download, Trash2, Folder, File, Filter } from "lucide-react";
 import { toast } from "sonner";
-import { useState, useCallback, memo } from "react";
+import { useState, useCallback, memo, useEffect } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useCasesStore } from "@/store/useCasesStore";
 import React from "react";
+import { fetchDocuments, saveDocument, deleteDocumentRecord, uploadDocumentFile, downloadDocumentFile, deleteDocumentFile } from "@/services/legalDataService";
 
 type DocRow = {
   id: string;
@@ -22,6 +23,7 @@ type DocRow = {
   size: string;
   date: string;
   uploadedBy: string;
+  storagePath?: string;
 };
 
 function formatBytes(n: number) {
@@ -66,12 +68,8 @@ const DocumentRow = memo(({ doc, onDownload, onDelete }: { doc: DocRow, onDownlo
 export default function Documents() {
   const currentUser = useAuthStore((s) => s.currentUser);
   const cases = useCasesStore((s) => s.cases) || [];
-  const [documents, setDocuments] = useState<DocRow[]>([
-    { id: "d1", name: "لائحة دعوى - شركة الراجحي.pdf", case: "C-2024-001", type: "لائحة", size: "2.4 MB", date: "2024-04-01", uploadedBy: "أحمد المحامي" },
-    { id: "d2", name: "عقد تأسيس شركة النهضة.pdf", case: "C-2024-002", type: "عقد", size: "1.1 MB", date: "2024-04-05", uploadedBy: "سارة المستشارة" },
-    { id: "d3", name: "مذكرة جوابية - عمالي.docx", case: "C-2024-003", type: "مذكرة", size: "500 KB", date: "2024-04-10", uploadedBy: "أحمد المحامي" },
-    { id: "d4", name: "حكم ابتدائي - قضية تجارية.pdf", case: "C-2024-001", type: "حكم", size: "3.2 MB", date: "2024-04-12", uploadedBy: "خالد الشريك" },
-  ]);
+  const [documents, setDocuments] = useState<DocRow[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFolder, setActiveFolder] = useState<string | null>(null);
@@ -80,21 +78,76 @@ export default function Documents() {
 
   const [sortBy, setSortBy] = useState<"date_desc" | "date_asc" | "name">("date_desc");
 
-  const handleDownload = useCallback((doc: DocRow) => {
-    const blob = new Blob(["محتوى المستند التجريبي"], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = doc.name;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success(`تم تحميل المستند: ${doc.name}`);
+  useEffect(() => {
+    loadDocuments();
   }, []);
 
-  const handleDelete = useCallback((id: string) => {
-    setDocuments((prev) => prev.filter((d) => d.id !== id));
-    toast.success(`تم حذف المستند من السجل`);
+  const loadDocuments = async () => {
+    setIsLoading(true);
+    try {
+      const docs = await fetchDocuments();
+      setDocuments(docs.map((d: any) => ({
+        id: d.id,
+        name: d.name,
+        case: d.case_id || "عام",
+        type: d.type || "مستند",
+        size: formatBytes(d.size_bytes || 0),
+        date: new Date(d.created_at).toISOString().slice(0, 10),
+        uploadedBy: d.uploaded_by || "مستخدم",
+        storagePath: d.storage_path
+      })));
+    } catch (e) {
+      toast.error("فشل تحميل المستندات");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDownload = useCallback(async (doc: DocRow) => {
+    const loadingToast = toast.loading("جاري التحميل...");
+    try {
+      if (doc.storagePath) {
+        const blob = await downloadDocumentFile(doc.storagePath);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = doc.name;
+        a.click();
+        URL.revokeObjectURL(url);
+      } else {
+        const blob = new Blob(["محتوى المستند التجريبي"], { type: "text/plain;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = doc.name;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+      toast.success(`تم تحميل المستند: ${doc.name}`, { id: loadingToast });
+    } catch (e) {
+      toast.error("فشل تحميل المستند", { id: loadingToast });
+    }
   }, []);
+
+  const handleDelete = useCallback(async (id: string) => {
+    try {
+      const doc = documents.find((d) => d.id === id);
+      if (doc?.storagePath) {
+        try {
+          await deleteDocumentFile(doc.storagePath);
+        } catch (e) {
+          console.error("Storage delete failed", e);
+        }
+      }
+      if (!id.startsWith("d-")) {
+        await deleteDocumentRecord(id);
+      }
+      setDocuments((prev) => prev.filter((d) => d.id !== id));
+      toast.success(`تم حذف المستند من السجل`);
+    } catch (e) {
+      toast.error("فشل حذف المستند");
+    }
+  }, [documents]);
 
   const filteredDocuments = documents.filter((doc) => {
     const matchesSearch = doc.name.includes(searchTerm) || doc.case.includes(searchTerm);
@@ -133,7 +186,7 @@ export default function Documents() {
           </DialogHeader>
           <form
             className="space-y-4 pt-2"
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault();
               const fd = new FormData(e.currentTarget);
               const file = (fd.get("file") as File) || null;
@@ -141,20 +194,27 @@ export default function Documents() {
                 toast.error("اختر ملفاً");
                 return;
               }
-              const caseRef = String(fd.get("caseRef") || "").trim() || "—";
+              const caseRef = String(fd.get("caseRef") || "").trim();
               const docType = String(fd.get("docType") || "").trim() || "مستند";
-              const row: DocRow = {
-                id: `d-${Date.now()}`,
-                name: file.name,
-                case: caseRef,
-                type: docType,
-                size: formatBytes(file.size),
-                date: new Date().toISOString().slice(0, 10),
-                uploadedBy: currentUser?.name || "مستخدم",
-              };
-              setDocuments((prev) => [row, ...prev]);
-              toast.success("تم تسجيل المستند في المكتب");
-              setUploadOpen(false);
+              
+              const loadingToast = toast.loading("جاري الرفع...");
+              try {
+                const { path } = await uploadDocumentFile(file, caseRef);
+                const newDoc = {
+                  name: file.name,
+                  case_id: caseRef || null,
+                  type: docType,
+                  size_bytes: file.size,
+                  storage_path: path,
+                  uploaded_by: currentUser?.name || "مستخدم"
+                };
+                await saveDocument(newDoc);
+                toast.success("تم تسجيل المستند في المكتب", { id: loadingToast });
+                setUploadOpen(false);
+                loadDocuments();
+              } catch (err) {
+                toast.error("فشل رفع المستند", { id: loadingToast });
+              }
             }}
           >
             <div className="space-y-2">

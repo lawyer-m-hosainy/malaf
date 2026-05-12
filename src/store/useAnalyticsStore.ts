@@ -14,6 +14,7 @@ interface AnalyticsState {
   fetchAnalyticsData: () => Promise<void>;
   getAttorneyPerformance: () => { name: string; cases: number; winningRate: number; billableHours: number }[];
   executeConflictCheck: (query: string) => ConflictCheckRecord;
+  reset: () => void;
 }
 
 const INITIAL_FINANCIAL = { totalRevenue: 0, totalVat: 0, collectionRate: 0, projectedRevenue: 0, totalCollected: 0, totalExpenses: 0 };
@@ -22,6 +23,8 @@ export const useAnalyticsStore = create<AnalyticsState>((set) => ({
   financialSummary: INITIAL_FINANCIAL,
   practiceAreaStats: [],
   isLoading: false,
+
+  reset: () => set({ financialSummary: INITIAL_FINANCIAL, practiceAreaStats: [], isLoading: false }),
 
   fetchAnalyticsData: async () => {
     const orgId = getCurrentTenantId();

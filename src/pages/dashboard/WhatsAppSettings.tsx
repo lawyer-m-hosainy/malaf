@@ -156,6 +156,8 @@ export function WhatsAppSettings() {
               <Label htmlFor="provider">مزود الخدمة</Label>
               <select 
                 id="provider"
+                aria-label="مزود الخدمة"
+                title="مزود الخدمة"
                 className="w-full h-10 rounded-md border border-slate-200 dark:border-white/10 bg-transparent px-3 py-2 text-sm"
                 value={settings.provider || 'meta_cloud'}
                 onChange={(e) => setSettings({ ...settings, provider: e.target.value })}

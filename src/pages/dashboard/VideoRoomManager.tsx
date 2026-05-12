@@ -191,6 +191,8 @@ export function VideoRoomManager() {
           </h3>
           <div className="flex flex-col sm:flex-row gap-3">
             <select
+              aria-label="اختر قضية"
+              title="اختر قضية"
               value={selectedCaseId}
               onChange={(e) => setSelectedCaseId(e.target.value)}
               className="flex-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2.5 text-sm text-gray-900 dark:text-white"

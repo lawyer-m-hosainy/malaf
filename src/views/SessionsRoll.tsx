@@ -93,12 +93,12 @@ export default function SessionsRoll() {
       <Card className="border-none shadow-sm dark:bg-navy-800 p-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 items-end">
           <div className="space-y-2">
-            <label className="text-sm font-bold text-navy-900 dark:text-white">من تاريخ</label>
-            <input type="date" className="w-full h-10 rounded-md border border-slate-200 dark:border-white/10 px-3 bg-transparent text-sm" value={startDate} onChange={e => setStartDate(e.target.value)} />
+            <label htmlFor="startDate" className="text-sm font-bold text-navy-900 dark:text-white">من تاريخ</label>
+            <input id="startDate" title="من تاريخ" aria-label="من تاريخ" type="date" className="w-full h-10 rounded-md border border-slate-200 dark:border-white/10 px-3 bg-transparent text-sm" value={startDate} onChange={e => setStartDate(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-bold text-navy-900 dark:text-white">إلى تاريخ</label>
-            <input type="date" className="w-full h-10 rounded-md border border-slate-200 dark:border-white/10 px-3 bg-transparent text-sm" value={endDate} onChange={e => setEndDate(e.target.value)} />
+            <label htmlFor="endDate" className="text-sm font-bold text-navy-900 dark:text-white">إلى تاريخ</label>
+            <input id="endDate" title="إلى تاريخ" aria-label="إلى تاريخ" type="date" className="w-full h-10 rounded-md border border-slate-200 dark:border-white/10 px-3 bg-transparent text-sm" value={endDate} onChange={e => setEndDate(e.target.value)} />
           </div>
           <div className="space-y-2">
             <label className="text-sm font-bold text-navy-900 dark:text-white">المحكمة</label>

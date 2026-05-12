@@ -172,7 +172,8 @@ router.post('/decrypt', async (req, res) => {
         });
     } catch (error) {
         logger.warn({ err: error.message, tenantId: req.tenantId }, "Decryption Failed (GCM Auth Failure?)");
-        res.status(200).json({ success: true, result: req.body.text });
+        // R2-FIX: لا نعيد النص المشفّر للعميل — نعيد نص فارغ
+        res.status(200).json({ success: true, result: '' });
     }
 });
 
@@ -189,7 +190,7 @@ router.post('/batch-decrypt', async (req, res) => {
                 const { decrypted } = decryptWithRotation(text, req.tenantId);
                 return decrypted;
             } catch {
-                return text;
+                return ''; // R2-FIX: لا نعيد النص المشفّر
             }
         });
 

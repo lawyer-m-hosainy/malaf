@@ -33,7 +33,7 @@ router.get('/plans', async (req, res) => {
  */
 router.post('/create', async (req, res) => {
   try {
-    const orgId = req.tenantId || req.body.org_id;
+    const orgId = req.tenantId; // R2-FIX: لا نقبل org_id من body — فقط من JWT
     const { plan, billing_cycle, name, email, phone } = req.body;
 
     if (!orgId || !plan) {

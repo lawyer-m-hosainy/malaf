@@ -35,10 +35,10 @@ export const useAuthStore = create<AuthState>()(
     const permissions: Record<string, string[]> = {
       'محامي شريك': ['*'], // صلاحية كاملة
       'مدير مكتب':  ['*'], // صلاحية كاملة
-      'محامي': ['view_cases', 'edit_cases', 'view_clients', 'legal_qa', 'conflict_check', 'org_admin', 'view_reports'],
-      'محامي مستشار': ['view_cases', 'view_clients', 'legal_qa', 'conflict_check', 'view_reports'],
-      'سكرتير': ['view_clients', 'edit_clients', 'view_cases', 'documents', 'finance_basic'],
-      'محامي متدرب': ['view_cases', 'training_portal', 'view_wiki'],
+      'محامي': ['view_cases', 'edit_cases', 'view_clients', 'edit_clients', 'legal_qa', 'conflict_check', 'org_admin', 'view_reports', 'documents', 'view_calendar', 'view_tasks', 'finance_basic', 'view_wiki'],
+      'محامي مستشار': ['view_cases', 'view_clients', 'legal_qa', 'conflict_check', 'view_reports', 'documents', 'view_calendar', 'view_wiki'],
+      'سكرتير': ['view_clients', 'edit_clients', 'view_cases', 'documents', 'finance_basic', 'view_calendar', 'view_tasks'],
+      'محامي متدرب': ['view_cases', 'training_portal', 'view_wiki', 'documents', 'view_calendar'],
     };
 
     const rolePerms = permissions[userRole] || [];

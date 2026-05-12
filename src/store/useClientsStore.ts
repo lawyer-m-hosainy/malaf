@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { Client, Lead, KeyAccount, Proposal } from '../types';
 import { useNotificationsStore } from './useNotificationsStore';
+import { fetchClients as fetchClientsFromDB } from '@/services/legalDataService';
 
 export type POAType = 'عام' | 'خاص' | 'قضايا فقط' | 'عقاري';
 export type POAOffice = 'الشهر العقاري' | 'موثق خاص' | 'قنصلية';
@@ -88,31 +89,7 @@ interface ClientsState {
   reset: () => void;
 }
 
-const MOCK_CLIENTS: Client[] = [
-  {
-    id: "CL-101",
-    name: "شركة الأفق للتطوير العقاري",
-    type: "منشأة",
-    commercialRegistration: "1010123456",
-    vatNumber: "300123456700003",
-    phone: "+201012345678"
-  },
-  {
-    id: "CL-102",
-    name: "مؤسسة البناء الحديث",
-    type: "منشأة",
-    commercialRegistration: "4030123456",
-    vatNumber: "300987654300003",
-    phone: "+201112345678"
-  },
-  {
-    id: "CL-103",
-    name: "أحمد بن عبدالله المفلح",
-    type: "فرد",
-    nationalId: "28501011234567",
-    phone: "+201212345678"
-  }
-];
+// R1-FIX: تم حذف MOCK_CLIENTS — البيانات تُحمّل من legalDataService
 
 const INITIAL_CLIENTS_STATE = {
   clients: [] as Client[],
@@ -174,7 +151,16 @@ export const useClientsStore = create<ClientsState>((set) => ({
     return { poas: updatedPOAs };
   }),
   fetchClients: async () => {
-    // In a real app, this calls legalDataService.fetchClients()
-    set({ hasLoaded: true });
+    try {
+      const clients = await fetchClientsFromDB();
+      if (clients && clients.length > 0) {
+        set({ clients, hasLoaded: true });
+      } else {
+        set({ hasLoaded: true });
+      }
+    } catch (error) {
+      console.error('فشل تحميل الموكلين:', error);
+      set({ hasLoaded: true });
+    }
   },
 }));

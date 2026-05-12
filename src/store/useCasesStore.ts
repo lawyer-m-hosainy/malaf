@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { Case, Session, Deadline } from '../types';
 import { useNotificationsStore } from './useNotificationsStore';
+import { fetchCases as fetchCasesFromDB, fetchSessions as fetchSessionsFromDB } from '@/services/legalDataService';
 
 interface CasesState {
   cases: Case[];
@@ -80,8 +81,19 @@ export const useCasesStore = create<CasesState>((set, get) => ({
 
   setCases: (cases) => set({ cases, hasLoaded: true }),
   fetchCases: async () => {
-    // In a real app, this calls legalDataService.fetchCases()
-    set({ hasLoaded: true });
+    if (get().isLoading) return;
+    set({ isLoading: true });
+    try {
+      const cases = await fetchCasesFromDB();
+      if (cases && cases.length > 0) {
+        set({ cases, hasLoaded: true, isLoading: false });
+      } else {
+        set({ hasLoaded: true, isLoading: false });
+      }
+    } catch (error) {
+      console.error('فشل تحميل القضايا:', error);
+      set({ hasLoaded: true, isLoading: false });
+    }
   },
   addCase: (caseData) => set((state) => ({ cases: [caseData, ...state.cases] })),
   updateCase: (id, updatedData) => {
@@ -163,10 +175,15 @@ export const useCasesStore = create<CasesState>((set, get) => ({
     if (get().hasLoadedSessions) return;
     set({ isLoading: true });
     try {
-      // In a real app, this would fetch from an API
-      set({ hasLoadedSessions: true, isLoading: false });
+      const sessions = await fetchSessionsFromDB();
+      if (sessions && sessions.length > 0) {
+        set({ sessions, hasLoadedSessions: true, isLoading: false });
+      } else {
+        set({ hasLoadedSessions: true, isLoading: false });
+      }
       checkSessions(get().sessions);
     } catch (error) {
+      console.error('فشل تحميل الجلسات:', error);
       set({ isLoading: false });
     }
   },

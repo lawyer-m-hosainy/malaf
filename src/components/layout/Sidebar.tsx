@@ -163,7 +163,7 @@ export function Sidebar() {
                 "overflow-hidden transition-all duration-200",
                 isOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
               )}>
-                <div className="mr-3 border-r border-white/10 space-y-0.5 py-1">
+                <div className="mr-3 border-e border-white/10 space-y-0.5 py-1">
                   {item.items.map((sub) => (
                     <NavLink
                       key={sub.href}

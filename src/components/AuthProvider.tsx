@@ -17,6 +17,7 @@ import { useExpertStore } from "@/store/useExpertStore";
 import { useIPStore } from "@/store/useIPStore";
 import { useUsageStore } from "@/store/useUsageStore";
 import { useUIStore } from "@/store/useUIStore";
+import { useAnalyticsStore } from "@/store/useAnalyticsStore";
 import { UserRole } from "@/types";
 import { setTenantIdCache } from "@/lib/tenant";
 import { toast } from "sonner";
@@ -40,6 +41,7 @@ function resetAllStores() {
   useIPStore.getState().reset();
   useUsageStore.getState().reset();
   useUIStore.getState().reset();
+  useAnalyticsStore.getState().reset(); // R2-FIX: كان مفقوداً
   setTenantIdCache(null);
   clearDecryptCache();
   localStorage.removeItem('malaf-auth-storage');

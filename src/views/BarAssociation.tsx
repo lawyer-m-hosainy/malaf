@@ -197,7 +197,7 @@ export default function BarAssociation() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>درجة القيد</Label>
-                  <select name="grade" className="w-full border rounded-md p-2 text-sm bg-white dark:bg-navy-900 dark:border-white/10" required>
+                  <select aria-label="درجة القيد" title="درجة القيد" name="grade" className="w-full border rounded-md p-2 text-sm bg-white dark:bg-navy-900 dark:border-white/10" required>
                     <option value="جزئي">جزئي</option>
                     <option value="ابتدائي">ابتدائي</option>
                     <option value="استئناف">استئناف</option>

@@ -93,9 +93,13 @@ export const authMiddleware = async (req, res, next) => {
         req.tenantId = req.user.tenantId;
         req.userRole = req.user.role;
 
-        // ✅ التحقق من وجود tenantId (org_id) — ضروري لعزل المستأجر
+        // ✅ R2-FIX: حظر الطلبات بدون tenantId — ضروري لعزل المستأجر
         if (!req.tenantId) {
-            logger.warn({ uid: req.user.uid }, 'User has no org_id — tenant isolation may fail');
+            logger.warn({ uid: req.user.uid }, 'User has no org_id — request blocked');
+            return res.status(403).json({
+                success: false,
+                error: 'لم يتم ربط حسابك بمكتب. يرجى إكمال التسجيل أو التواصل مع الإدارة.'
+            });
         }
 
         next();

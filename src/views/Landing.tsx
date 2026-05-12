@@ -185,11 +185,26 @@ export default function Landing() {
               >
                 <div className="absolute -inset-4 bg-gradient-to-tr from-primary-500/20 to-emerald-500/20 rounded-[2rem] blur-2xl"></div>
                 <div className="relative bg-white dark:bg-navy-800 border border-slate-200 dark:border-white/10 rounded-[2rem] p-2 shadow-2xl overflow-hidden">
-                  <img 
-                    src="https://picsum.photos/seed/malaf/1200/800" 
-                    alt="Malaf Dashboard Preview" 
-                    className="rounded-[1.5rem] w-full shadow-inner opacity-50 grayscale"
-                  />
+                  <div className="rounded-[1.5rem] w-full aspect-[3/2] bg-slate-100 dark:bg-navy-900 flex flex-col p-6 gap-4">
+                    <div className="w-full flex justify-between items-center pb-4 border-b border-slate-200 dark:border-white/5">
+                      <div className="w-32 h-6 bg-slate-200 dark:bg-white/10 rounded-md"></div>
+                      <div className="flex gap-2">
+                        <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-white/10"></div>
+                        <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-white/10"></div>
+                      </div>
+                    </div>
+                    <div className="flex gap-4 flex-1">
+                      <div className="w-1/4 bg-slate-200 dark:bg-white/5 rounded-xl h-full"></div>
+                      <div className="flex-1 flex flex-col gap-4">
+                        <div className="flex gap-4">
+                          <div className="flex-1 h-24 bg-primary-100 dark:bg-primary-900/30 rounded-xl"></div>
+                          <div className="flex-1 h-24 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl"></div>
+                          <div className="flex-1 h-24 bg-amber-100 dark:bg-amber-900/30 rounded-xl"></div>
+                        </div>
+                        <div className="flex-1 bg-slate-200 dark:bg-white/5 rounded-xl"></div>
+                      </div>
+                    </div>
+                  </div>
                   {/* Floating badge */}
                   <div className="absolute top-8 -start-6 bg-white dark:bg-navy-900 p-4 rounded-2xl shadow-xl border border-slate-100 dark:border-white/5 flex items-center gap-3 animate-bounce-slow">
                     <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center text-emerald-600">
@@ -308,8 +323,8 @@ export default function Landing() {
           <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500">
             <div>&copy; {new Date().getFullYear()} مكتب العدالة للمحاماة والاستشارات القانونية. جميع الحقوق محفوظة.</div>
             <div className="flex gap-6">
-              <a href="#" style={{ pointerEvents: 'none', opacity: 0.4 }} className="hover:text-white transition-colors">الشروط والأحكام</a>
-              <a href="#" style={{ pointerEvents: 'none', opacity: 0.4 }} className="hover:text-white transition-colors">سياسة الخصوصية</a>
+              <a href="#" className="pointer-events-none opacity-40 hover:text-white transition-colors">الشروط والأحكام</a>
+              <a href="#" className="pointer-events-none opacity-40 hover:text-white transition-colors">سياسة الخصوصية</a>
             </div>
           </div>
         </div>

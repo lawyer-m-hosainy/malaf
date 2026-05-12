@@ -110,7 +110,7 @@ export default function App() {
             </div>
           )}
           <OfflineIndicator />
-          <Toaster richColors position="top-center" />
+          <Toaster richColors position="top-left" dir="rtl" />
           <BrowserRouter>
             <Suspense fallback={<RouteLoadingFallback />}>
               <AppDataLoader>
@@ -122,47 +122,47 @@ export default function App() {
                 
                 <Route path="/dashboard" element={<ProtectedRoute><RouteLayoutWrapper /></ProtectedRoute>}>
                   <Route index element={<Dashboard />} />
-                  <Route path="clients" element={<Clients />} />
-                  <Route path="poa" element={<POA />} />
-                <Route path="cases" element={<Cases />} />
-                <Route path="roll" element={<SessionsRoll />} />
-                <Route path="calendar" element={<Calendar />} />
-                <Route path="finance" element={<Finance />} />
-                <Route path="expenses" element={<Expenses />} />
-                <Route path="team" element={<Team />} />
-                <Route path="tasks" element={<Tasks />} />
+                  <Route path="clients" element={<PermissionGate permission="view_clients"><Clients /></PermissionGate>} />
+                  <Route path="poa" element={<PermissionGate permission="view_clients"><POA /></PermissionGate>} />
+                <Route path="cases" element={<PermissionGate permission="view_cases"><Cases /></PermissionGate>} />
+                <Route path="roll" element={<PermissionGate permission="view_cases"><SessionsRoll /></PermissionGate>} />
+                <Route path="calendar" element={<PermissionGate permission="view_calendar"><Calendar /></PermissionGate>} />
+                <Route path="finance" element={<PermissionGate permission="finance_basic"><Finance /></PermissionGate>} />
+                <Route path="expenses" element={<PermissionGate permission="finance_basic"><Expenses /></PermissionGate>} />
+                <Route path="team" element={<PermissionGate permission="org_admin"><Team /></PermissionGate>} />
+                <Route path="tasks" element={<PermissionGate permission="view_tasks"><Tasks /></PermissionGate>} />
                 <Route path="analytics" element={<PermissionGate permission="view_reports"><Analytics /></PermissionGate>} />
-                <Route path="library" element={<LegalLibrary />} />
-                <Route path="contracts" element={<Contracts />} />
-                <Route path="documents" element={<Documents />} />
-                <Route path="ip-management" element={<IPManagement />} />
-                <Route path="time-tracking" element={<TimeTracking />} />
-                <Route path="client-portal" element={<PortalManagement />} />
-                <Route path="conflict-check" element={<ConflictCheck />} />
-                <Route path="enforcement" element={<Enforcement />} />
-                <Route path="collections" element={<Collections />} />
-                <Route path="clm" element={<CLM />} />
-                <Route path="ip-operations" element={<IPOperations />} />
-                <Route path="specialized-tracks" element={<SpecializedTracks />} />
+                <Route path="library" element={<PermissionGate permission="view_cases"><LegalLibrary /></PermissionGate>} />
+                <Route path="contracts" element={<PermissionGate permission="documents"><Contracts /></PermissionGate>} />
+                <Route path="documents" element={<PermissionGate permission="documents"><Documents /></PermissionGate>} />
+                <Route path="ip-management" element={<PermissionGate permission="view_cases"><IPManagement /></PermissionGate>} />
+                <Route path="time-tracking" element={<PermissionGate permission="view_tasks"><TimeTracking /></PermissionGate>} />
+                <Route path="client-portal" element={<PermissionGate permission="org_admin"><PortalManagement /></PermissionGate>} />
+                <Route path="conflict-check" element={<PermissionGate permission="conflict_check"><ConflictCheck /></PermissionGate>} />
+                <Route path="enforcement" element={<PermissionGate permission="view_cases"><Enforcement /></PermissionGate>} />
+                <Route path="collections" element={<PermissionGate permission="finance_basic"><Collections /></PermissionGate>} />
+                <Route path="clm" element={<PermissionGate permission="documents"><CLM /></PermissionGate>} />
+                <Route path="ip-operations" element={<PermissionGate permission="view_cases"><IPOperations /></PermissionGate>} />
+                <Route path="specialized-tracks" element={<PermissionGate permission="view_cases"><SpecializedTracks /></PermissionGate>} />
                 <Route path="audit-logs" element={<PermissionGate permission="org_admin"><AuditLogs /></PermissionGate>} />
-                <Route path="ai-analyzer" element={<AIDocumentAnalyzer />} />
-                <Route path="wiki" element={<InternalWiki />} />
+                <Route path="ai-analyzer" element={<PermissionGate permission="documents"><AIDocumentAnalyzer /></PermissionGate>} />
+                <Route path="wiki" element={<PermissionGate permission="view_wiki"><InternalWiki /></PermissionGate>} />
                 <Route path="whatsapp" element={<PermissionGate permission="org_admin"><WhatsAppSettings /></PermissionGate>} />
-                <Route path="video-rooms" element={<VideoRoomManager />} />
-                <Route path="field-checkins" element={<FieldCheckins />} />
-                <Route path="video/:caseId" element={<VideoRoom />} />
+                <Route path="video-rooms" element={<PermissionGate permission="view_cases"><VideoRoomManager /></PermissionGate>} />
+                <Route path="field-checkins" element={<PermissionGate permission="org_admin"><FieldCheckins /></PermissionGate>} />
+                <Route path="video/:caseId" element={<PermissionGate permission="view_cases"><VideoRoom /></PermissionGate>} />
                 <Route path="platform-admin" element={<PermissionGate permission="platform_admin"><GlobalAdmin /></PermissionGate>} />
                 {/* Egyptian Modules */}
-                <Route path="bar-association" element={<BarAssociation />} />
-                <Route path="economic-court" element={<EconomicCourt />} />
-                <Route path="state-council" element={<StateCouncil />} />
-                <Route path="experts" element={<ExpertMissions />} />
-                <Route path="real-estate-registry" element={<RealEstateRegistry />} />
-                <Route path="family-courts" element={<FamilyCourts />} />
-                <Route path="criminal-cases" element={<CriminalCases />} />
-                <Route path="eta-invoicing" element={<ETAInvoicing />} />
-                <Route path="e-litigation" element={<ELitigation />} />
-                <Route path="settings" element={<Settings />} />
+                <Route path="bar-association" element={<PermissionGate permission="view_cases"><BarAssociation /></PermissionGate>} />
+                <Route path="economic-court" element={<PermissionGate permission="view_cases"><EconomicCourt /></PermissionGate>} />
+                <Route path="state-council" element={<PermissionGate permission="view_cases"><StateCouncil /></PermissionGate>} />
+                <Route path="experts" element={<PermissionGate permission="view_cases"><ExpertMissions /></PermissionGate>} />
+                <Route path="real-estate-registry" element={<PermissionGate permission="view_cases"><RealEstateRegistry /></PermissionGate>} />
+                <Route path="family-courts" element={<PermissionGate permission="view_cases"><FamilyCourts /></PermissionGate>} />
+                <Route path="criminal-cases" element={<PermissionGate permission="view_cases"><CriminalCases /></PermissionGate>} />
+                <Route path="eta-invoicing" element={<PermissionGate permission="finance_basic"><ETAInvoicing /></PermissionGate>} />
+                <Route path="e-litigation" element={<PermissionGate permission="view_cases"><ELitigation /></PermissionGate>} />
+                <Route path="settings" element={<PermissionGate permission="org_admin"><Settings /></PermissionGate>} />
                 <Route path="*" element={<NotFound />} />
               </Route>
               

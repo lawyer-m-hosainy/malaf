@@ -277,7 +277,7 @@ export default function ETAInvoicing() {
               <div><Label>المبلغ الأساسي (ج.م)</Label><Input name="amount" type="number" required min="1" placeholder="25000" /></div>
               <div><Label>وصف الخدمة</Label><Input name="description" required placeholder="أتعاب قضية مدنية" /></div>
               <div className="flex items-center gap-2">
-                <input type="checkbox" id="scheduleTax" name="scheduleTax" className="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500" />
+                <input type="checkbox" id="scheduleTax" name="scheduleTax" aria-label="تطبيق ضريبة جدول 10%" title="تطبيق ضريبة جدول 10%" className="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500" />
                 <Label htmlFor="scheduleTax">تطبيق ضريبة جدول 10% (استشارات وخدمات قانونية)</Label>
               </div>
               <p className="text-xs text-slate-500">* ضريبة القيمة المضافة 14% + دمغة محاماة 20 ج.م ستُحسب تلقائياً</p>

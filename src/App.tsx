@@ -110,7 +110,7 @@ export default function App() {
             </div>
           )}
           <OfflineIndicator />
-          <Toaster richColors position="top-left" dir="rtl" />
+          <Toaster richColors position="top-left" />
           <BrowserRouter>
             <Suspense fallback={<RouteLoadingFallback />}>
               <AppDataLoader>

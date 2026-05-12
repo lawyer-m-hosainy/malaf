@@ -11,7 +11,7 @@ const SessionRollRow = memo(({ item }: { item: any }) => (
   <TableRow className={item.isRecess ? 'bg-amber-50/50 dark:bg-amber-900/10' : ''}>
     <TableCell className="font-bold whitespace-nowrap text-sm">
       {new Date(item.date).toLocaleDateString('ar-EG', { weekday: 'short', month: 'short', day: 'numeric' })}
-      {item.isRecess && <AlertCircle size={12} className="inline ms-1 text-amber-500" title="إجازة قضائية" />}
+      {item.isRecess && <span title="إجازة قضائية"><AlertCircle size={12} className="inline ms-1 text-amber-500" /></span>}
     </TableCell>
     <TableCell className="font-bold text-navy-900 dark:text-white whitespace-nowrap text-sm">{item.caseId}</TableCell>
     <TableCell className="text-sm">{item.court}</TableCell>

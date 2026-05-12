@@ -68,7 +68,7 @@ const initialState = {
       lastUpdated: "2024-04-05",
       tags: ["التحكيم التجاري", "عقود"]
     }
-  ],
+  ] as WikiArticle[],
   workflows: [],
   auditLogs: [],
   eSignatures: [],

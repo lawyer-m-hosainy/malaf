@@ -19,13 +19,13 @@ interface InvoicesState {
 
 const checkOverdueInvoices = (invoices: Invoice | Invoice[]) => {
   const invoiceList = Array.isArray(invoices) ? invoices : [invoices];
-  const overdue = invoiceList.filter(inv => inv.status === 'غير مدفوعة' && new Date(inv.dueDate) < new Date());
+  const overdue = invoiceList.filter(inv => inv.status === 'غير مدفوعة' && new Date(inv.date) < new Date());
   
   if (overdue.length > 0) {
     overdue.forEach(inv => {
       useNotificationsStore.getState().addNotification({
         title: `فاتورة متأخرة: ${inv.id}`,
-        message: `المبلغ المستحق: ${inv.total} ج.م - تاريخ الاستحقاق: ${inv.dueDate}`,
+        message: `المبلغ المستحق: ${inv.total} ج.م - تاريخ الإصدار: ${inv.date}`,
         type: 'error'
       });
     });

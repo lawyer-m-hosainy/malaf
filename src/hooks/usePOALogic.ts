@@ -91,7 +91,7 @@ export function usePOALogic() {
       resetForm();
     } catch (error) {
       if (error instanceof ZodError) {
-        toast.error(error.errors[0]?.message || "خطأ في التحقق");
+        toast.error(error.issues[0]?.message || "خطأ في التحقق");
       } else {
         toast.error("حدث خطأ غير متوقع");
       }

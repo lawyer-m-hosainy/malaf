@@ -184,39 +184,15 @@ export default function Cases() {
   const [caseToDelete, setCaseToDelete] = useState<string | null>(null);
   const [referOpen, setReferOpen] = useState(false);
   const [caseToRefer, setCaseToRefer] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(false);
   
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("الكل");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
+  
+  const isLoading = !hasLoaded;
 
-  React.useEffect(() => {
-    const loadData = async () => {
-      if (hasLoaded) return;
-      setIsLoading(true);
-      try {
-        const [remoteClients, remoteCases, remoteTrust, remoteEnf, remoteTasks, remoteTeam] = await Promise.all([
-          fetchClients(), 
-          fetchCases(),
-          fetchTrustAccounts(),
-          fetchEnforcement(),
-          fetchTasks(),
-          fetchTeam()
-        ]);
-        
-        if (remoteClients?.length > 0) useClientsStore.getState().setClients(remoteClients);
-        if (remoteCases?.length > 0) useCasesStore.getState().setCases(remoteCases);
-        if (remoteTrust?.length > 0) useFinanceStore.getState().setTrustAccounts(remoteTrust);
-        if (remoteEnf?.length > 0) useEnforcementStore.getState().setEnforcementCases(remoteEnf);
-        if (remoteTasks?.length > 0) useTeamStore.getState().setTasks(remoteTasks);
-        if (remoteTeam?.length > 0) useTeamStore.getState().setTeamMembers(remoteTeam);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadData();
-  }, [hasLoaded]);
+  // R8: Data loading moved to global AppDataLoader to prevent redundant fetches on navigation
 
   const handleToggleExpand = React.useCallback((id: string) => {
     setExpandedCase(prev => prev === id ? null : id);

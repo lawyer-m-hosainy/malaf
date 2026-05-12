@@ -22,6 +22,7 @@ export default function AddExpenseDialog({ caseData }: AddExpenseDialogProps) {
     const fd = new FormData(e.currentTarget);
     addExpense({
       id: `EXP-${Date.now()}`,
+      clientId: caseData.clientId,
       caseId: caseData.id,
       caseName: `${caseData.plaintiff} ضد ${caseData.defendant}`,
       category: String(fd.get('category')) as ExpenseCategory,

@@ -80,8 +80,7 @@ export default function VideoRoom() {
           borderRadius: '12px'
         },
         showLeaveButton: false,
-        showFullscreenButton: true,
-        lang: 'ar'
+        showFullscreenButton: true
       }
     );
 

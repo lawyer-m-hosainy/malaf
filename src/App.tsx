@@ -19,6 +19,7 @@ import { logEvent } from "@/observability/logger";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { Toaster } from "@/components/ui/sonner";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
+import { AppDataLoader } from "@/components/AppDataLoader";
 
 const Login = lazy(() => import("./views/Login"));
 const Landing = lazy(() => import("./views/Landing"));
@@ -103,7 +104,7 @@ export default function App() {
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
       <ErrorBoundary fallbackModule="التطبيق الرئيسي">
         <AuthProvider>
-          {(import.meta as any).env?.PROD && (
+          {!((import.meta as any).env?.PROD) && (
             <div className="bg-primary-600 text-white text-[10px] py-1 text-center font-bold sticky top-0 z-[100] shadow-sm select-none">
               بيئة العرض التجريبي - مَلَف (لأغراض الاستعراض فقط)
             </div>
@@ -112,8 +113,9 @@ export default function App() {
           <Toaster richColors position="top-center" />
           <BrowserRouter>
             <Suspense fallback={<RouteLoadingFallback />}>
-              <Routes>
-                <Route path="/" element={<Landing />} />
+              <AppDataLoader>
+                <Routes>
+                  <Route path="/" element={<Landing />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/onboarding" element={<OnboardingFlow />} />
                 <Route path="/client-portal" element={<ClientPortal />} />
@@ -164,9 +166,9 @@ export default function App() {
                 <Route path="*" element={<NotFound />} />
               </Route>
               
-              {/* Redirect old routes if needed */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+              </AppDataLoader>
             </Suspense>
         </BrowserRouter>
         </AuthProvider>

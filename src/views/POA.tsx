@@ -59,7 +59,7 @@ export default function POA() {
                   <Label>الموكل</Label>
                   <Select 
                     value={formData.clientId} 
-                    onValueChange={(v) => setFormData(prev => ({ ...prev, clientId: v }))}
+                    onValueChange={(v) => setFormData(prev => ({ ...prev, clientId: v || '' }))}
                   >
                     <SelectTrigger className="dark:bg-white/5 dark:border-white/10">
                       <SelectValue placeholder="اختر الموكل" />

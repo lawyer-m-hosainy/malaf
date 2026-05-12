@@ -7,6 +7,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { useCasesStore } from "@/store/useCasesStore";
+import { Case } from "@/types";
 
 const services = [
   { title: "توثيق التوكيلات الرسمية", desc: "توكيلات عامة وخاصة في القضايا" },
@@ -16,51 +18,22 @@ const services = [
 ];
 
 export default function RealEstateRegistry() {
-  const [requests] = useState([
-    {
-      id: "REQ-2026-901",
-      contractType: "بيع عقار مسجل",
-      depositDate: "2026-04-10",
-      stage: "فحص",
-      expectedMonthDate: "2026-05-15",
-      fees: 15000,
-      notes: "تم دفع الرسوم المبدئية"
-    },
-    {
-      id: "REQ-2026-905",
-      contractType: "توكيل عام قضايا",
-      depositDate: "2026-05-01",
-      stage: "إيداع",
-      expectedMonthDate: "2026-05-02",
-      fees: 150,
-      notes: ""
-    },
-    {
-      id: "REQ-2026-880",
-      contractType: "تسجيل شركة",
-      depositDate: "2026-03-20",
-      stage: "اعتراض",
-      expectedMonthDate: "-",
-      fees: 5000,
-      notes: "نقص مستندات المساحة"
-    },
-    {
-      id: "REQ-2026-800",
-      contractType: "رهن عقاري",
-      depositDate: "2026-02-15",
-      stage: "شهر",
-      expectedMonthDate: "2026-03-15",
-      fees: 30000,
-      notes: "مكتمل"
-    }
-  ]);
+  const cases = useCasesStore(state => state.cases);
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const renderStageBadge = (stage: string) => {
+  const registryCases = cases.filter(c => c.type === 'عقاري').filter(c => {
+    const matchesSearch = `${c.plaintiff} ${c.defendant} ${c.firstInstanceNumber || ''}`.includes(searchTerm);
+    return matchesSearch;
+  });
+
+  const renderStageBadge = (stage: string | undefined) => {
+    if (!stage) return <Badge variant="outline">غير محدد</Badge>;
     switch(stage) {
       case 'إيداع': return <Badge variant="outline" className="bg-slate-50 text-slate-700">إيداع</Badge>;
       case 'فحص': return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200"><Clock size={12} className="me-1"/> فحص</Badge>;
       case 'اعتراض': return <Badge className="bg-red-50 text-red-700 border-none hover:bg-red-100"><AlertTriangle size={12} className="me-1"/> اعتراض</Badge>;
       case 'شهر': return <Badge className="bg-emerald-50 text-emerald-700 border-none hover:bg-emerald-100"><CheckCircle size={12} className="me-1"/> تم الشهر</Badge>;
+      case 'متداولة': return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200"><Clock size={12} className="me-1"/> متداولة</Badge>;
       default: return <Badge>{stage}</Badge>;
     }
   };
@@ -114,16 +87,20 @@ export default function RealEstateRegistry() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {requests.map(req => (
+              {registryCases.length > 0 ? registryCases.map(req => (
                 <TableRow key={req.id}>
-                  <TableCell className="font-bold text-navy-900 dark:text-white">{req.id}</TableCell>
-                  <TableCell>{req.contractType}</TableCell>
-                  <TableCell>{formatDateEG(req.depositDate)}</TableCell>
-                  <TableCell>{renderStageBadge(req.stage)}</TableCell>
-                  <TableCell className="font-mono text-sm">{req.expectedMonthDate !== '-' ? formatDateEG(req.expectedMonthDate) : '—'}</TableCell>
-                  <TableCell className="font-bold text-emerald-600">{formatEGP(req.fees)}</TableCell>
+                  <TableCell className="font-bold text-navy-900 dark:text-white">{req.firstInstanceNumber || req.id.slice(0, 8)}</TableCell>
+                  <TableCell>{req.plaintiff} ضد {req.defendant}</TableCell>
+                  <TableCell>{formatDateEG(req.createdAt || new Date().toISOString())}</TableCell>
+                  <TableCell>{renderStageBadge(req.status)}</TableCell>
+                  <TableCell className="font-mono text-sm">—</TableCell>
+                  <TableCell className="font-bold text-emerald-600">—</TableCell>
                 </TableRow>
-              ))}
+              )) : (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8 text-slate-500">لا توجد طلبات مسجلة</TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </CardContent>

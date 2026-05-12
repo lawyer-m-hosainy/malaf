@@ -96,6 +96,34 @@ export const useCasesStore = create<CasesState>((set, get) => ({
       });
     }
 
+    // R7: AUTO-CALCULATE APPEAL DEADLINES
+    if (updatedData.status === 'محكوم فيها') {
+      const currentCase = get().cases.find((c: any) => c.id === id);
+      if (currentCase && currentCase.status !== 'محكوم فيها') {
+        const type = updatedData.type || currentCase.type;
+        let days = 0;
+        if (type === 'مدني' || type === 'تجاري' || type === 'أحوال شخصية' || type === 'إداري') days = 40;
+        if (type === 'جنائي') days = 10;
+        
+        if (days > 0) {
+          const deadlineDate = new Date();
+          deadlineDate.setDate(deadlineDate.getDate() + days);
+          
+          const newDeadline: Deadline = {
+            id: `dl-${Date.now()}`,
+            caseId: id,
+            title: `ميعاد استئناف (${days} يوماً) - ${updatedData.title || currentCase.title || ''}`,
+            date: deadlineDate.toISOString().split('T')[0],
+            type: 'انتهاء مدة استئناف',
+            status: 'pending',
+            priority: 'high'
+          };
+          
+          get().addDeadline(newDeadline);
+        }
+      }
+    }
+
     set((state) => ({
       cases: state.cases.map(c => c.id === id ? { ...c, ...updatedData } : c)
     }));

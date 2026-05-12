@@ -5,13 +5,26 @@ import { useState } from "react";
 import { useEffect } from "react";
 import { TrendingUp, TrendingDown, Scale, Users, FileText, PieChart as PieChartIcon, BarChart3, LineChart as LineChartIcon, Calendar as CalendarIcon, DollarSign, Download, Loader2, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  PieChart, Pie, Cell, LineChart, Line, AreaChart, Area, Legend 
-} from 'recharts';
-import { toast } from "sonner";
+import { lazy, Suspense } from "react";
 import { useAnalyticsStore } from '@/store/useAnalyticsStore';
 import { useMemo } from "react";
+
+const BarChart = lazy(() => import('recharts').then(module => ({ default: module.BarChart })));
+const Bar = lazy(() => import('recharts').then(module => ({ default: module.Bar })));
+const XAxis = lazy(() => import('recharts').then(module => ({ default: module.XAxis })));
+const YAxis = lazy(() => import('recharts').then(module => ({ default: module.YAxis })));
+const CartesianGrid = lazy(() => import('recharts').then(module => ({ default: module.CartesianGrid })));
+const Tooltip = lazy(() => import('recharts').then(module => ({ default: module.Tooltip })));
+const ResponsiveContainer = lazy(() => import('recharts').then(module => ({ default: module.ResponsiveContainer })));
+const PieChart = lazy(() => import('recharts').then(module => ({ default: module.PieChart })));
+const Pie = lazy(() => import('recharts').then(module => ({ default: module.Pie })));
+const Cell = lazy(() => import('recharts').then(module => ({ default: module.Cell })));
+const LineChart = lazy(() => import('recharts').then(module => ({ default: module.LineChart })));
+const Line = lazy(() => import('recharts').then(module => ({ default: module.Line })));
+const AreaChart = lazy(() => import('recharts').then(module => ({ default: module.AreaChart })));
+const Area = lazy(() => import('recharts').then(module => ({ default: module.Area })));
+const Legend = lazy(() => import('recharts').then(module => ({ default: module.Legend })));
+import { toast } from "sonner";
 
 const revenueData = [
   { name: 'يناير', revenue: 45000, expenses: 12000, profit: 33000 },
@@ -155,29 +168,31 @@ export default function Analytics() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6 h-[350px]">
-            <ResponsiveContainer width="99%" height={300}>
-              <AreaChart data={revenueData}>
-                <defs>
-                  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#006c35" stopOpacity={0.1}/>
-                    <stop offset="95%" stopColor="#006c35" stopOpacity={0}/>
-                  </linearGradient>
-                  <linearGradient id="colorExpenses" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#ef4444" stopOpacity={0.1}/>
-                    <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b'}} />
-                <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b'}} />
-                <Tooltip 
-                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                />
-                <Legend verticalAlign="top" height={36}/>
-                <Area type="monotone" dataKey="revenue" name="الإيرادات" stroke="#006c35" fillOpacity={1} fill="url(#colorRevenue)" strokeWidth={2} />
-                <Area type="monotone" dataKey="expenses" name="المصروفات" stroke="#ef4444" fillOpacity={1} fill="url(#colorExpenses)" strokeWidth={2} />
-              </AreaChart>
-            </ResponsiveContainer>
+            <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><Loader2 className="animate-spin text-slate-300" /></div>}>
+              <ResponsiveContainer width="99%" height={300}>
+                <AreaChart data={revenueData}>
+                  <defs>
+                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#006c35" stopOpacity={0.1}/>
+                      <stop offset="95%" stopColor="#006c35" stopOpacity={0}/>
+                    </linearGradient>
+                    <linearGradient id="colorExpenses" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#ef4444" stopOpacity={0.1}/>
+                      <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b'}} />
+                  <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b'}} />
+                  <Tooltip 
+                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                  />
+                  <Legend verticalAlign="top" height={36}/>
+                  <Area type="monotone" dataKey="revenue" name="الإيرادات" stroke="#006c35" fillOpacity={1} fill="url(#colorRevenue)" strokeWidth={2} />
+                  <Area type="monotone" dataKey="expenses" name="المصروفات" stroke="#ef4444" fillOpacity={1} fill="url(#colorExpenses)" strokeWidth={2} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </Suspense>
           </CardContent>
         </Card>
 
@@ -189,23 +204,25 @@ export default function Analytics() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6 h-[350px] flex flex-col items-center">
-            <ResponsiveContainer width="99%" height={300}>
-              <PieChart>
-                <Pie
-                  data={caseSuccessData}
-                  innerRadius={80}
-                  outerRadius={110}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {caseSuccessData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
+            <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><Loader2 className="animate-spin text-slate-300" /></div>}>
+              <ResponsiveContainer width="99%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={caseSuccessData}
+                    innerRadius={80}
+                    outerRadius={110}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {caseSuccessData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </Suspense>
           </CardContent>
         </Card>
       </div>
@@ -219,19 +236,21 @@ export default function Analytics() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6 h-[350px]">
-            <ResponsiveContainer width="99%" height={300}>
-              <BarChart data={attorneyPerformance} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
-                <XAxis type="number" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b'}} />
-                <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b'}} />
-                <Tooltip 
-                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                />
-                <Legend />
-                <Bar dataKey="cases" name="القضايا" fill="#006c35" radius={[0, 4, 4, 0]} barSize={20} />
-                <Bar dataKey="winningRate" name="نسبة النجاح %" fill="#d4af37" radius={[0, 4, 4, 0]} barSize={20} />
-              </BarChart>
-            </ResponsiveContainer>
+            <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><Loader2 className="animate-spin text-slate-300" /></div>}>
+              <ResponsiveContainer width="99%" height={300}>
+                <BarChart data={attorneyPerformance} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
+                  <XAxis type="number" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b'}} />
+                  <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b'}} />
+                  <Tooltip 
+                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                  />
+                  <Legend />
+                  <Bar dataKey="cases" name="القضايا" fill="#006c35" radius={[0, 4, 4, 0]} barSize={20} />
+                  <Bar dataKey="winningRate" name="نسبة النجاح %" fill="#d4af37" radius={[0, 4, 4, 0]} barSize={20} />
+                </BarChart>
+              </ResponsiveContainer>
+            </Suspense>
           </CardContent>
         </Card>
 
@@ -243,15 +262,17 @@ export default function Analytics() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6 h-[350px]">
-            <ResponsiveContainer width="99%" height={300}>
-              <LineChart data={revenueData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b'}} />
-                <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b'}} />
-                <Tooltip />
-                <Line type="monotone" dataKey="revenue" stroke="#006c35" strokeWidth={3} dot={{ r: 4, fill: '#006c35' }} activeDot={{ r: 6 }} />
-              </LineChart>
-            </ResponsiveContainer>
+            <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><Loader2 className="animate-spin text-slate-300" /></div>}>
+              <ResponsiveContainer width="99%" height={300}>
+                <LineChart data={revenueData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b'}} />
+                  <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b'}} />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="revenue" stroke="#006c35" strokeWidth={3} dot={{ r: 4, fill: '#006c35' }} activeDot={{ r: 6 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </Suspense>
           </CardContent>
         </Card>
       </div>

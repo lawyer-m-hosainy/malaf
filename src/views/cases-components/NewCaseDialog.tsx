@@ -358,13 +358,29 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>الرقم الآلي</Label>
-            <Input 
-              placeholder="الرقم الآلي للقضية" 
-              value={newCaseData.automatedNumber}
-              onChange={e => setNewCaseData(p => ({ ...p, automatedNumber: e.target.value }))}
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>الرقم الآلي</Label>
+              <Input 
+                placeholder="الرقم الآلي للقضية" 
+                value={newCaseData.automatedNumber}
+                onChange={e => setNewCaseData(p => ({ ...p, automatedNumber: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>درجة التقاضي</Label>
+              <select 
+                className="w-full h-10 rounded-md border border-slate-200 dark:border-white/10 bg-transparent px-3 py-2 text-sm text-navy-900 dark:text-white"
+                value={newCaseData.currentTier}
+                onChange={e => setNewCaseData(p => ({ ...p, currentTier: e.target.value as any }))}
+              >
+                <option value="جزئية" className="dark:bg-navy-900">جزئية (أول درجة)</option>
+                <option value="ابتدائي" className="dark:bg-navy-900">ابتدائية (كلي)</option>
+                <option value="استئناف" className="dark:bg-navy-900">استئناف</option>
+                <option value="نقض" className="dark:bg-navy-900">نقض / إدارية عليا</option>
+                <option value="دستورية عليا" className="dark:bg-navy-900">دستورية عليا</option>
+              </select>
+            </div>
           </div>
 
           <CourtSelector 

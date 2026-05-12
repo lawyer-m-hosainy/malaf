@@ -36,13 +36,14 @@ export const seedDemoData = () => {
       circulationCode: "CIRC-101",
       currentTier: "ابتدائي",
       firstInstanceNumber: "1542/2024",
+      memorandums: [],
     },
     {
       id: "C-2026-002",
       clientId: "CL-EG-002",
       type: "جنائي",
       status: "تحت الدراسة",
-      court: "محكمة جنح العجوزة",
+      court: "المحكمة الجنائية الابتدائية",
       plaintiff: "النيابة العامة",
       defendant: "أحمد محمود المنصوري",
       title: "جنحة شيك بدون رصيد",
@@ -56,13 +57,14 @@ export const seedDemoData = () => {
       criminalTier: "جنحة",
       criminalStage: "مرحلة المحاكمة",
       prosecutionRef: "123/2024 نيابة العجوزة",
+      memorandums: [],
     },
     {
       id: "C-2026-003",
       clientId: "CL-EG-004",
       type: "أحوال شخصية",
       status: "متداولة",
-      court: "محكمة الأسرة بالمعادي",
+      court: "محاكم الأسرة",
       plaintiff: "سارة حسن الجندي",
       defendant: "إبراهيم علي محمود",
       title: "دعوى نفقة زوجية وصغير",
@@ -74,6 +76,7 @@ export const seedDemoData = () => {
       circulationCode: "CIRC-103",
       currentTier: "ابتدائي",
       familyCaseType: "نفقة زوجية",
+      memorandums: [],
     },
   ];
 
@@ -95,7 +98,7 @@ export const seedDemoData = () => {
       caseName: "جنحة شيك - أحمد المنصوري",
       date: new Date(Date.now() + 86400000 * 5).toISOString().split('T')[0],
       time: "10:30",
-      court: "جنح العجوزة",
+      court: "المحكمة الجنائية الابتدائية",
       circuit: "دائرة السبت",
       status: "قادمة",
       responsibleLawyer: "أ. منى سعيد",
@@ -108,13 +111,13 @@ export const seedDemoData = () => {
   ];
 
   const team: TeamMember[] = [
-    { id: "TM-001", name: "د. إبراهيم الفقي", role: "شريك مؤسس", email: "ibrahim@nile-law.eg", avatar: "https://i.pravatar.cc/150?u=ibrahim" },
-    { id: "TM-002", name: "أ. محمود صبري", role: "محامي نقض", email: "mahmoud@nile-law.eg", avatar: "https://i.pravatar.cc/150?u=mahmoud" },
-    { id: "TM-003", name: "أ. رانيا يوسف", role: "محامية استئناف", email: "rania@nile-law.eg", avatar: "https://i.pravatar.cc/150?u=rania" },
+    { id: "TM-001", name: "د. إبراهيم الفقي", role: "محامي شريك", email: "ibrahim@nile-law.eg", avatar: "https://i.pravatar.cc/150?u=ibrahim", activeCases: 10, pendingTasks: 2, completedTasks: 15, joinDate: new Date().toISOString(), status: 'نشط' },
+    { id: "TM-002", name: "أ. محمود صبري", role: "محامي مستشار", email: "mahmoud@nile-law.eg", avatar: "https://i.pravatar.cc/150?u=mahmoud", activeCases: 5, pendingTasks: 4, completedTasks: 20, joinDate: new Date().toISOString(), status: 'نشط' },
+    { id: "TM-003", name: "أ. رانيا يوسف", role: "محامي", email: "rania@nile-law.eg", avatar: "https://i.pravatar.cc/150?u=rania", activeCases: 8, pendingTasks: 1, completedTasks: 10, joinDate: new Date().toISOString(), status: 'نشط' },
   ];
 
   const tasks: Task[] = [
-    { id: "TK-001", title: "إعداد مذكرة الرد", description: "تجهيز الرد على دفوع المقاولات المتحدة", status: "pending", priority: "high", dueDate: new Date(Date.now() + 86400000 * 3).toISOString(), assignedTo: "TM-002", caseId: "C-2026-001" },
+    { id: "TK-001", title: "إعداد مذكرة الرد", status: "pending", priority: "high", dueDate: new Date(Date.now() + 86400000 * 3).toISOString(), assignedTo: "TM-002", caseId: "C-2026-001" },
   ];
 
   // Populate stores

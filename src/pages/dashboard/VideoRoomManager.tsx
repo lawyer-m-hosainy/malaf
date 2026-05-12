@@ -30,7 +30,7 @@ export function VideoRoomManager() {
   const navigate = useNavigate();
   const cases = useCasesStore(s => s.cases);
   const clients = useClientsStore(s => s.clients);
-  const orgId = useAuthStore(s => s.orgId);
+  const orgId = useAuthStore(s => s.currentUser?.orgId);
   const [search, setSearch] = useState('');
   const [sessions, setSessions] = useState<VideoSession[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -196,9 +196,9 @@ export function VideoRoomManager() {
               className="flex-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2.5 text-sm text-gray-900 dark:text-white"
             >
               <option value="">اختر قضية...</option>
-              {cases.filter(c => !c.deletedAt).map(c => (
+              {cases.filter(c => c.status !== 'مغلقة').map(c => (
                 <option key={c.id} value={c.id}>
-                  {c.caseNumber ? `قضية ${c.caseNumber} — ` : ''}{c.plaintiff || 'المدعي'} ضد {c.defendant || 'المدعى عليه'}
+                  {c.firstInstanceNumber ? `قضية ${c.firstInstanceNumber} — ` : ''}{c.plaintiff || 'المدعي'} ضد {c.defendant || 'المدعى عليه'}
                 </option>
               ))}
             </select>

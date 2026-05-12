@@ -60,7 +60,7 @@ const sourceLabels: Record<string, { label: string; icon: any }> = {
 };
 
 export default function FieldCheckins() {
-  const orgId = useAuthStore(s => s.orgId);
+  const orgId = useAuthStore(s => s.currentUser?.orgId);
   const teamMembers = useTeamStore(s => s.teamMembers);
   const [checkins, setCheckins] = useState<CheckIn[]>([]);
   const [locations, setLocations] = useState<KnownLocation[]>([]);

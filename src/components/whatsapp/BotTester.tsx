@@ -27,7 +27,7 @@ export default function BotTester() {
 
     try {
       // ✅ BUG-006 FIX: استخدام API حقيقي بدلاً من setTimeout وهمي
-      const phone = testPhone.trim() || currentUser?.phone || '+201000000000';
+      const phone = testPhone.trim() || '+201000000000';
       await apiPost('/api/whatsapp/send', {
         phone,
         message: testMessage,

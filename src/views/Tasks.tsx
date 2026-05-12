@@ -138,7 +138,7 @@ export default function Tasks() {
         <CardHeader className="border-b border-slate-50 dark:border-white/5">
           <div className="flex items-center gap-2">
             <Filter className="text-slate-400" size={16} />
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v || 'all')}>
               <SelectTrigger className="w-40 dark:bg-navy-900 dark:border-white/10">
                 <SelectValue placeholder="حالة المهمة" />
               </SelectTrigger>
@@ -148,7 +148,7 @@ export default function Tasks() {
                 <SelectItem value="completed">مكتملة</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+            <Select value={priorityFilter} onValueChange={(v) => setPriorityFilter(v || 'all')}>
               <SelectTrigger className="w-40 dark:bg-navy-900 dark:border-white/10">
                 <SelectValue placeholder="الأولوية" />
               </SelectTrigger>

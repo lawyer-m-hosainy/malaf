@@ -32,12 +32,6 @@ interface ETAInvoice {
   description: string;
 }
 
-const initialInvoices: ETAInvoice[] = [
-  { id: 'ETA-001', client: 'شركة النيل للتجارة والتوريدات', clientTaxId: '123-456-789', issuerTaxReg: OFFICE_TAX_REG, etaCode: ETA_ACTIVITY_CODE, amount: 25000, vatAmount: 3500, scheduleTax: 2500, stampDuty: 20, total: 31020, status: 'مرسلة', uuid: 'ETA-UUID-001', date: '2026-04-01', description: 'أتعاب قضية مدنية' },
-  { id: 'ETA-002', client: 'مؤسسة الأهرام الرقمية', clientTaxId: '987-654-321', issuerTaxReg: OFFICE_TAX_REG, etaCode: ETA_ACTIVITY_CODE, amount: 15000, vatAmount: 2100, scheduleTax: 0, stampDuty: 20, total: 17120, status: 'مقبولة', uuid: 'ETA-UUID-002', date: '2026-04-05', description: 'استشارة قانونية' },
-  { id: 'ETA-003', client: 'شركة بيراميدز للمقاولات', clientTaxId: '555-123-456', issuerTaxReg: OFFICE_TAX_REG, etaCode: ETA_ACTIVITY_CODE, amount: 45000, vatAmount: 6300, scheduleTax: 4500, stampDuty: 20, total: 55820, status: 'مرفوضة', uuid: null, date: '2026-04-10', description: 'أتعاب قضية عقود' },
-  { id: 'ETA-004', client: 'مكتب المستقبل للاستيراد', clientTaxId: '444-789-123', issuerTaxReg: OFFICE_TAX_REG, etaCode: ETA_ACTIVITY_CODE, amount: 8000, vatAmount: 1120, scheduleTax: 0, stampDuty: 20, total: 9140, status: 'مسودة', uuid: null, date: '2026-04-15', description: 'إعداد عقد تأسيس' },
-];
 
 export default function ETAInvoicing() {
   const [invoices, setInvoices] = useState<ETAInvoice[]>([]);

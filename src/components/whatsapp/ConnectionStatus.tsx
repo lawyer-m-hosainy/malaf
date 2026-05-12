@@ -34,7 +34,7 @@ const ConnectionStatus = () => {
     } catch {
       setStatus({
         isConnected: false,
-        lastMessage: 'تعذر الاتصال بالخادم',
+        lastMessage: 'تعذر الاتصال بالخادم (Connection Failed)',
         phone: '—',
         isLoading: false,
       });
@@ -54,7 +54,7 @@ const ConnectionStatus = () => {
           )}
         </div>
         <span className={`text-sm font-semibold ${status.isConnected ? 'text-green-700' : 'text-red-600'}`}>
-          {status.isLoading ? 'جاري الفحص...' : status.isConnected ? 'البوت متصل ويعمل' : 'البوت غير متصل'}
+          {status.isLoading ? 'جاري الفحص... (Checking)' : status.isConnected ? 'البوت متصل ويعمل (Connected)' : 'البوت غير متصل (Disconnected)'}
         </span>
         <span className="text-gray-300 hidden sm:inline">|</span>
         <span className="text-sm text-gray-500">

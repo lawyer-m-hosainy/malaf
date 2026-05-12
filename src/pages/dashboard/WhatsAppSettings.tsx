@@ -160,7 +160,7 @@ export function WhatsAppSettings() {
                 value={settings.provider || 'meta_cloud'}
                 onChange={(e) => setSettings({ ...settings, provider: e.target.value })}
               >
-                <option value="meta_cloud">Meta Cloud API (Official)</option>
+                <option value="meta_cloud">واجهة ميتا السحابية (رسمي)</option>
                 <option value="360dialog">360dialog</option>
               </select>
             </div>

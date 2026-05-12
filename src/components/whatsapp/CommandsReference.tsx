@@ -73,7 +73,7 @@ export default function CommandsReference() {
                             {cmd.command}
                           </span>
                         </td>
-                        <td className="py-2 px-3 text-gray-600 dark:text-gray-400" dir="ltr">{cmd.example}</td>
+                        <td className="py-2 px-3 text-gray-600 dark:text-gray-400">{cmd.example}</td>
                         <td className="py-2 px-3 text-gray-600 dark:text-gray-400">{cmd.result}</td>
                       </tr>
                     ))}

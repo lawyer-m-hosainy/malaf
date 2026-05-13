@@ -27,18 +27,18 @@ export default function Landing() {
             </div>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600 dark:text-slate-300">
-            <a href="#services" className="hover:text-primary-600 transition-colors">خدماتنا</a>
-            <a href="#about" className="hover:text-primary-600 transition-colors">من نحن</a>
+            <a href="#services" className="hover:text-primary-600 transition-colors">الميزات</a>
             <a href="#pricing" className="hover:text-primary-600 transition-colors">الباقات</a>
-            <a href="#tech" className="hover:text-primary-600 transition-colors">التقنية القانونية</a>
+            <a href="#about" className="hover:text-primary-600 transition-colors">من نحن</a>
+            <a href="#tech" className="hover:text-primary-600 transition-colors">بوابة الموكلين</a>
             <a href="#contact" className="hover:text-primary-600 transition-colors">تواصل معنا</a>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="ghost" className="hidden md:flex font-medium" onClick={() => navigate('/client-portal')}>
-              بوابة الموكلين
+            <Button variant="ghost" className="hidden md:flex font-medium" onClick={() => navigate('/login')}>
+              تسجيل الدخول
             </Button>
             <Button className="bg-primary-600 hover:bg-primary-700 text-white shadow-md shadow-primary-500/20 rounded-full px-6" onClick={() => navigate('/login')}>
-              تسجيل الدخول
+              ابدأ مجاناً
             </Button>
           </div>
         </div>
@@ -58,31 +58,31 @@ export default function Landing() {
             className="max-w-4xl mx-auto space-y-8"
           >
             <Badge className="bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400 border border-primary-100 dark:border-primary-800/30 px-4 py-1.5 text-sm font-medium">
-              الريادة في تقديم الخدمات القانونية المتكاملة
+              أول نظام إدارة متكامل لمكاتب المحاماة في مصر
             </Badge>
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-black leading-[1.05] tracking-tight text-navy-900 dark:text-white">
-              حوكمة مكاتب <br />
+              حوّل مكتبك إلى <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 via-emerald-600 to-blue-600 animate-gradient">
-                المحاماة الذكية
+                مكتب ذكي
               </span>
             </h1>
             <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 leading-relaxed max-w-2xl mx-auto">
-              أول منصة ERP قانونية متكاملة مصممة خصيصاً للمكاتب والشركات القانونية في مصر. أتمتة كاملة، ذكاء اصطناعي، وإدارة شاملة للقضايا والموكلين.
+              ملف يجمع إدارة القضايا، الموكلين، الجلسات، العقود، والفواتير في منصة واحدة مصممة خصيصاً للمحامي المصري.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8">
-              <Button size="lg" className="w-full sm:w-auto bg-primary-600 hover:bg-primary-700 text-white h-14 px-8 text-lg rounded-full shadow-xl shadow-primary-500/20 transition-transform hover:scale-105" onClick={() => window.location.href='#contact'}>
-                طلب استشارة مجانية
+              <Button size="lg" className="w-full sm:w-auto bg-primary-600 hover:bg-primary-700 text-white h-14 px-8 text-lg rounded-full shadow-xl shadow-primary-500/20 transition-transform hover:scale-105" onClick={() => navigate('/login')}>
+                ابدأ تجربتك المجانية
                 <ArrowLeft className="ms-2 w-5 h-5" />
               </Button>
-              <Button size="lg" variant="outline" className="w-full sm:w-auto h-14 px-8 text-lg rounded-full border-slate-200 dark:border-white/10 bg-white/50 dark:bg-navy-800/50 backdrop-blur-sm hover:bg-slate-100 dark:hover:bg-white/5" onClick={() => navigate('/client-portal')}>
-                متابعة قضيتك
+              <Button size="lg" variant="outline" className="w-full sm:w-auto h-14 px-8 text-lg rounded-full border-slate-200 dark:border-white/10 bg-white/50 dark:bg-navy-800/50 backdrop-blur-sm hover:bg-slate-100 dark:hover:bg-white/5" onClick={() => window.location.href='#services'}>
+                شاهد العرض التوضيحي
               </Button>
             </div>
             
             <div className="pt-12 flex items-center justify-center gap-8 text-sm font-medium text-slate-500 dark:text-slate-400">
-              <div className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-green-500" /> مقيدون بنقابة المحامين المصريين</div>
-              <div className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-green-500" /> سرية تامة</div>
-              <div className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-green-500" /> تقارير دورية</div>
+              <div className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-green-500" /> خوادم سحابية آمنة</div>
+              <div className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-green-500" /> تشفير بيانات بنكي</div>
+              <div className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-green-500" /> نسخ احتياطي يومي</div>
             </div>
           </motion.div>
         </div>
@@ -93,10 +93,10 @@ export default function Landing() {
         <div className="container mx-auto px-6 py-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {[
-              { label: "سنوات الخبرة", value: "+15" },
-              { label: "قضية ناجحة", value: "+2,500" },
-              { label: "موكل راضٍ", value: "+1,200" },
-              { label: "محامٍ ومستشار", value: "24" }
+              { label: "مكتب محاماة مشترك", value: "+500" },
+              { label: "قضية مُدارة", value: "+50,000" },
+              { label: "متوسط التقييم", value: "4.9/5" },
+              { label: "توفير في وقت الإدارة", value: "-60%" }
             ].map((stat, i) => (
               <div key={i} className="space-y-2">
                 <div className="text-4xl md:text-5xl font-bold text-navy-900 dark:text-white">{stat.value}</div>
@@ -111,17 +111,17 @@ export default function Landing() {
       <section id="services" className="py-24 bg-slate-50 dark:bg-navy-900">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16 max-w-2xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">مجالات التخصص</h2>
-            <p className="text-slate-600 dark:text-slate-400 text-lg">نغطي طيفاً واسعاً من التخصصات القانونية لتلبية كافة احتياجاتك بدقة واحترافية.</p>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">ماذا تدير بملف؟</h2>
+            <p className="text-slate-600 dark:text-slate-400 text-lg">منصة واحدة تغنيك عن عشرات التطبيقات وملفات الإكسل المشتتة.</p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { icon: Building2, title: "القضايا التجارية", desc: "تأسيس الشركات، صياغة العقود التجارية، قضايا الإفلاس، والمنازعات بين الشركاء." },
-              { icon: Briefcase, title: "القضايا العمالية", desc: "تمثيل الشركات والعمال في منازعات العمل، صياغة لوائح تنظيم العمل، وعقود التوظيف." },
-              { icon: Gavel, title: "القضايا الجزائية", desc: "الدفاع في القضايا الجنائية، الجرائم الاقتصادية، والجرائم المعلوماتية." },
-              { icon: Users, title: "الأحوال الشخصية", desc: "قضايا التركات، الأوقاف، الوصايا، وكافة النزاعات الأسرية بسرية تامة." },
-              { icon: FileText, title: "الملكية الفكرية", desc: "تسجيل العلامات التجارية، براءات الاختراع، وحماية حقوق المؤلف." },
-              { icon: ShieldCheck, title: "الامتثال والحوكمة", desc: "ضمان توافق أعمال شركتك مع الأنظمة واللوائح المحلية والدولية." }
+              { icon: Gavel, title: "القضايا والجلسات", desc: "إدارة متكاملة للمواعيد، المحاكم، والمستجدات مع تنبيهات تلقائية قبل كل جلسة." },
+              { icon: Users, title: "الموكلين", desc: "ملفات كاملة لكل موكل، عقود، وتواصل مباشر ومسجل لحفظ حقوق المكتب." },
+              { icon: FileText, title: "الفواتير والتحصيل", desc: "إصدار فواتير إلكترونية متوافقة مع منظومة ETA المصرية، وتتبع للمدفوعات المتأخرة." },
+              { icon: Briefcase, title: "إدارة الفريق", desc: "صلاحيات دقيقة لكل محامٍ، توزيع المهام، وقياس ومتابعة إنتاجية أعضاء المكتب." },
+              { icon: Scale, title: "الذكاء الاصطناعي", desc: "صياغة مستندات قانونية وتلخيص مذكرات ومرفقات ضخمة في ثوانٍ معدودة." },
+              { icon: ShieldCheck, title: "بوابة الموكلين", desc: "شفافية تامة ورضا أكبر لعملائك من خلال بوابة خاصة تتيح لهم متابعة قضاياهم دون إزعاجك." }
             ].map((service, i) => (
               <motion.div
                 key={i}
@@ -144,26 +144,53 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Target Audience Section */}
+      <section className="py-24 bg-white dark:bg-navy-800 border-t border-slate-100 dark:border-white/5">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16 max-w-2xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">لمن صُمِّمت ملف؟</h2>
+            <p className="text-slate-600 dark:text-slate-400 text-lg">منصة مرنة تتكيف مع حجم عملك وطبيعة مكتبك.</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              { icon: Users, title: "مكاتب المحاماة الفردية", desc: "إدارة كل شيء لوحدك بدون فريق إداري. وفر وقتك للعمل القانوني الحقيقي بدلاً من الأعمال الإدارية." },
+              { icon: Briefcase, title: "شركات المحاماة المتوسطة", desc: "تنسيق فرق العمل، توزيع المهام، ومتابعة الأداء اليومي لكل محامٍ في فريقك." },
+              { icon: Building2, title: "الشركات القانونية الكبرى", desc: "حوكمة متكاملة، تقارير تنفيذية دقيقة، وإدارة صلاحيات معقدة للفروع المتعددة." }
+            ].map((audience, i) => (
+              <div key={i} className="p-8 rounded-3xl bg-slate-50 dark:bg-navy-900 border border-slate-100 dark:border-white/5 text-center hover:border-primary-200 transition-colors">
+                <div className="w-16 h-16 bg-white dark:bg-navy-800 text-primary-600 dark:text-primary-400 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+                  <audience.icon className="w-8 h-8" />
+                </div>
+                <h3 className="text-xl font-bold mb-4">{audience.title}</h3>
+                <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                  {audience.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Tech/Portal Section */}
-      <section id="tech" className="py-24 bg-white dark:bg-navy-800 overflow-hidden">
+      <section id="tech" className="py-24 bg-slate-50 dark:bg-navy-900 overflow-hidden">
         <div className="container mx-auto px-6">
           <div className="flex flex-col lg:flex-row items-center gap-16">
             <div className="lg:w-1/2 space-y-8">
               <Badge className="bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-none px-4 py-1.5 text-sm">
-                التقنية في خدمة القانون
+                ميزة تنافسية لمكتبك
               </Badge>
               <h2 className="text-3xl md:text-4xl font-bold leading-tight">
-                بوابة موكلين متطورة <br /> تبقيك على اطلاع دائم
+                بوابة موكلين متطورة <br /> تبقي عملاءك على اطلاع دائم
               </h2>
               <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
-                نؤمن بالشفافية المطلقة. من خلال بوابة الموكلين الخاصة بنا، يمكنك متابعة سير قضاياك، الاطلاع على الجلسات القادمة، تحميل المستندات، والتواصل مع فريق العمل الموكل بقضيتك على مدار الساعة.
+                ارفع مستوى الشفافية والرضا لدى موكليك. من خلال بوابة الموكلين الخاصة بك، يمكن لعملائك متابعة سير قضاياهم، الاطلاع على الجلسات، وتحميل المستندات دون الحاجة لإزعاجك بالاتصالات المتكررة.
               </p>
               <ul className="space-y-4">
                 {[
-                  "تحديثات فورية لحالة القضية",
-                  "ربط مع بوابة التقاضي الإلكتروني",
-                  "أرشفة إلكترونية آمنة للمستندات",
-                  "فواتير إلكترونية متوافقة مع منظومة ETA"
+                  "تقليل اتصالات الاستفسار بنسبة 70%",
+                  "أرشفة إلكترونية آمنة لمستندات الموكل",
+                  "واجهة احترافية تحمل شعار مكتبك",
+                  "شفافية تامة تعزز ثقة العميل"
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-3 text-slate-700 dark:text-slate-300 font-medium">
                     <div className="w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900/50 flex items-center justify-center text-primary-600 dark:text-primary-400">
@@ -173,8 +200,8 @@ export default function Landing() {
                   </li>
                 ))}
               </ul>
-              <Button size="lg" className="bg-navy-900 hover:bg-navy-800 dark:bg-white dark:bg-navy-900 dark:text-navy-900 dark:hover:bg-slate-100 rounded-full px-8" onClick={() => navigate('/client-portal')}>
-                اكتشف بوابة الموكلين
+              <Button size="lg" className="bg-navy-900 hover:bg-navy-800 dark:bg-white dark:bg-navy-900 dark:text-navy-900 dark:hover:bg-slate-100 rounded-full px-8" onClick={() => navigate('/login')}>
+                تعرف على بوابة الموكلين
               </Button>
             </div>
             <div className="lg:w-1/2 relative">
@@ -227,14 +254,14 @@ export default function Landing() {
       <section className="py-24 bg-slate-50 dark:bg-navy-900">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">ماذا يقول موكلونا</h2>
-            <p className="text-slate-600 dark:text-slate-400 text-lg">نفخر بثقة عملائنا ونعتبرها وسام شرف لنا.</p>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">ماذا يقول أصحاب المكاتب</h2>
+            <p className="text-slate-600 dark:text-slate-400 text-lg">آراء محامين ومديري مكاتب استخدموا المنصة لتحويل أعمالهم.</p>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
             {[
-              { name: "شركة الأفق للتجارة", text: "احترافية عالية في التعامل مع قضيتنا التجارية المعقدة. فريق العمل كان متجاوباً جداً والبوابة الإلكترونية سهلت علينا متابعة كل جديد." },
-              { name: "مؤسسة البناء الحديث", text: "صياغة العقود لديهم دقيقة جداً وتحمي حقوقنا بشكل كامل. نعتمد عليهم كمستشار قانوني دائم لمؤسستنا." },
-              { name: "عبدالله السالم", text: "سرعة في الإنجاز وشفافية في التعامل. تم إنهاء قضيتي العمالية في وقت قياسي وبنتائج مرضية جداً." }
+              { name: "أ. خالد منصور، شريك في مكتب منصور وشركاه", text: "كنا بنضيع 3 ساعات يومياً في التنظيم الورقي والبحث في الملفات. مع ملف، بقت الـ 3 ساعات دول شغل حقيقي وقضايا أكتر." },
+              { name: "أ. نورهان إبراهيم، مديرة مكتب", text: "بوابة الموكلين خفّضت استفسارات الواتساب والمكالمات الهاتفية من مكتبنا بنسبة 70%، الموكل بيشوف قضيته بنفسه في أي وقت." },
+              { name: "أ. محمود سليم، محامٍ حر", text: "النظام المحاسبي وربطه بالفاتورة الإلكترونية أنقذنا من غرامات التأخير ووفر وقت المحاسب بشكل لا يصدق. المنصة دي ضرورة مش رفاهية." }
             ].map((testimonial, i) => (
               <div key={i} className="p-8 rounded-3xl bg-white dark:bg-navy-800 border border-slate-100 dark:border-white/5">
                 <div className="flex gap-1 text-amber-400 mb-6">
@@ -362,12 +389,12 @@ export default function Landing() {
         <div className="absolute inset-0 bg-primary-600"></div>
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
         <div className="container mx-auto px-6 relative z-10 text-center">
-          <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">هل أنت مستعد لحماية حقوقك؟</h2>
+          <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">مكتبك يستحق أكثر من Excel وواتساب</h2>
           <p className="text-primary-100 text-lg mb-10 max-w-2xl mx-auto">
-            تواصل معنا اليوم للحصول على استشارة قانونية مبدئية. فريقنا جاهز لدراسة قضيتك وتقديم أفضل الحلول القانونية.
+            جرّب ملف مجاناً لمدة 14 يوم واستمتع بإدارة ذكية ومتكاملة لمكتبك — بدون الحاجة لبطاقة ائتمان.
           </p>
-          <Button size="lg" className="bg-white dark:bg-navy-900 text-primary-600 hover:bg-slate-50 h-14 px-10 text-lg rounded-full shadow-xl" onClick={() => window.location.href='#contact'}>
-            تواصل معنا الآن
+          <Button size="lg" className="bg-white dark:bg-navy-900 text-primary-600 hover:bg-slate-50 h-14 px-10 text-lg rounded-full shadow-xl" onClick={() => navigate('/login')}>
+            ابدأ الآن
           </Button>
         </div>
       </section>
@@ -387,7 +414,7 @@ export default function Landing() {
                 </div>
               </div>
               <p className="text-sm leading-relaxed text-slate-400">
-                مكتب محاماة رائد يقدم خدمات قانونية متكاملة للشركات والأفراد، معتمدين على الخبرة العميقة والتقنية الحديثة.
+                منصة SaaS متكاملة مصممة خصيصاً لرقمنة مكاتب المحاماة في مصر والوطن العربي، من خلال حلول ذكية وأتمتة شاملة.
               </p>
             </div>
             
@@ -395,19 +422,19 @@ export default function Landing() {
               <h4 className="text-white font-bold mb-6">روابط سريعة</h4>
               <ul className="space-y-3 text-sm">
                 <li><a href="/" className="hover:text-primary-400 transition-colors">الرئيسية</a></li>
-                <li><a href="#services" className="hover:text-primary-400 transition-colors">خدماتنا</a></li>
+                <li><a href="#services" className="hover:text-primary-400 transition-colors">الميزات</a></li>
+                <li><a href="#pricing" className="hover:text-primary-400 transition-colors">الباقات والأسعار</a></li>
                 <li><a href="#about" className="hover:text-primary-400 transition-colors">من نحن</a></li>
-                <li><a href="/client-portal" className="hover:text-primary-400 transition-colors">بوابة الموكلين</a></li>
               </ul>
             </div>
             
             <div>
               <h4 className="text-white font-bold mb-6">الخدمات</h4>
               <ul className="space-y-3 text-sm">
-                <li><a href="/login" className="hover:text-primary-400 transition-colors">القضايا التجارية</a></li>
-                <li><a href="/login" className="hover:text-primary-400 transition-colors">القضايا العمالية</a></li>
-                <li><a href="/login" className="hover:text-primary-400 transition-colors">تأسيس الشركات</a></li>
-                <li><a href="/login" className="hover:text-primary-400 transition-colors">صياغة العقود</a></li>
+                <li><a href="/client-portal" className="hover:text-primary-400 transition-colors">بوابة الموكلين</a></li>
+                <li><a href="#" className="hover:text-primary-400 transition-colors">تطبيقات الهواتف</a></li>
+                <li><a href="#" className="hover:text-primary-400 transition-colors">مركز المساعدة</a></li>
+                <li><a href="#" className="hover:text-primary-400 transition-colors">API للمطورين</a></li>
               </ul>
             </div>
             
@@ -431,7 +458,7 @@ export default function Landing() {
           </div>
           
           <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500">
-            <div>&copy; {new Date().getFullYear()} مكتب العدالة للمحاماة والاستشارات القانونية. جميع الحقوق محفوظة.</div>
+            <div>&copy; {new Date().getFullYear()} شركة ملف لتقنية المعلومات. جميع الحقوق محفوظة.</div>
             <div className="flex gap-6">
               <a href="#" className="pointer-events-none opacity-40 hover:text-white transition-colors">الشروط والأحكام</a>
               <a href="#" className="pointer-events-none opacity-40 hover:text-white transition-colors">سياسة الخصوصية</a>

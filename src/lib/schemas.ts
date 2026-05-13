@@ -1,15 +1,19 @@
 import { z } from 'zod';
 
-// التحقق من رقم الجوال المصري (+201xxxxxxxxx أو 01xxxxxxxxx)
+// التحقق من رقم الجوال المصري (+201xxxxxxxxx أو 01xxxxxxxxx) - السماح بمسافات اختيارية
 const egyptMobileRegex = /^(\+201|01)[0-9]{9}$/;
 
 export const clientSchema = z.object({
   name: z.string().min(2, { message: "الاسم يجب أن يكون حرفين على الأقل" }),
   type: z.enum(['فرد', 'منشأة'], { message: "نوع العميل مطلوب" }),
-  phone: z.string().regex(egyptMobileRegex, { message: "رقم الجوال يجب أن يبدأ بـ +201 أو 01 ويتبعه 9 أرقام" }).optional().or(z.literal('')),
-  nationalId: z.string().refine(val => val === '' || /^[23]\d{13}$/.test(val), { 
-    message: "الرقم القومي يجب أن يكون 14 رقم ويبدأ بـ 2 أو 3" 
-  }).optional().or(z.literal('')),
+  phone: z.string().transform(v => v.replace(/\s+/g, '')).pipe(
+    z.string().regex(egyptMobileRegex, { message: "رقم الجوال غير صحيح (يجب أن يكون 11 رقم يبدأ بـ 01)" }).optional().or(z.literal(''))
+  ).optional().or(z.literal('')),
+  nationalId: z.string().transform(v => v.replace(/\s+/g, '')).pipe(
+    z.string().refine(val => val === '' || /^[23]\d{13}$/.test(val), { 
+      message: "الرقم القومي يجب أن يكون 14 رقم ويبدأ بـ 2 أو 3" 
+    }).optional().or(z.literal(''))
+  ).optional().or(z.literal('')),
   commercialRegistration: z.string().optional().or(z.literal('')),
   vatNumber: z.string().optional().or(z.literal('')),
   address: z.string().optional(),

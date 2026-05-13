@@ -4,7 +4,7 @@ import { clientSchema } from "@/lib/schemas";
 import { ZodError } from "zod";
 import { toast } from "sonner";
 import { useEffect } from "react";
-import { fetchClients, fetchClientsPaginated } from "@/services/legalDataService";
+import { fetchClients, fetchClientsPaginated, saveClient } from "@/services/legalDataService";
 
 
 export function useClientsLogic() {
@@ -99,25 +99,35 @@ export function useClientsLogic() {
     }
   }, [deleteClient]);
 
-  const handleSubmit = useCallback((e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
+      // تنظيف البيانات وتحويل الهاتف للصيغة الدولية
+      const cleanPhone = formData.phone.trim().replace(/\s+/g, '');
       const formattedData = {
         ...formData,
-        phone: formData.phone.startsWith('01') ? `+20${formData.phone.substring(1)}` : formData.phone
+        name: formData.name.trim(),
+        phone: cleanPhone.startsWith('01') ? `+20${cleanPhone.substring(1)}` : cleanPhone,
+        nationalId: formData.nationalId.trim(),
+        commercialRegistration: formData.commercialRegistration.trim(),
+        vatNumber: formData.vatNumber.trim(),
       };
 
-      clientSchema.parse(formattedData);
+      // التحقق من البيانات
+      const validated = clientSchema.parse(formattedData);
       
       if (editingClientId) {
-        updateClient(editingClientId, formattedData);
+        await saveClient({ ...validated, id: editingClientId } as any);
+        updateClient(editingClientId, validated);
         toast.success("تم تحديث بيانات العميل بنجاح");
       } else {
+        const newId = `C-${Date.now()}`;
         const newClient = {
-          id: `C-${Date.now()}`,
-          ...formattedData,
+          id: newId,
+          ...validated,
         };
+        await saveClient(newClient as any);
         addClient(newClient as any);
         toast.success("تم إضافة العميل بنجاح");
       }
@@ -125,10 +135,13 @@ export function useClientsLogic() {
       setIsOpen(false);
       resetForm();
     } catch (error) {
+      console.error("Validation/Save Error:", error);
       if (error instanceof ZodError) {
-        toast.error((error as any).errors?.[0]?.message || "خطأ في التحقق");
+        // إظهار أول خطأ موجود في الـ Schema
+        const firstError = error.errors[0];
+        toast.error(firstError.message || "خطأ في البيانات المدخلة");
       } else {
-        toast.error("حدث خطأ غير متوقع");
+        toast.error("حدث خطأ أثناء حفظ البيانات، يرجى المحاولة مرة أخرى");
       }
     }
   }, [formData, editingClientId, updateClient, addClient, resetForm]);

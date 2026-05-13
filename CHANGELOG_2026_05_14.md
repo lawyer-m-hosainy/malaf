@@ -4,6 +4,7 @@
 
 ### Fixed
 - **Case & Invoice Persistence**: Resolved "Unexpected Error" when saving/updating cases and invoices by implementing robust field mapping between frontend (camelCase) and backend (snake_case).
+- **Duplicate Client Prevention**: Implemented a check to prevent registering the same client twice based on their National ID or Commercial Registration, addressing the data duplication issue.
 - **Critical UI Restoration**: Fixed an issue where the main application (`App.tsx`) was returning a "HELLO WORLD" test message, restoring the full routing and module system.
 - **Schema Compatibility**: Added a filtering layer in `legalDataService.ts` to strip out extra frontend-only fields (like specialized workflow flags) before sending data to Supabase, preventing 400 Bad Request errors.
 - **Entity Synchronization**: Improved sync for Tasks, Sessions, POAs, and Expenses by ensuring correct column names are used in `upsert` operations.

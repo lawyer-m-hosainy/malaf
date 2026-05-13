@@ -122,6 +122,19 @@ export function useClientsLogic() {
         updateClient(editingClientId, validated);
         toast.success("تم تحديث بيانات العميل بنجاح");
       } else {
+        // === منع التكرار (Duplicate Detection) ===
+        const isDuplicate = clients.some(c => 
+          (validated.nationalId && c.nationalId === validated.nationalId) || 
+          (validated.commercialRegistration && c.commercialRegistration === validated.commercialRegistration)
+        );
+
+        if (isDuplicate) {
+          toast.error("هذا العميل مسجل بالفعل (يوجد تطابق في الرقم القومي أو السجل التجاري)", {
+            description: "يرجى التأكد من البيانات أو البحث عن العميل في القائمة."
+          });
+          return;
+        }
+
         const newId = `C-${Date.now()}`;
         const newClient = {
           id: newId,

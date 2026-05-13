@@ -13,6 +13,7 @@
 - **Enhanced Case Roles**: Added support for complex legal roles like "Plaintiff & Counter-Defendant", "Intervener", and "Appellee" to handle diverse litigation scenarios.
 - **Flexible Court Selection**: Converted the court/location field into a searchable input with free-text support, allowing lawyers to manually enter any court or location across the republic.
 - **Contextual Form Labels**: Implemented dynamic field labeling in the case form that adjusts based on the selected role (e.g., automatically switching between "Plaintiffs" and "Appellants").
+- **Accessibility Improvements**: Fixed accessibility warnings in the `CourtSelector` component by adding descriptive `title` attributes to all dropdown menus.
 - **Reliability**: Strengthened the `try-catch` blocks in data services to provide more specific error context in the console while maintaining a user-friendly UI.
 
 ### Technical Details

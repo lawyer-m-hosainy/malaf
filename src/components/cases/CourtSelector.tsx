@@ -43,6 +43,7 @@ export function CourtSelector({ value, onChange, error }: CourtSelectorProps) {
           نوع القضية <span className="text-red-500">*</span>
         </label>
         <select
+          title="نوع القضية"
           value={value.category}
           onChange={(e) => handleCategoryChange(e.target.value)}
           className="w-full h-10 rounded-md border border-slate-200 dark:border-white/10 bg-transparent px-3 py-2 text-sm text-navy-900 dark:text-white"
@@ -60,6 +61,7 @@ export function CourtSelector({ value, onChange, error }: CourtSelectorProps) {
           التصنيف <span className="text-red-500">*</span>
         </label>
         <select
+          title="تصنيف القضية"
           value={value.subType}
           onChange={(e) => handleSubTypeChange(e.target.value)}
           disabled={!value.category}

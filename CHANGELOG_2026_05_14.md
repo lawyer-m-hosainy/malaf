@@ -9,8 +9,9 @@
 - **Entity Synchronization**: Improved sync for Tasks, Sessions, POAs, and Expenses by ensuring correct column names are used in `upsert` operations.
 - **Audit Logging**: Ensured that audit logs are correctly triggered for Case and Invoice updates.
 
-### Improved
-- **Data Fetching**: Updated `fetchCases`, `fetchSessions`, and `fetchExpenses` to automatically map database snake_case columns back to the frontend's expected camelCase properties.
+- **Enhanced Case Roles**: Added support for complex legal roles like "Plaintiff & Counter-Defendant", "Intervener", and "Appellee" to handle diverse litigation scenarios.
+- **Flexible Court Selection**: Converted the court/location field into a searchable input with free-text support, allowing lawyers to manually enter any court or location across the republic.
+- **Contextual Form Labels**: Implemented dynamic field labeling in the case form that adjusts based on the selected role (e.g., automatically switching between "Plaintiffs" and "Appellants").
 - **Reliability**: Strengthened the `try-catch` blocks in data services to provide more specific error context in the console while maintaining a user-friendly UI.
 
 ### Technical Details

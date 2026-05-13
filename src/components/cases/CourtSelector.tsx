@@ -77,17 +77,22 @@ export function CourtSelector({ value, onChange, error }: CourtSelectorProps) {
         <label className="text-sm font-medium">
           المحكمة / المكان <span className="text-red-500">*</span>
         </label>
-        <select
-          value={value.location}
-          onChange={(e) => handleLocationChange(e.target.value)}
-          disabled={!value.subType}
-          className="w-full h-10 rounded-md border border-slate-200 dark:border-white/10 bg-transparent px-3 py-2 text-sm text-navy-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <option value="" className="dark:bg-navy-900">— اختر المحكمة —</option>
-          {locations.map((loc) => (
-            <option key={loc} value={loc} className="dark:bg-navy-900">{loc}</option>
-          ))}
-        </select>
+        <div className="relative">
+          <input
+            list="court-locations"
+            value={value.location}
+            onChange={(e) => handleLocationChange(e.target.value)}
+            disabled={!value.subType}
+            placeholder={!value.subType ? "— اختر التصنيف أولاً —" : "اختر المحكمة أو اكتبها يدوياً..."}
+            className="w-full h-10 rounded-md border border-slate-200 dark:border-white/10 bg-transparent px-3 py-2 text-sm text-navy-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed outline-none focus:ring-2 focus:ring-primary-500/20"
+          />
+          <datalist id="court-locations">
+            {locations.map((loc) => (
+              <option key={loc} value={loc} />
+            ))}
+          </datalist>
+        </div>
+        <p className="text-[10px] text-slate-400">يمكنك اختيار محكمة من القائمة أو كتابة اسم المحكمة/المكان يدوياً</p>
       </div>
 
       {/* رسالة الخطأ */}

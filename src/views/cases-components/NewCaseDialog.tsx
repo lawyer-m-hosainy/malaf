@@ -252,12 +252,19 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
               <Label>صفة الموكل</Label>
               <select 
                 title="صفة الموكل"
-                className="w-full h-10 rounded-md border border-slate-200 dark:border-white/10 bg-transparent px-3 py-2 text-sm"
+                className="w-full h-10 rounded-md border border-slate-200 dark:border-white/10 bg-transparent px-3 py-2 text-sm text-navy-900 dark:text-white"
                 value={newCaseData.clientRole}
                 onChange={e => setNewCaseData(p => ({ ...p, clientRole: e.target.value as any }))}
               >
-                <option value="مدعي">مدعي</option>
-                <option value="مدعى عليه">مدعى عليه</option>
+                <option value="مدعي" className="dark:bg-navy-900">مدعي</option>
+                <option value="مدعى عليه" className="dark:bg-navy-900">مدعى عليه</option>
+                <option value="مدعي ومدعى عليه فرعياً" className="dark:bg-navy-900">مدعي ومدعى عليه فرعياً (طلب عارض)</option>
+                <option value="متدخل هجومي" className="dark:bg-navy-900">متدخل هجومي (خصم ثالث)</option>
+                <option value="متدخل انضمامي" className="dark:bg-navy-900">متدخل انضمامي (مع أحد الأطراف)</option>
+                <option value="مستأنف" className="dark:bg-navy-900">مستأنف</option>
+                <option value="مستأنف ضده" className="dark:bg-navy-900">مستأنف ضده</option>
+                <option value="طاعن" className="dark:bg-navy-900">طاعن (بالنقض)</option>
+                <option value="مطعون ضده" className="dark:bg-navy-900">مطعون ضده</option>
               </select>
             </div>
           </div>
@@ -508,10 +515,14 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
           )}
 
           <div className="grid grid-cols-2 gap-4">
-            {newCaseData.clientRole === 'مدعي' ? (
+            {['مدعي', 'مدعي ومدعى عليه فرعياً', 'مستأنف', 'طاعن', 'متدخل هجومي', 'متدخل انضمامي'].includes(newCaseData.clientRole) ? (
               <>
                 <div className="space-y-2">
-                  <Label>باقي المدعين (موكلين آخرين معك)</Label>
+                  <Label>
+                    {newCaseData.clientRole === 'مستأنف' ? 'باقي المستأنفين (معك)' : 
+                     newCaseData.clientRole === 'طاعن' ? 'باقي الطاعنين (معك)' : 
+                     'باقي المدعين (موكلين آخرين معك)'}
+                  </Label>
                   <Input 
                     placeholder="أسماء الموكلين الإضافيين (إن وجد)" 
                     value={newCaseData.plaintiff}
@@ -520,9 +531,13 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
                   <p className="text-[10px] text-slate-400">يمكنك كتابة أكثر من اسم مفصولين بفاصلة</p>
                 </div>
                 <div className="space-y-2">
-                  <Label>الخصوم (المدعى عليهم)</Label>
+                  <Label>
+                    {newCaseData.clientRole === 'مستأنف' ? 'الخصوم (المستأنف ضدهم)' : 
+                     newCaseData.clientRole === 'طاعن' ? 'الخصوم (المطعون ضدهم)' : 
+                     'الخصوم (المدعى عليهم)'}
+                  </Label>
                   <Input 
-                    placeholder="أسماء الخصوم المدعى عليهم" 
+                    placeholder="أسماء الخصوم" 
                     value={newCaseData.defendant}
                     onChange={e => setNewCaseData(p => ({ ...p, defendant: e.target.value }))}
                   />
@@ -531,15 +546,23 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
             ) : (
               <>
                 <div className="space-y-2">
-                  <Label>الخصوم (المدعون)</Label>
+                  <Label>
+                    {newCaseData.clientRole === 'مستأنف ضده' ? 'الخصوم (المستأنفون)' : 
+                     newCaseData.clientRole === 'مطعون ضده' ? 'الخصوم (الطاعنون)' : 
+                     'الخصوم (المدعون)'}
+                  </Label>
                   <Input 
-                    placeholder="أسماء الخصوم المدعين" 
+                    placeholder="أسماء الخصوم" 
                     value={newCaseData.plaintiff}
                     onChange={e => setNewCaseData(p => ({ ...p, plaintiff: e.target.value }))}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>باقي المدعى عليهم (موكلين آخرين معك)</Label>
+                  <Label>
+                    {newCaseData.clientRole === 'مستأنف ضده' ? 'باقي المستأنف ضدهم (معك)' : 
+                     newCaseData.clientRole === 'مطعون ضده' ? 'باقي المطعون ضدهم (معك)' : 
+                     'باقي المدعى عليهم (موكلين آخرين معك)'}
+                  </Label>
                   <Input 
                     placeholder="أسماء الموكلين الإضافيين (إن وجد)" 
                     value={newCaseData.defendant}

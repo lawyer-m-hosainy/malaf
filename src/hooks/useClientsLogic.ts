@@ -138,7 +138,7 @@ export function useClientsLogic() {
       console.error("Validation/Save Error:", error);
       if (error instanceof ZodError) {
         // إظهار أول خطأ موجود في الـ Schema
-        const firstError = error.errors[0];
+        const firstError = error.issues[0];
         toast.error(firstError.message || "خطأ في البيانات المدخلة");
       } else {
         toast.error("حدث خطأ أثناء حفظ البيانات، يرجى المحاولة مرة أخرى");

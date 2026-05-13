@@ -345,6 +345,8 @@ export default function Login() {
               </Dialog>
             </div>
 
+            {/* Demo Mode — Dev only */}
+            {!((import.meta as any).env?.PROD) && (
             <div className="pt-4">
               <div className="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 p-4 rounded-xl text-xs border border-emerald-200 dark:border-emerald-900/50 text-center space-y-2">
                 <div className="font-black text-sm uppercase">منطقة المستثمرين | Investor Zone</div>
@@ -371,6 +373,7 @@ export default function Login() {
                 بدء العرض التفاعلي للمنصة
               </Button>
             </div>
+            )}
 
             <div className="mt-4 text-center">
               <Button variant="link" onClick={() => navigate('/')} className="text-primary-600 dark:text-primary-400">

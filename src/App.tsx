@@ -104,11 +104,7 @@ export default function App() {
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
       <ErrorBoundary fallbackModule="التطبيق الرئيسي">
         <AuthProvider>
-          {!((import.meta as any).env?.PROD) && (
-            <div className="bg-primary-600 text-white text-[10px] py-1 text-center font-bold sticky top-0 z-[100] shadow-sm select-none">
-              بيئة العرض التجريبي - مَلَف (لأغراض الاستعراض فقط)
-            </div>
-          )}
+
           <OfflineIndicator />
           <Toaster richColors position="top-left" />
           <BrowserRouter>

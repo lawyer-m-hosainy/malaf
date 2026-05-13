@@ -29,6 +29,7 @@ export default function Landing() {
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600 dark:text-slate-300">
             <a href="#services" className="hover:text-primary-600 transition-colors">خدماتنا</a>
             <a href="#about" className="hover:text-primary-600 transition-colors">من نحن</a>
+            <a href="#pricing" className="hover:text-primary-600 transition-colors">الباقات</a>
             <a href="#tech" className="hover:text-primary-600 transition-colors">التقنية القانونية</a>
             <a href="#contact" className="hover:text-primary-600 transition-colors">تواصل معنا</a>
           </div>
@@ -244,6 +245,115 @@ export default function Landing() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section id="pricing" className="py-24 bg-white dark:bg-navy-800">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16 max-w-2xl mx-auto">
+            <Badge className="bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400 border-none px-4 py-1.5 text-sm mb-4">
+              باقات الاشتراك
+            </Badge>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">اختر الباقة المناسبة لمكتبك</h2>
+            <p className="text-slate-600 dark:text-slate-400 text-lg">أسعار شفافة بدون رسوم خفية. جميع الباقات تشمل تحديثات مجانية ودعم فني.</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {[
+              {
+                name: "الأساسية",
+                price: 300,
+                desc: "مثالية لمكاتب المحاماة الناشئة",
+                popular: false,
+                features: [
+                  "إدارة العملاء والقضايا",
+                  "الفاتورة الإلكترونية (ETA)",
+                  "التقويم والمواعيد",
+                  "مساعد الذكاء الاصطناعي (محدود)",
+                  "حتى 5 مستخدمين",
+                  "50 قضية",
+                ]
+              },
+              {
+                name: "المتقدمة",
+                price: 600,
+                desc: "الأنسب للمكاتب المتوسطة والمتنامية",
+                popular: true,
+                features: [
+                  "كل ميزات الأساسية",
+                  "إدارة العقود (CLM)",
+                  "نظام التحصيل",
+                  "فحص تعارض المصالح",
+                  "تتبع الوقت والفوترة",
+                  "تقارير متقدمة",
+                  "حتى 20 مستخدم",
+                  "500 قضية",
+                ]
+              },
+              {
+                name: "المؤسسات",
+                price: 1300,
+                desc: "للشركات القانونية الكبرى",
+                popular: false,
+                features: [
+                  "كل ميزات المتقدمة",
+                  "إدارة الامتثال (GRC)",
+                  "بوابة العميل الخاصة",
+                  "الملكية الفكرية",
+                  "المسارات المتخصصة",
+                  "دعم فني ذو أولوية",
+                  "مستخدمون غير محدودون",
+                  "قضايا غير محدودة",
+                ]
+              }
+            ].map((plan, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.15 }}
+                className={`relative p-8 rounded-3xl border-2 transition-all ${
+                  plan.popular
+                    ? "border-primary-500 bg-primary-50/50 dark:bg-primary-900/10 shadow-xl shadow-primary-500/10 scale-105"
+                    : "border-slate-100 dark:border-white/5 bg-white dark:bg-navy-800 hover:border-primary-200 dark:hover:border-primary-800/30"
+                }`}
+              >
+                {plan.popular && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                    <Badge className="bg-primary-600 text-white px-4 py-1 text-xs font-bold shadow-lg">الأكثر طلباً</Badge>
+                  </div>
+                )}
+                <div className="text-center mb-6">
+                  <h3 className="text-xl font-bold text-navy-900 dark:text-white mb-2">{plan.name}</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">{plan.desc}</p>
+                  <div className="flex items-baseline justify-center gap-1">
+                    <span className="text-5xl font-black text-navy-900 dark:text-white">{plan.price}</span>
+                    <span className="text-sm text-slate-400 font-medium">ج.م/شهر</span>
+                  </div>
+                </div>
+                <ul className="space-y-3 mb-8">
+                  {plan.features.map((f, j) => (
+                    <li key={j} className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+                      <CheckCircle2 className="w-4 h-4 text-primary-500 shrink-0" />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <Button
+                  onClick={() => navigate('/login')}
+                  className={`w-full py-5 rounded-xl font-bold transition-all ${
+                    plan.popular
+                      ? "bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-500/20"
+                      : "bg-slate-100 dark:bg-white/5 hover:bg-primary-600 hover:text-white text-navy-900 dark:text-white"
+                  }`}
+                >
+                  ابدأ الآن
+                </Button>
+              </motion.div>
+            ))}
+          </div>
+          <p className="text-center text-sm text-slate-400 mt-8">جميع الأسعار بالجنيه المصري وتشمل ضريبة القيمة المضافة. خصم 17% على الاشتراك السنوي.</p>
         </div>
       </section>
 

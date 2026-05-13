@@ -183,13 +183,17 @@ async function resolveUserProfile(
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  // R185-FIX: Guard against re-entrant handleAuthChange calls
+  const processingRef = React.useRef(false);
 
   useEffect(() => {
     // Supabase v2 onAuthStateChange fires INITIAL_SESSION immediately upon subscribing.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        // Prevent infinite loops: if we triggered the update ourselves, just update the local state
-        if (event === 'USER_UPDATED') {
+        // R185-FIX: Prevent infinite loops — USER_UPDATED and TOKEN_REFRESHED
+        // are triggered by our own supabase.auth.updateUser() call inside resolveUserProfile.
+        // Processing them as full auth changes creates a re-entrant loop → Error #185.
+        if (event === 'USER_UPDATED' || event === 'TOKEN_REFRESHED') {
            setUser(session?.user || null);
            return;
         }
@@ -201,35 +205,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const handleAuthChange = async (supabaseUser: any) => {
-    if (supabaseUser) {
-      const profile = await resolveUserProfile(supabaseUser);
-      if (!profile) {
-        toast.error("تعذر تحميل ملف المستخدم. يرجى إعادة تسجيل الدخول.");
-        await supabase.auth.signOut();
-        setTenantIdCache(null);
-        useAuthStore.getState().setCurrentUser(null);
-        setUser(null);
-        setLoading(false);
-        return;
-      }
+    // R185-FIX: Prevent concurrent calls (e.g. INITIAL_SESSION + SIGNED_IN firing together)
+    if (processingRef.current) return;
+    processingRef.current = true;
 
-      const { role, orgId } = profile;
-      setTenantIdCache(orgId);
-      
-      useAuthStore.getState().setCurrentUser({
-        id: supabaseUser.id,
-        name: supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || "المستخدم",
-        email: supabaseUser.email || "",
-        role,
-        orgId,
-        avatar: supabaseUser.user_metadata?.avatar_url || undefined,
-      });
-      setUser(supabaseUser);
-    } else {
-      setUser(null);
-      resetAllStores(); // Clear all data
+    try {
+      if (supabaseUser) {
+        const profile = await resolveUserProfile(supabaseUser);
+        if (!profile) {
+          toast.error("تعذر تحميل ملف المستخدم. يرجى إعادة تسجيل الدخول.");
+          await supabase.auth.signOut();
+          setTenantIdCache(null);
+          useAuthStore.getState().setCurrentUser(null);
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+
+        const { role, orgId } = profile;
+        setTenantIdCache(orgId);
+        
+        useAuthStore.getState().setCurrentUser({
+          id: supabaseUser.id,
+          name: supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || "المستخدم",
+          email: supabaseUser.email || "",
+          role,
+          orgId,
+          avatar: supabaseUser.user_metadata?.avatar_url || undefined,
+        });
+        setUser(supabaseUser);
+      } else {
+        setUser(null);
+        resetAllStores(); // Clear all data
+      }
+      setLoading(false);
+    } finally {
+      processingRef.current = false;
     }
-    setLoading(false);
   };
 
   if (loading) {

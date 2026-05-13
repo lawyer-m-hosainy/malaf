@@ -1,40 +1,18 @@
-# 📝 سجل التعديلات - 14 مايو 2026
+# Changelog - 2026-05-14
 
-هذا الملف مخصص لتتبع التغييرات التي تمت برمجياً اليوم لضمان استقرار المنصة وتوثيق التحسينات.
+## [1.2.1] - 2026-05-14
 
-## 🛠️ التعديلات التقنية (Infrastructure)
+### Fixed
+- **Case & Invoice Persistence**: Resolved "Unexpected Error" when saving/updating cases and invoices by implementing robust field mapping between frontend (camelCase) and backend (snake_case).
+- **Schema Compatibility**: Added a filtering layer in `legalDataService.ts` to strip out extra frontend-only fields (like specialized workflow flags) before sending data to Supabase, preventing 400 Bad Request errors.
+- **Entity Synchronization**: Improved sync for Tasks, Sessions, POAs, and Expenses by ensuring correct column names are used in `upsert` operations.
+- **Audit Logging**: Ensured that audit logs are correctly triggered for Case and Invoice updates.
 
-### 1. حل مشكلة تحميل متغيرات البيئة (ESM Environment Fix)
-- **المشكلة:** كان السيرفر (`server.js`) يفشل في التشغيل محلياً بسبب عدم قراءة مفاتيح Supabase قبل تحميل المسارات (Routes) نتيجة طبيعة ملفات ESM.
-- **الحل:** تم إنشاء ملف وسيط `env.js` يقوم بتحميل `.env` و `.env.local` أولاً، ثم استيراده في بداية `server.js`.
-- **الملفات المتأثرة:** `env.js`, `server.js`.
+### Improved
+- **Data Fetching**: Updated `fetchCases`, `fetchSessions`, and `fetchExpenses` to automatically map database snake_case columns back to the frontend's expected camelCase properties.
+- **Reliability**: Strengthened the `try-catch` blocks in data services to provide more specific error context in the console while maintaining a user-friendly UI.
 
-### 2. تشغيل البيئة المحلية (Localhost)
-- تم إعداد وتشغيل الواجهة الأمامية على منفذ `3005`.
-- تم إعداد وتشغيل السيرفر الخلفي على منفذ `3000`.
-
----
-
-## 🎨 تحسينات واجهة المستخدم (UI/UX)
-
-### 3. إصلاح استجابة مربع "الصياغة الذكية"
-- **المشكلة:** مربع عرض المسودة القانونية كان بأبعاد ثابتة (`595px`) مما يجعله يظهر بشكل مشوه (شريط طويل) أو يخرج عن إطار الصفحة في الشاشات المختلفة.
-- **الحل:** 
-    - تحويل العرض إلى مرن (`w-full`) مع حد أقصى للتنسيق.
-    - جعل الارتفاع يتناسب مع المحتوى.
-    - تحسين الهوامش والخطوط لتشبه الورقة الرسمية ولكن بشكل متجاوب.
-- **الملفات المتأثرة:** `src/views/Dashboard.tsx`.
-
----
-
-## 📅 التعديلات القادمة (To-Do)
-- [x] متابعة أي ملاحظات إضافية على واجهة لوحة القيادة.
-- [ ] التأكد من عمل تصدير الـ PDF بعد تعديل الأبعاد.
-
-### 4. إصلاح خطأ إضافة الموكلين (Client Validation & Persistence)
-- **المشكلة:** ظهور رسالة "خطأ في التحقق" عامة عند إضافة موكل، وعدم حفظ الموكلين الجدد في قاعدة البيانات (كانوا يختفون عند التحديث).
-- **الحل:** 
-    - تحديث `clientSchema` ليكون أكثر مرونة مع المسافات والأرقام.
-    - ربط نموذج الإضافة بدالة `saveClient` لضمان الحفظ في Supabase.
-    - تحسين رسائل الخطأ لتظهر السبب الحقيقي للمشكلة للمستخدم.
-- **الملفات المتأثرة:** `src/lib/schemas.ts`, `src/hooks/useClientsLogic.ts`.
+### Technical Details
+- Added `mapCaseToDB`, `mapDBToCase`, `mapInvoiceToDB`, and similar helpers to `legalDataService.ts`.
+- Switched `fetchCases` from specific column selection to `*` selection with manual mapping to ensure future-proofing.
+- Fixed a bug where `clientRole` was being sent as camelCase instead of `client_role` in the database.

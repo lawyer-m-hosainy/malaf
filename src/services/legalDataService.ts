@@ -148,20 +148,58 @@ export async function deleteClient(clientId: string): Promise<void> {
   await logAuditAction("DELETE_SOFT", "clients", clientId, "حذف موكل (ناعم)");
 }
 
+// ─── مساعدات التحويل (Mapping Helpers) ──────────────────────────
+function mapCaseToDB(c: any, orgId: string) {
+  const mapped: any = {
+    id: c.id,
+    org_id: orgId,
+    client_id: c.clientId || c.client_id,
+    title: c.title || "",
+    case_number: c.automatedNumber || c.case_number || "",
+    court: c.court || c.court_location || "",
+    type: c.type || c.court_category || "",
+    status: c.status || "متداولة",
+    plaintiff: c.plaintiff || "",
+    defendant: c.defendant || "",
+    client_role: c.clientRole || c.client_role || "مدعي",
+    court_category: c.court_category || c.type || "",
+    court_sub_type: c.court_sub_type || "",
+    court_location: c.court_location || c.court || "",
+    first_instance_number: c.firstInstanceNumber || c.first_instance_number || "",
+    appeal_number: c.appealNumber || c.appeal_number || "",
+    cassation_number: c.cassationNumber || c.cassation_number || "",
+    created_at: c.createdAt || c.created_at || new Date().toISOString(),
+  };
+  return mapped;
+}
+
+function mapDBToCase(d: any): Case {
+  return {
+    ...d,
+    clientId: d.client_id,
+    clientRole: d.client_role,
+    automatedNumber: d.case_number,
+    firstInstanceNumber: d.first_instance_number,
+    appealNumber: d.appeal_number,
+    cassationNumber: d.cassation_number,
+    createdAt: d.created_at,
+  } as Case;
+}
+
 // ─── القضايا (Cases) ─────────────────────────────────────────────
 export async function fetchCases(): Promise<Case[]> {
   const orgId = requireOrgId();
   try {
     const { data, error } = await supabase
       .from(CASES_TABLE)
-      .select("id, plaintiff, defendant, court, case_number, case_year, status, created_at")
+      .select("*") // جلب كل الأعمدة المتاحة
       .eq("org_id", orgId)
       .is("deleted_at", null)
       .order("created_at", { ascending: false })
-      .limit(20);
+      .limit(50);
 
     if (error) throw error;
-    return (data || []) as any;
+    return (data || []).map(mapDBToCase);
   } catch (error) {
     console.error("خطأ في جلب القضايا:", error);
     throw error;
@@ -171,9 +209,14 @@ export async function fetchCases(): Promise<Case[]> {
 export async function saveCases(cases: Case[]): Promise<void> {
   const orgId = requireOrgId();
   try {
-    const casesWithOrg = cases.map((c) => ({ ...c, org_id: orgId }));
-    const { error } = await supabase.from(CASES_TABLE).upsert(casesWithOrg);
+    const mappedCases = cases.map((c) => mapCaseToDB(c, orgId));
+    const { error } = await supabase.from(CASES_TABLE).upsert(mappedCases);
     if (error) throw error;
+    
+    // Log audit for each case
+    for (const c of cases) {
+      await logAuditAction("UPSERT", "cases", c.id, `حفظ قضية: ${c.title || c.id}`);
+    }
   } catch (error) {
     console.error("خطأ في حفظ القضايا:", error);
     throw error;
@@ -183,8 +226,10 @@ export async function saveCases(cases: Case[]): Promise<void> {
 export async function saveCase(caseData: Partial<Case>): Promise<void> {
   const orgId = requireOrgId();
   try {
-    const { error } = await supabase.from(CASES_TABLE).upsert({ ...caseData, org_id: orgId });
+    const mappedCase = mapCaseToDB(caseData, orgId);
+    const { error } = await supabase.from(CASES_TABLE).upsert(mappedCase);
     if (error) throw error;
+    await logAuditAction("UPSERT", "cases", caseData.id!, `حفظ قضية: ${caseData.title || caseData.id}`);
   } catch (error) {
     console.error("خطأ في حفظ القضية:", error);
     throw error;
@@ -222,15 +267,30 @@ export async function fetchInvoices(): Promise<Invoice[]> {
   }
 }
 
+function mapInvoiceToDB(inv: any, orgId: string) {
+  return {
+    id: inv.id,
+    org_id: orgId,
+    client_id: inv.clientId,
+    amount: inv.base || inv.amount,
+    total: inv.total,
+    status: inv.status,
+    date: inv.date,
+    vat_amount: inv.vat || 0,
+    created_at: inv.createdAt || new Date().toISOString(),
+  };
+}
+
 export async function saveInvoice(
   invoice: Invoice,
   isUpdate: boolean = false
 ): Promise<void> {
   const orgId = requireOrgId();
   try {
+    const mappedInvoice = mapInvoiceToDB(invoice, orgId);
     const { error } = await supabase
       .from("invoices")
-      .upsert({ ...invoice, org_id: orgId }); // ✅ ربط المكتب دائماً
+      .upsert(mappedInvoice); 
     if (error) throw error;
     await logAuditAction(
       isUpdate ? "UPDATE" : "CREATE",
@@ -256,21 +316,52 @@ export async function deleteInvoice(invoiceId: string): Promise<void> {
 }
 
 // ─── المهام (Tasks) ──────────────────────────────────────────────
+function mapTaskToDB(task: any, orgId: string) {
+  return {
+    id: task.id,
+    org_id: orgId,
+    title: task.title,
+    description: task.description,
+    status: task.status,
+    priority: task.priority,
+    due_date: task.dueDate,
+    assigned_to: task.assignedTo,
+    created_at: task.createdAt || new Date().toISOString(),
+  };
+}
+
 export async function fetchTasks(): Promise<any[]> {
   const orgId = requireOrgId();
   try {
     const { data, error } = await supabase
       .from("tasks")
-      .select("id, title, status, due_date, assigned_to")
+      .select("*")
       .eq("org_id", orgId)
       .is("deleted_at", null)
       .order("due_date")
       .limit(50);
     if (error) throw error;
-    return data || [];
+    return (data || []).map(t => ({
+      ...t,
+      dueDate: t.due_date,
+      assignedTo: t.assigned_to,
+      createdAt: t.created_at,
+    }));
   } catch (error) {
     console.error("خطأ في جلب المهام:", error);
     return [];
+  }
+}
+
+export async function saveTask(task: any): Promise<void> {
+  const orgId = requireOrgId();
+  try {
+    const mappedTask = mapTaskToDB(task, orgId);
+    const { error } = await supabase.from("tasks").upsert(mappedTask);
+    if (error) throw error;
+  } catch (error) {
+    console.error("خطأ في حفظ المهمة:", error);
+    throw error;
   }
 }
 
@@ -361,13 +452,26 @@ export async function deleteTrustAccount(id: string): Promise<void> {
 }
 
 // ─── الجلسات (Sessions) ──────────────────────────────────────────
+function mapSessionToDB(session: any, orgId: string) {
+  return {
+    id: session.id,
+    org_id: orgId,
+    case_id: session.caseId,
+    date: session.date,
+    time: session.time,
+    court_room: session.courtRoom || session.court_room || "",
+    notes: session.notes,
+    created_at: session.createdAt || new Date().toISOString(),
+  };
+}
+
 export async function fetchSessions(caseId?: string): Promise<any[]> {
   const orgId = requireOrgId();
   try {
     let query = supabase
       .from("sessions")
-      .select("id, case_id, org_id, date, time, court_room, notes, created_at")
-      .eq("org_id", orgId) // ✅ عزل مباشر باستخدام org_id
+      .select("*")
+      .eq("org_id", orgId) 
       .order("date", { ascending: false })
       .limit(200);
 
@@ -377,46 +481,124 @@ export async function fetchSessions(caseId?: string): Promise<any[]> {
 
     const { data, error } = await query;
     if (error) throw error;
-    return data || [];
+    return (data || []).map(s => ({
+      ...s,
+      caseId: s.case_id,
+      courtRoom: s.court_room,
+      createdAt: s.created_at,
+    }));
   } catch (error) {
     console.error("خطأ في جلب الجلسات:", error);
     return [];
   }
 }
 
+export async function saveSession(session: any): Promise<void> {
+  const orgId = requireOrgId();
+  try {
+    const mappedSession = mapSessionToDB(session, orgId);
+    const { error } = await supabase.from("sessions").upsert(mappedSession);
+    if (error) throw error;
+  } catch (error) {
+    console.error("خطأ في حفظ الجلسة:", error);
+    throw error;
+  }
+}
+
 // ─── التوكيلات (POAs) ────────────────────────────────────────────
+function mapPOAToDB(poa: any, orgId: string) {
+  return {
+    id: poa.id,
+    org_id: orgId,
+    client_id: poa.clientId,
+    number: poa.number,
+    year: poa.year,
+    office: poa.office,
+    type: poa.type,
+    status: poa.status,
+    expiry_date: poa.expiryDate || poa.expiry_date,
+    created_at: poa.createdAt || new Date().toISOString(),
+  };
+}
+
 export async function fetchPOAs(): Promise<any[]> {
   const orgId = requireOrgId();
   try {
     const { data, error } = await supabase
       .from("poas")
-      .select("id, client_id, number, year, office, type, status, expiry_date, created_at, clients!inner(org_id)")
-      .eq("clients.org_id", orgId) // ✅ عزل عبر العلاقة مع الموكلين
+      .select("*, clients!inner(org_id)")
+      .eq("clients.org_id", orgId) 
       .limit(100);
     if (error) throw error;
-    return data || [];
+    return (data || []).map(p => ({
+      ...p,
+      clientId: p.client_id,
+      expiryDate: p.expiry_date,
+      createdAt: p.created_at,
+    }));
   } catch (error) {
     console.error("خطأ في جلب التوكيلات:", error);
     return [];
   }
 }
 
+export async function savePOA(poa: any): Promise<void> {
+  const orgId = requireOrgId();
+  try {
+    const mappedPOA = mapPOAToDB(poa, orgId);
+    const { error } = await supabase.from("poas").upsert(mappedPOA);
+    if (error) throw error;
+  } catch (error) {
+    console.error("خطأ في حفظ التوكيل:", error);
+    throw error;
+  }
+}
+
 // ─── المصروفات (Expenses) ────────────────────────────────────────
+function mapExpenseToDB(exp: any, orgId: string) {
+  return {
+    id: exp.id,
+    org_id: orgId,
+    case_id: exp.caseId || exp.case_id,
+    amount: exp.amount,
+    category: exp.category,
+    description: exp.description,
+    date: exp.date,
+    created_at: exp.createdAt || new Date().toISOString(),
+  };
+}
+
 export async function fetchExpenses(): Promise<any[]> {
   const orgId = requireOrgId();
   try {
     const { data, error } = await supabase
       .from("expenses")
-      .select("id, case_id, amount, category, description, date, created_at")
+      .select("*")
       .eq("org_id", orgId)
-      .is("deleted_at", null) // ✅ احترام الحذف الناعم
+      .is("deleted_at", null) 
       .order("date", { ascending: false })
       .limit(100);
     if (error) throw error;
-    return data || [];
+    return (data || []).map(e => ({
+      ...e,
+      caseId: e.case_id,
+      createdAt: e.created_at,
+    }));
   } catch (error) {
     console.error("خطأ في جلب المصروفات:", error);
     return [];
+  }
+}
+
+export async function saveExpense(expense: any): Promise<void> {
+  const orgId = requireOrgId();
+  try {
+    const mappedExpense = mapExpenseToDB(expense, orgId);
+    const { error } = await supabase.from("expenses").upsert(mappedExpense);
+    if (error) throw error;
+  } catch (error) {
+    console.error("خطأ في حفظ المصروف:", error);
+    throw error;
   }
 }
 

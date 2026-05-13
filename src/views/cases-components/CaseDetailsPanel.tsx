@@ -33,12 +33,43 @@ export default function CaseDetailsPanel({ caseData, sessions, expenses, tasks, 
   const clients = useClientsStore(state => state.clients);
   const caseClient = clients.find(c => c.id === caseData.clientId);
 
+  // ─── Dynamic Timeline Events ─────────────────────────────
   const timelineEvents = [
-    { date: '2024-01-10', title: 'استلام القضية', description: 'تم استلام ملف القضية وتوقيع العقد' },
-    { date: '2024-01-25', title: 'رفع الدعوى', description: 'تم قيد الدعوى في المحكمة التجارية' },
-    { date: '2024-02-15', title: 'الجلسة الأولى', description: 'حضور الجلسة وتقديم لائحة الادعاء' },
-    { date: '2024-03-05', title: 'تبادل المذكرات', description: 'تقديم مذكرة الرد على دفوع المدعى عليه' },
+    { 
+      date: format(new Date(caseData.createdAt), "yyyy-MM-dd"), 
+      title: 'استلام القضية', 
+      description: 'تم فتح ملف القضية وبدء الإجراءات الإدارية' 
+    }
   ];
+
+  if (caseData.circulationCode || caseData.automatedNumber) {
+    timelineEvents.push({
+      date: format(new Date(caseData.createdAt), "yyyy-MM-dd"),
+      title: 'قيد الدعوى',
+      description: `تم قيد الدعوى برقم آلي: ${caseData.automatedNumber || '-'}`
+    });
+  }
+
+  // إضافة الجلسات السابقة
+  caseSessions.filter(s => new Date(s.date) <= new Date()).forEach(session => {
+    timelineEvents.push({
+      date: session.date,
+      title: `جلسة ${session.court || 'المحكمة'}`,
+      description: session.notes || 'حضور الجلسة ومتابعة سير الدعوى'
+    });
+  });
+
+  // إضافة المذكرات
+  if (caseData.memorandums && caseData.memorandums.length > 0) {
+    timelineEvents.push({
+      date: format(new Date(), "yyyy-MM-dd"), // تقريبي
+      title: 'تبادل المذكرات',
+      description: `تم إيداع عدد ${caseData.memorandums.length} مذكرات قانونية`
+    });
+  }
+
+  // ترتيب زمني
+  timelineEvents.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   return (
     <div className="p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">

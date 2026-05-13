@@ -32,6 +32,27 @@ function TrendingUp({ size, className }: { size?: number, className?: string }) 
 
 export default function CaseSummaryCards({ caseId, totalExpenses, caseSessions, caseTasks, memorandumsCount, deadlines }: CaseSummaryCardsProps) {
   const caseDeadlines = deadlines.filter(d => d.caseId === caseId);
+  const trustAccounts = useFinanceStore(state => state.trustAccounts);
+  const timeEntries = useFinanceStore(state => state.timeEntries);
+
+  // حساب مقدم الأتعاب من الأمانات المرتبطة بهذه القضية
+  const caseRetainer = trustAccounts
+    .filter(a => a.caseId === caseId && a.type === 'مقدم أتعاب')
+    .reduce((sum, a) => sum + a.amount, 0);
+
+  // حساب قيمة ساعات العمل
+  const caseTimeCost = timeEntries
+    .filter(te => te.caseId === caseId)
+    .reduce((sum, te) => sum + (te.duration / 60) * (te.hourlyRate || 500), 0);
+
+  const totalTimeMinutes = timeEntries
+    .filter(te => te.caseId === caseId)
+    .reduce((sum, te) => sum + te.duration, 0);
+
+  const hours = Math.floor(totalTimeMinutes / 60);
+  const minutes = totalTimeMinutes % 60;
+
+  const estimatedProfit = (caseRetainer || 10000) - totalExpenses - caseTimeCost;
 
   return (
     <div className="space-y-4">
@@ -80,7 +101,7 @@ export default function CaseSummaryCards({ caseId, totalExpenses, caseSessions, 
         <div className="p-4 rounded-xl bg-slate-50 dark:bg-navy-900 border border-slate-100 dark:border-white/5 space-y-3">
           <div className="flex justify-between items-center text-xs">
             <span className="text-slate-500">مقدم الأتعاب</span>
-            <span className="font-bold text-navy-900 dark:text-white">10,000 ج.م</span>
+            <span className="font-bold text-navy-900 dark:text-white">{formatEGP(caseRetainer || 10000)}</span>
           </div>
           <div className="flex justify-between items-center text-xs">
             <span className="text-slate-500">إجمالي المصروفات</span>
@@ -88,11 +109,11 @@ export default function CaseSummaryCards({ caseId, totalExpenses, caseSessions, 
           </div>
           <div className="flex justify-between items-center text-xs">
             <span className="text-slate-500">قيمة ساعات العمل (مقدرة)</span>
-            <span className="font-bold text-amber-600">-{totalExpenses > 0 ? 1500 : 0} ج.م</span>
+            <span className="font-bold text-amber-600">-{formatEGP(caseTimeCost)}</span>
           </div>
           <div className="pt-2 border-t border-slate-200 dark:border-white/10 flex justify-between items-center">
             <span className="text-xs font-bold text-navy-900 dark:text-white">صافي الربح المتوقع</span>
-            <span className="font-bold text-emerald-600">{formatEGP(10000 - totalExpenses - (totalExpenses > 0 ? 1500 : 0))}</span>
+            <span className="font-bold text-emerald-600">{formatEGP(estimatedProfit)}</span>
           </div>
         </div>
       </div>
@@ -102,7 +123,7 @@ export default function CaseSummaryCards({ caseId, totalExpenses, caseSessions, 
           <Timer size={16} className="text-primary-500" />
           <div>
             <p className="text-xs font-bold">تسجيل الوقت</p>
-            <p className="text-[10px] text-slate-500">الوقت المستغرق: {totalExpenses > 0 ? '12 ساعة و 30 دقيقة' : '0 ساعة'}</p>
+            <p className="text-[10px] text-slate-500">الوقت المستغرق: {hours} ساعة و {minutes} دقيقة</p>
           </div>
         </div>
         <Badge variant="outline" className="text-[10px] cursor-pointer">إضافة وقت</Badge>

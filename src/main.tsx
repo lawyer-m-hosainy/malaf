@@ -6,6 +6,7 @@ import './index.css';
 import { logEvent } from './observability/logger';
 
 window.addEventListener("error", (event) => {
+  console.error('>>> Window error:', event.message, event.filename, event.lineno);
   logEvent("error", {
     event: "window_error",
     context: {
@@ -18,6 +19,7 @@ window.addEventListener("error", (event) => {
 });
 
 window.addEventListener("unhandledrejection", (event) => {
+  console.error('>>> Unhandled rejection:', event.reason);
   logEvent("error", {
     event: "unhandled_rejection",
     context: {
@@ -26,8 +28,24 @@ window.addEventListener("unhandledrejection", (event) => {
   });
 });
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-);
+try {
+  console.log('>>> Attempting to mount React');
+  const rootElement = document.getElementById('root');
+  if (!rootElement) {
+    console.error('>>> Root element not found!');
+    document.body.innerHTML = '<div style="color:red;padding:20px;">ERROR: Root element not found</div>';
+  } else {
+    console.log('>>> Root element found, creating root');
+    const root = createRoot(rootElement);
+    console.log('>>> Root created, rendering App');
+    root.render(
+      <StrictMode>
+        <App />
+      </StrictMode>,
+    );
+    console.log('>>> App rendered successfully');
+  }
+} catch (error) {
+  console.error('>>> Error mounting React:', error);
+  document.body.innerHTML = `<div style="color:red;padding:20px;">ERROR: ${error}</div>`;
+}

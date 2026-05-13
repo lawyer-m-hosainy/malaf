@@ -334,9 +334,9 @@ export default function Dashboard() {
                         </Button>
                       )}
                     </div>
-                    <ScrollArea className="flex-1 bg-white dark:bg-navy-800 border border-slate-200 dark:border-white/10 rounded-md p-6">
+                    <ScrollArea className="flex-1 bg-white dark:bg-navy-800 border border-slate-200 dark:border-white/10 rounded-md overflow-hidden">
                       {draftResult ? (
-                        <div id="draft-result-content" className="p-8 text-[12px] leading-relaxed whitespace-pre-wrap dark:text-slate-300 font-serif bg-white text-black min-h-[842px] w-[595px] mx-auto shadow-sm" dir="rtl">
+                        <div id="draft-result-content" className="p-6 md:p-10 text-[13px] leading-relaxed whitespace-pre-wrap dark:text-slate-900 font-serif bg-white text-black min-h-[600px] w-full max-w-[800px] mx-auto shadow-sm" dir="rtl">
                           {/* Letterhead */}
                           <div className="border-b-2 border-primary-800 pb-4 mb-8 flex justify-between items-start">
                             <div className="text-right">

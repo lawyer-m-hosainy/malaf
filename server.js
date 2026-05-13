@@ -1,10 +1,10 @@
+import './env.js';
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import dotenv from 'dotenv';
 import fs from 'fs';
 import compression from 'compression';
 import { pinoHttp } from 'pino-http';
@@ -27,9 +27,6 @@ import { sendWhatsAppMessage } from './services/whatsapp/messageSender.js';
 // Import Middlewares
 import { authMiddleware } from './middleware/auth.js';
 
-// Load environment variables
-dotenv.config();
-
 // ═══════════════════════════════════════════════════════
 // R9-FIX: NODE_ENV detection + environment validation
 // ═══════════════════════════════════════════════════════
@@ -48,14 +45,10 @@ const missingOptional = OPTIONAL_ENV_VARS.filter(key => !process.env[key]);
 if (missingRequired.length > 0) {
     if (IS_PROD) {
         console.error(`❌ [FATAL] Missing required env vars in production: ${missingRequired.join(', ')}`);
-        console.error('   → Set these in Render Dashboard → Environment');
         process.exit(1);
     } else {
         console.warn(`⚠️  [DEV] Missing env vars (non-critical in dev): ${missingRequired.join(', ')}`);
     }
-}
-if (missingOptional.length > 0 && IS_PROD) {
-    console.warn(`⚠️  [PROD] Optional env vars missing: ${missingOptional.join(', ')} — some features may be disabled`);
 }
 
 const logger = pino({

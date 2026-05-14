@@ -99,6 +99,7 @@ export default function Landing() {
                     src="https://resource2.heygen.ai/video/f2fd5c4f361a4036b3ce158cdb6291d3/v80e6505d3c014f7087e7899ed6643f17/gif.gif" 
                     alt="مقدمة منصة مَلَف القانونية" 
                     className="w-full h-auto object-cover" 
+                    referrerPolicy="no-referrer"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent opacity-60 group-hover:opacity-40 transition-opacity"></div>
                   <div className="absolute bottom-6 left-0 right-0 flex justify-center">

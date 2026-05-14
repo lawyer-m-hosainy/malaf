@@ -89,26 +89,17 @@ export default function Landing() {
               transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
               className="pt-16 flex flex-col items-center justify-center w-full"
             >
-              <div className="relative group rounded-[2rem] overflow-hidden shadow-2xl shadow-primary-500/20 border-[6px] border-white dark:border-navy-800 hover:scale-[1.02] transition-all duration-300 max-w-[320px]">
-                <a href="https://app.heygen.com/videos/f2fd5c4f361a4036b3ce158cdb6291d3" target="_blank" rel="noopener noreferrer" className="block relative">
-                  <div className="absolute top-4 right-4 z-20 bg-black/60 backdrop-blur-md text-white px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-                    مقدمة المنصة
-                  </div>
-                  <img 
-                    src="https://resource2.heygen.ai/video/f2fd5c4f361a4036b3ce158cdb6291d3/v80e6505d3c014f7087e7899ed6643f17/gif.gif" 
-                    alt="مقدمة منصة مَلَف القانونية" 
-                    className="w-full h-auto object-cover" 
-                    referrerPolicy="no-referrer"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent opacity-60 group-hover:opacity-40 transition-opacity"></div>
-                  <div className="absolute bottom-6 left-0 right-0 flex justify-center">
-                    <div className="bg-white/20 backdrop-blur-sm border border-white/30 text-white px-6 py-2 rounded-full font-bold text-sm flex items-center gap-2 group-hover:bg-primary-600 group-hover:border-primary-500 transition-colors">
-                      <div className="w-0 h-0 border-y-[6px] border-y-transparent border-l-[10px] border-l-white mr-1"></div>
-                      شاهد الفيديو
-                    </div>
-                  </div>
-                </a>
+              <div className="relative w-full max-w-[600px] rounded-[2rem] overflow-hidden shadow-2xl shadow-primary-500/20 border-[6px] border-white dark:border-navy-800 bg-slate-100 dark:bg-navy-900 aspect-video hover:scale-[1.02] transition-transform duration-300">
+                <iframe
+                  width="100%"
+                  height="100%"
+                  src="https://app.heygen.com/embeds/f2fd5c4f361a4036b3ce158cdb6291d3"
+                  title="مقدمة منصة مَلَف القانونية"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                  className="w-full h-full object-cover"
+                ></iframe>
               </div>
             </motion.div>
           </motion.div>

@@ -252,6 +252,8 @@ export function FirstLoginWizard() {
                       <div className="space-y-2">
                         <Label>نوع القضية</Label>
                         <select 
+                          title="نوع القضية"
+                          aria-label="نوع القضية"
                           className="w-full h-10 px-3 rounded-md border border-slate-200 dark:border-white/10 bg-transparent text-sm"
                           value={caseType}
                           onChange={e => setCaseType(e.target.value)}

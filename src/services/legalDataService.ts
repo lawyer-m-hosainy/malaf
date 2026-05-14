@@ -192,7 +192,7 @@ export async function fetchCases(): Promise<Case[]> {
   try {
     const { data, error } = await supabase
       .from(CASES_TABLE)
-      .select("*") // جلب كل الأعمدة المتاحة
+      .select("id, client_id, title, type, court, status, plaintiff, defendant, first_instance_number, appeal_number, cassation_number, created_at") // جلب كل الأعمدة المتاحة
       .eq("org_id", orgId)
       .is("deleted_at", null)
       .order("created_at", { ascending: false })
@@ -335,7 +335,7 @@ export async function fetchTasks(): Promise<any[]> {
   try {
     const { data, error } = await supabase
       .from("tasks")
-      .select("*")
+      .select("id, case_id, assigned_to, title, description, due_date, status, priority, created_at")
       .eq("org_id", orgId)
       .is("deleted_at", null)
       .order("due_date")
@@ -470,7 +470,7 @@ export async function fetchSessions(caseId?: string): Promise<any[]> {
   try {
     let query = supabase
       .from("sessions")
-      .select("*")
+      .select("id, case_id, date, time, court, circuit, status, previous_decision, postponement_reason, next_session_date, lawyer_id, notes, created_at")
       .eq("org_id", orgId) 
       .order("date", { ascending: false })
       .limit(200);
@@ -573,7 +573,7 @@ export async function fetchExpenses(): Promise<any[]> {
   try {
     const { data, error } = await supabase
       .from("expenses")
-      .select("*")
+      .select("id, case_id, client_id, category, amount, date, status, description, requires_partner_approval, created_at")
       .eq("org_id", orgId)
       .is("deleted_at", null) 
       .order("date", { ascending: false })
@@ -652,7 +652,7 @@ export async function fetchETAInvoices(): Promise<any[]> {
   try {
     const { data, error } = await supabase
       .from("eta_invoices")
-      .select("*")
+      .select("id, org_id, amount, status, created_at")
       .eq("org_id", orgId)
       .order("created_at", { ascending: false });
     if (error) throw error;
@@ -682,7 +682,7 @@ export async function fetchConflictChecks(): Promise<any[]> {
   try {
     const { data, error } = await supabase
       .from("conflict_checks")
-      .select("*")
+      .select("id, org_id, entity_name, check_date, status, created_at")
       .eq("org_id", orgId)
       .order("created_at", { ascending: false });
     if (error) throw error;
@@ -712,7 +712,7 @@ export async function fetchWikiArticles(): Promise<any[]> {
   try {
     const { data, error } = await supabase
       .from("wiki_articles")
-      .select("*")
+      .select("id, org_id, title, content, created_at")
       .eq("org_id", orgId)
       .order("created_at", { ascending: false });
     if (error) throw error;
@@ -755,7 +755,7 @@ export async function fetchSpecializedCases(table: string): Promise<any[]> {
   try {
     const { data, error } = await supabase
       .from(table)
-      .select("*")
+      .select("id, org_id, created_at") // Dynamic table select
       .eq("org_id", orgId)
       .order("created_at", { ascending: false });
     if (error) throw error;
@@ -772,7 +772,7 @@ export async function fetchDocuments(): Promise<any[]> {
   try {
     const { data, error } = await supabase
       .from("documents")
-      .select("*")
+      .select("id, case_id, client_id, file_name, file_url, category, shared_with_client, size, created_at")
       .eq("org_id", orgId)
       .is("deleted_at", null)
       .order("created_at", { ascending: false });

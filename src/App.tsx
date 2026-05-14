@@ -22,9 +22,11 @@ import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { AppDataLoader } from "@/components/AppDataLoader";
 
 const Login = lazy(() => import("./views/Login"));
+const AIDocumentAnalyzer = lazy(() => import('@/views/AIDocumentAnalyzer'));
+const Terms = lazy(() => import('@/views/Terms'));
+const Privacy = lazy(() => import('@/views/Privacy'));
+const GlobalAdmin = lazy(() => import('@/views/GlobalAdmin'));
 const Landing = lazy(() => import("./views/Landing"));
-const Terms = lazy(() => import("./views/Terms"));
-const Privacy = lazy(() => import("./views/Privacy"));
 const Dashboard = lazy(() => import("./views/Dashboard"));
 const Clients = lazy(() => import("./views/Clients"));
 const Cases = lazy(() => import("./views/Cases"));
@@ -51,14 +53,12 @@ const CLM = lazy(() => import("./views/CLM"));
 const IPOperations = lazy(() => import("./views/IPOperations"));
 const SpecializedTracks = lazy(() => import("./views/SpecializedTracks"));
 const AuditLogs = lazy(() => import("./views/AuditLogs"));
-const AIDocumentAnalyzer = lazy(() => import("./views/AIDocumentAnalyzer"));
 const InternalWiki = lazy(() => import("./views/InternalWiki"));
 const NotFound = lazy(() => import("./views/NotFound"));
 const Billing = lazy(() => import("./views/Billing"));
 
 // Enterprise Modules
 const OnboardingFlow = lazy(() => import("./modules/onboarding/OnboardingFlow"));
-const GlobalAdmin = lazy(() => import("./modules/admin/GlobalAdmin"));
 const WhatsAppSettings = lazy(() => import("./pages/dashboard/WhatsAppSettings").then(m => ({ default: m.WhatsAppSettings })));
 const VideoRoom = lazy(() => import("./pages/dashboard/VideoRoom"));
 const VideoRoomManager = lazy(() => import("./pages/dashboard/VideoRoomManager"));
@@ -165,6 +165,7 @@ export default function App() {
                 <Route path="e-litigation" element={<PermissionGate permission="view_cases"><ELitigation /></PermissionGate>} />
                 <Route path="settings" element={<PermissionGate permission="org_admin"><Settings /></PermissionGate>} />
                 <Route path="billing" element={<PermissionGate permission="org_admin"><Billing /></PermissionGate>} />
+                <Route path="global-admin" element={<GlobalAdmin />} />
                 <Route path="*" element={<NotFound />} />
               </Route>
               

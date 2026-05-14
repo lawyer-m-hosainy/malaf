@@ -135,7 +135,7 @@ export function FirstLoginWizard() {
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
-      <DialogContent className="max-w-2xl p-0 overflow-hidden bg-white dark:bg-navy-900 border-none rounded-2xl" hideCloseButton>
+      <DialogContent className="max-w-2xl p-0 overflow-hidden bg-white dark:bg-navy-900 border-none rounded-2xl" showCloseButton={false}>
         <div className="flex h-[500px]">
           {/* Sidebar */}
           <div className="w-1/3 bg-slate-50 dark:bg-black/20 p-6 border-e border-slate-100 dark:border-white/5">

@@ -484,7 +484,6 @@ export async function fetchSessions(caseId?: string): Promise<any[]> {
     return (data || []).map(s => ({
       ...s,
       caseId: s.case_id,
-      courtRoom: s.court_room,
       createdAt: s.created_at,
     }));
   } catch (error) {

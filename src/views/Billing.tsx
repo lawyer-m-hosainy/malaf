@@ -14,6 +14,8 @@ import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/useAuthStore";
 import { PLANS } from "@/modules/subscriptions/subscriptionService";
 import { formatDateEG } from "@/lib/formatEG";
+import { InstapayCheckout } from "@/components/InstapayCheckout";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface SubscriptionData {
   plan: string;
@@ -48,6 +50,12 @@ export default function Billing() {
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [upgrading, setUpgrading] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<{
+    plan: "basic" | "advanced" | "enterprise";
+    amount: number;
+    billingCycle: "monthly" | "yearly";
+  } | null>(null);
 
   useEffect(() => {
     if (orgId) loadBillingData();
@@ -210,7 +218,10 @@ export default function Billing() {
                 : 'اشترك الآن لضمان استمرار عملك بدون انقطاع.'}
             </p>
           </div>
-          <Button onClick={() => handleUpgrade('basic')} className="bg-primary-600 hover:bg-primary-700 text-white shrink-0">
+          <Button onClick={() => {
+            setSelectedPlan({ plan: "basic", amount: PLANS.basic.priceMonthly, billingCycle: "monthly" });
+            setCheckoutOpen(true);
+          }} className="bg-primary-600 hover:bg-primary-700 text-white shrink-0">
             اشترك الآن
           </Button>
         </motion.div>
@@ -223,7 +234,12 @@ export default function Billing() {
             <p className="font-bold text-red-700 dark:text-red-400">اشتراكك منتهي — الوضع الحالي: قراءة فقط</p>
             <p className="text-sm text-slate-500">لن تستطيع إضافة أو تعديل بيانات حتى تجدد اشتراكك.</p>
           </div>
-          <Button onClick={() => handleUpgrade(currentPlan === 'free' ? 'basic' : currentPlan)} className="bg-red-600 hover:bg-red-700 text-white shrink-0">
+          <Button onClick={() => {
+            const planToRenew = currentPlan === 'free' ? 'basic' : currentPlan;
+            const planConfig = Object.values(PLANS).find(p => p.tier === planToRenew) || PLANS.basic;
+            setSelectedPlan({ plan: planToRenew as "basic"|"advanced"|"enterprise", amount: planConfig.priceMonthly, billingCycle: "monthly" });
+            setCheckoutOpen(true);
+          }} className="bg-red-600 hover:bg-red-700 text-white shrink-0">
             جدّد الآن
           </Button>
         </motion.div>
@@ -320,8 +336,10 @@ export default function Billing() {
             }).map(plan => (
               <button
                 key={plan.tier}
-                onClick={() => handleUpgrade(plan.tier)}
-                disabled={upgrading}
+                onClick={() => {
+                  setSelectedPlan({ plan: plan.tier as "basic"|"advanced"|"enterprise", amount: plan.priceMonthly, billingCycle: "monthly" });
+                  setCheckoutOpen(true);
+                }}
                 className="w-full p-4 rounded-xl border border-slate-100 dark:border-white/5 hover:border-primary-200 dark:hover:border-primary-800/30 transition-all text-start group"
               >
                 <div className="flex items-center justify-between mb-1">
@@ -399,6 +417,21 @@ export default function Billing() {
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={checkoutOpen} onOpenChange={setCheckoutOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>إتمام الاشتراك</DialogTitle>
+          </DialogHeader>
+          {selectedPlan && (
+            <InstapayCheckout
+              {...selectedPlan}
+              onSuccess={() => { setCheckoutOpen(false); window.location.reload(); }}
+              onCancel={() => setCheckoutOpen(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

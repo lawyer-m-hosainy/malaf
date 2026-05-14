@@ -6,7 +6,7 @@ import {
   Globe, Sparkles, Landmark, History, BookOpen, FileText, GraduationCap,
   Gavel, HandCoins, FileSignature, MessageSquare, Layers,
   Shield, Building, Home, Heart, Siren, Receipt, Monitor,
-  Search, ClipboardList, ChevronDown, FolderOpen, Coins, Building2, Video, MapPin
+  Search, ClipboardList, ChevronDown, FolderOpen, Coins, Building2, Video, MapPin, CreditCard
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -189,7 +189,21 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="p-4 border-t border-white/10">
+      <div className="p-4 border-t border-white/10 space-y-1">
+        <NavLink 
+          to="/dashboard/billing"
+          className={({ isActive }) =>
+            cn(
+              "flex items-center gap-3 px-3 py-2.5 rounded-md transition-colors text-sm font-medium",
+              isActive 
+                ? "bg-primary-500 text-white shadow-sm" 
+                : "text-slate-300 hover:bg-white/5 hover:text-white"
+            )
+          }
+        >
+          <CreditCard size={18} />
+          الفوترة والاشتراك
+        </NavLink>
         <NavLink 
           to="/dashboard/settings"
           className={({ isActive }) =>
@@ -204,7 +218,6 @@ export function Sidebar() {
           <Settings size={18} />
           الإعدادات
         </NavLink>
-
       </div>
     </aside>
     </>

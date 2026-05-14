@@ -32,6 +32,8 @@ import { EGYPTIAN_LEGAL_TEMPLATES } from "@/services/ai/templates";
 import { useUsageStore } from "@/store/useUsageStore";
 import { formatDateEG } from "@/lib/formatEG";
 
+import { TrialBanner } from "@/components/TrialBanner";
+
 const CATEGORY_COLORS: Record<string, { color: string; bgClass: string }> = {
   'تجاري': { color: 'var(--color-primary-500)', bgClass: 'bg-primary-500' },
   'عمالي': { color: 'var(--color-accent-500)', bgClass: 'bg-accent-500' },
@@ -258,6 +260,9 @@ export default function Dashboard() {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
     >
+      {/* Subscription Trial/Expiry Banner */}
+      <TrialBanner />
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-navy-900 dark:text-white">لوحة القيادة</h1>

@@ -52,6 +52,7 @@ const AuditLogs = lazy(() => import("./views/AuditLogs"));
 const AIDocumentAnalyzer = lazy(() => import("./views/AIDocumentAnalyzer"));
 const InternalWiki = lazy(() => import("./views/InternalWiki"));
 const NotFound = lazy(() => import("./views/NotFound"));
+const Billing = lazy(() => import("./views/Billing"));
 
 // Enterprise Modules
 const OnboardingFlow = lazy(() => import("./modules/onboarding/OnboardingFlow"));
@@ -159,6 +160,7 @@ export default function App() {
                 <Route path="eta-invoicing" element={<PermissionGate permission="finance_basic"><ETAInvoicing /></PermissionGate>} />
                 <Route path="e-litigation" element={<PermissionGate permission="view_cases"><ELitigation /></PermissionGate>} />
                 <Route path="settings" element={<PermissionGate permission="org_admin"><Settings /></PermissionGate>} />
+                <Route path="billing" element={<PermissionGate permission="org_admin"><Billing /></PermissionGate>} />
                 <Route path="*" element={<NotFound />} />
               </Route>
               

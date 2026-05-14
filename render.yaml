@@ -40,6 +40,10 @@ services:
         sync: false
       - key: WA_VERIFY_TOKEN
         sync: false
+      - key: PAYMOB_API_KEY
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
       # Facebook Messenger Bot
       - key: FB_PAGE_ACCESS_TOKEN
         sync: false

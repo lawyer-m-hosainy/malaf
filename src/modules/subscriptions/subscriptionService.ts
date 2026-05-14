@@ -106,30 +106,80 @@ export function checkQuota(
   };
 }
 
-// ── Paymob/Fawry Payment Facade (Mocked) ───────────────────────────
-// In production, replace with real Paymob/Fawry SDK calls.
-export async function initializePayment(
-  tenantId: string,
-  plan: PlanTier,
-  billing: 'monthly' | 'yearly'
-): Promise<{ paymentUrl: string; sessionId: string }> {
-  const selectedPlan = PLANS[plan];
-  const amount = billing === 'monthly' ? selectedPlan.priceMonthly : selectedPlan.priceYearly;
+// ── Arabic Quota Error Messages ─────────────────────────────────────
+export const QUOTA_MESSAGES = {
+  cases: {
+    title: 'تم الوصول للحد الأقصى من القضايا',
+    description: (max: number) => `باقتك الحالية تسمح بـ ${max} قضية فقط. يرجى ترقية باقتك لإضافة المزيد.`,
+  },
+  users: {
+    title: 'تم الوصول للحد الأقصى من المستخدمين',
+    description: (max: number) => `باقتك الحالية تسمح بـ ${max} مستخدم فقط. يرجى ترقية باقتك لإضافة أعضاء جدد.`,
+  },
+  upgrade: {
+    cta: 'ترقية الباقة',
+    dismiss: 'ليس الآن',
+  }
+};
 
-  // Mock: In production, call Egyptian Payment Gateway (e.g. Paymob/Fawry)
-  console.log(`[Payment Mock] Initiating payment for tenant ${tenantId}, plan ${plan}, amount ${amount} EGP (ج.م)`);
+// ── Quota Check with Real DB ────────────────────────────────────────
+export async function checkQuotaFromDB(
+  supabase: any,
+  orgId: string,
+  resource: 'cases' | 'users'
+): Promise<{ allowed: boolean; current: number; max: number; planName: string }> {
+  try {
+    // Get org plan
+    const { data: org } = await supabase
+      .from('organizations')
+      .select('plan')
+      .eq('id', orgId)
+      .single();
+    
+    const planKey = org?.plan || 'free';
 
-  return {
-    paymentUrl: `https://api.paymob.com/v1/payments?amount=${amount * 100}&currency=EGP&description=Malaf+Egypt+${plan}`,
-    sessionId: `MOCK-SESSION-${Date.now()}`
-  };
+    // Get plan limits
+    const { data: limits } = await supabase
+      .from('plan_limits')
+      .select('max_cases, max_users, display_name_ar')
+      .eq('plan_key', planKey)
+      .eq('is_active', true)
+      .single();
+
+    const max = resource === 'cases' 
+      ? (limits?.max_cases ?? 5) 
+      : (limits?.max_users ?? 1);
+    
+    // Count current usage
+    let current = 0;
+    if (resource === 'cases') {
+      const { count } = await supabase
+        .from('cases')
+        .select('id', { count: 'exact', head: true })
+        .eq('org_id', orgId)
+        .is('deleted_at', null);
+      current = count ?? 0;
+    } else {
+      const { count } = await supabase
+        .from('profiles')
+        .select('id', { count: 'exact', head: true })
+        .eq('org_id', orgId)
+        .eq('is_active', true);
+      current = count ?? 0;
+    }
+
+    // -1 means unlimited
+    if (max === -1) return { allowed: true, current, max, planName: limits?.display_name_ar || planKey };
+
+    return {
+      allowed: current < max,
+      current,
+      max,
+      planName: limits?.display_name_ar || planKey,
+    };
+  } catch {
+    // Fail open in case of DB error — trigger will enforce at DB level anyway
+    return { allowed: true, current: 0, max: -1, planName: 'غير محدد' };
+  }
 }
 
-export async function verifyPayment(sessionId: string): Promise<{ success: boolean; transactionId: string }> {
-  // Mock: In production, verify with Gateway API (Paymob/Fawry)
-  console.log(`[Payment Mock] Verifying payment session ${sessionId}`);
-  return {
-    success: true,
-    transactionId: `TXN-${Date.now()}`
-  };
-}

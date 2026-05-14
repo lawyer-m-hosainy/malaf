@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Receipt, Wallet, TrendingDown, History, Search, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { formatDateEG } from "@/lib/formatEG";
 import { toast } from "sonner";
 import { useFinanceStore } from '@/store/useFinanceStore';
 import { useCasesStore } from '@/store/useCasesStore';
@@ -187,7 +188,7 @@ export default function Expenses() {
             <TableBody>
               {filteredExpenses.map((exp) => (
                 <TableRow key={exp.id} className="hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors">
-                  <TableCell className="text-sm dark:text-slate-300">{new Date(exp.date).toLocaleDateString('ar-EG')}</TableCell>
+                  <TableCell className="text-sm dark:text-slate-300">{formatDateEG(new Date(exp.date))}</TableCell>
                   <TableCell className="font-bold text-navy-900 dark:text-white">{exp.caseName}</TableCell>
                   <TableCell>
                     <Badge variant="outline" className="dark:border-white/10 dark:text-slate-300">

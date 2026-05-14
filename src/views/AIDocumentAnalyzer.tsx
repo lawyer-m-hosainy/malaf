@@ -12,6 +12,7 @@ import { useCasesStore } from "@/store/useCasesStore";
 import { useClientsStore } from "@/store/useClientsStore";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
+import { formatDateEG } from "@/lib/formatEG";
 
 export default function AIDocumentAnalyzer() {
   const [content, setContent] = useState("");
@@ -57,7 +58,7 @@ export default function AIDocumentAnalyzer() {
       'الدائرة': selectedCase?.circuit || "",
       'المدعى_عليه': selectedCase?.defendant || "",
       'اسم_المحامي': "الأستاذ/ محمد حسيني", // Default or current user
-      'التاريخ': new Date().toLocaleDateString('ar-EG'),
+      'التاريخ': formatDateEG(new Date()),
     };
 
     Object.entries(data).forEach(([key, value]) => {
@@ -209,6 +210,8 @@ export default function AIDocumentAnalyzer() {
                 <User size={14} className="text-primary-500" /> اختيار الموكل (للتعبئة التلقائية)
               </Label>
               <select 
+                title="اختر الموكل للتعبئة التلقائية"
+                aria-label="اختر الموكل للتعبئة التلقائية"
                 className="w-full h-10 rounded-md border border-slate-200 dark:border-white/10 bg-transparent px-3 py-2 text-sm"
                 value={selectedClientId}
                 onChange={e => setSelectedClientId(e.target.value)}
@@ -222,6 +225,8 @@ export default function AIDocumentAnalyzer() {
                 <Briefcase size={14} className="text-primary-500" /> اختيار القضية
               </Label>
               <select 
+                title="اختر القضية المرتبطة"
+                aria-label="اختر القضية المرتبطة"
                 className="w-full h-10 rounded-md border border-slate-200 dark:border-white/10 bg-transparent px-3 py-2 text-sm"
                 value={selectedCaseId}
                 onChange={e => setSelectedCaseId(e.target.value)}

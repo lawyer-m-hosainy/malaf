@@ -127,10 +127,10 @@ export default function Landing() {
         <div className="container mx-auto px-6 py-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {[
-              { label: "مكتب محاماة مشترك", value: "+500" },
-              { label: "قضية مُدارة", value: "+50,000" },
-              { label: "متوسط التقييم", value: "4.9/5" },
-              { label: "توفير في وقت الإدارة", value: "-60%" }
+              { label: "توفير في وقت الإدارة", value: "60%" },
+              { label: "نموذج قانوني جاهز", value: "+150" },
+              { label: "تشفير وحماية للبيانات", value: "100%" },
+              { label: "دعم فني متواصل", value: "24/7" }
             ].map((stat, i) => (
               <div key={i} className="space-y-2">
                 <div className="text-4xl md:text-5xl font-bold text-navy-900 dark:text-white">{stat.value}</div>
@@ -284,30 +284,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="py-24 bg-slate-50 dark:bg-navy-900">
-        <div className="container mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">ماذا يقول أصحاب المكاتب</h2>
-            <p className="text-slate-600 dark:text-slate-400 text-lg">آراء محامين ومديري مكاتب استخدموا المنصة لتحويل أعمالهم.</p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              { name: "أ. خالد منصور، شريك في مكتب منصور وشركاه", text: "كنا بنضيع 3 ساعات يومياً في التنظيم الورقي والبحث في الملفات. مع ملف، بقت الـ 3 ساعات دول شغل حقيقي وقضايا أكتر." },
-              { name: "أ. نورهان إبراهيم، مديرة مكتب", text: "بوابة الموكلين خفّضت استفسارات الواتساب والمكالمات الهاتفية من مكتبنا بنسبة 70%، الموكل بيشوف قضيته بنفسه في أي وقت." },
-              { name: "أ. محمود سليم، محامٍ حر", text: "النظام المحاسبي وربطه بالفاتورة الإلكترونية أنقذنا من غرامات التأخير ووفر وقت المحاسب بشكل لا يصدق. المنصة دي ضرورة مش رفاهية." }
-            ].map((testimonial, i) => (
-              <div key={i} className="p-8 rounded-3xl bg-white dark:bg-navy-800 border border-slate-100 dark:border-white/5">
-                <div className="flex gap-1 text-amber-400 mb-6">
-                  {[...Array(5)].map((_, j) => <Star key={j} className="w-5 h-5 fill-current" />)}
-                </div>
-                <p className="text-slate-600 dark:text-slate-300 leading-relaxed mb-6">"{testimonial.text}"</p>
-                <div className="font-bold text-navy-900 dark:text-white">{testimonial.name}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Pricing Section */}
       <section id="pricing" className="py-24 bg-white dark:bg-navy-800">
@@ -319,13 +295,15 @@ export default function Landing() {
             <h2 className="text-3xl md:text-4xl font-bold mb-4">اختر الباقة المناسبة لمكتبك</h2>
             <p className="text-slate-600 dark:text-slate-400 text-lg">أسعار شفافة بدون رسوم خفية. جميع الباقات تشمل تحديثات مجانية ودعم فني.</p>
           </div>
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
             {[
               {
                 name: "الأساسية",
-                price: 300,
+                price: 599,
+                priceLabel: "599",
                 desc: "مثالية لمكاتب المحاماة الناشئة",
                 popular: false,
+                isCustom: false,
                 features: [
                   "إدارة العملاء والقضايا",
                   "الفاتورة الإلكترونية (ETA)",
@@ -337,9 +315,11 @@ export default function Landing() {
               },
               {
                 name: "المتقدمة",
-                price: 600,
+                price: 999,
+                priceLabel: "999",
                 desc: "الأنسب للمكاتب المتوسطة والمتنامية",
                 popular: true,
+                isCustom: false,
                 features: [
                   "كل ميزات الأساسية",
                   "إدارة العقود (CLM)",
@@ -353,9 +333,11 @@ export default function Landing() {
               },
               {
                 name: "المؤسسات",
-                price: 1300,
-                desc: "للشركات القانونية الكبرى",
+                price: 1599,
+                priceLabel: "1,599",
+                desc: "للشركات القانونية المتنامية",
                 popular: false,
+                isCustom: false,
                 features: [
                   "كل ميزات المتقدمة",
                   "إدارة الامتثال (GRC)",
@@ -366,6 +348,24 @@ export default function Landing() {
                   "مستخدمون غير محدودون",
                   "قضايا غير محدودة",
                 ]
+              },
+              {
+                name: "الشركات الكبرى",
+                price: 0,
+                priceLabel: "اتصل بنا",
+                desc: "حلول مخصصة للكيانات القانونية الكبرى",
+                popular: false,
+                isCustom: true,
+                features: [
+                  "كل ميزات المؤسسات",
+                  "مدير حساب مخصص",
+                  "تدريب فريق العمل",
+                  "تخصيص الواجهة والعلامة التجارية",
+                  "SLA ودعم فني على مدار الساعة",
+                  "ربط API مع أنظمتكم",
+                  "فروع متعددة",
+                  "تقارير تنفيذية مخصصة",
+                ]
               }
             ].map((plan, i) => (
               <motion.div
@@ -373,10 +373,10 @@ export default function Landing() {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.15 }}
-                className={`relative p-8 rounded-3xl border-2 transition-all ${
+                transition={{ delay: i * 0.12 }}
+                className={`relative p-7 rounded-3xl border-2 transition-all ${
                   plan.popular
-                    ? "border-primary-500 bg-primary-50/50 dark:bg-primary-900/10 shadow-xl shadow-primary-500/10 scale-105"
+                    ? "border-primary-500 bg-primary-50/50 dark:bg-primary-900/10 shadow-xl shadow-primary-500/10 scale-105 z-10"
                     : "border-slate-100 dark:border-white/5 bg-white dark:bg-navy-800 hover:border-primary-200 dark:hover:border-primary-800/30"
                 }`}
               >
@@ -389,8 +389,8 @@ export default function Landing() {
                   <h3 className="text-xl font-bold text-navy-900 dark:text-white mb-2">{plan.name}</h3>
                   <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">{plan.desc}</p>
                   <div className="flex items-baseline justify-center gap-1">
-                    <span className="text-5xl font-black text-navy-900 dark:text-white">{plan.price}</span>
-                    <span className="text-sm text-slate-400 font-medium">ج.م/شهر</span>
+                    <span className={`font-black text-navy-900 dark:text-white ${plan.isCustom ? 'text-2xl' : 'text-5xl'}`}>{plan.priceLabel}</span>
+                    {!plan.isCustom && <span className="text-sm text-slate-400 font-medium">ج.م/شهر</span>}
                   </div>
                 </div>
                 <ul className="space-y-3 mb-8">
@@ -402,14 +402,16 @@ export default function Landing() {
                   ))}
                 </ul>
                 <Button
-                  onClick={() => navigate('/login')}
+                  onClick={() => plan.isCustom ? window.open('https://wa.me/201141973834', '_blank') : navigate('/login')}
                   className={`w-full py-5 rounded-xl font-bold transition-all ${
                     plan.popular
                       ? "bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-500/20"
-                      : "bg-slate-100 dark:bg-white/5 hover:bg-primary-600 hover:text-white text-navy-900 dark:text-white"
+                      : plan.isCustom
+                        ? "bg-navy-900 dark:bg-white text-white dark:text-navy-900 hover:bg-navy-800 dark:hover:bg-slate-100"
+                        : "bg-slate-100 dark:bg-white/5 hover:bg-primary-600 hover:text-white text-navy-900 dark:text-white"
                   }`}
                 >
-                  ابدأ الآن
+                  {plan.isCustom ? 'تواصل معنا' : 'ابدأ الآن'}
                 </Button>
               </motion.div>
             ))}
@@ -475,11 +477,11 @@ export default function Landing() {
               <ul className="space-y-4 text-sm">
                 <li className="flex items-start gap-3">
                   <MapPin className="w-5 h-5 text-primary-500 shrink-0" />
-                  <span>شارع قصر النيل، وسط البلد، برج النيل، الدور 12، القاهرة، جمهورية مصر العربية</span>
+                  <span>المنصورة — توريل القديمة، شارع بوتاري، محافظة الدقهلية، جمهورية مصر العربية</span>
                 </li>
                 <li className="flex items-center gap-3">
                   <Phone className="w-5 h-5 text-primary-500 shrink-0" />
-                  <span dir="ltr">+20 2 234 5678</span>
+                  <span dir="ltr">+20 114 197 3834</span>
                 </li>
                 <li className="flex items-center gap-3">
                   <Mail className="w-5 h-5 text-primary-500 shrink-0" />
@@ -492,8 +494,8 @@ export default function Landing() {
           <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500">
             <div>&copy; {new Date().getFullYear()} شركة ملف لتقنية المعلومات. جميع الحقوق محفوظة.</div>
             <div className="flex gap-6">
-              <a href="#" className="pointer-events-none opacity-40 hover:text-white transition-colors">الشروط والأحكام</a>
-              <a href="#" className="pointer-events-none opacity-40 hover:text-white transition-colors">سياسة الخصوصية</a>
+              <a href="/terms" className="hover:text-white transition-colors">الشروط والأحكام</a>
+              <a href="/privacy" className="hover:text-white transition-colors">سياسة الخصوصية</a>
             </div>
           </div>
         </div>
@@ -501,7 +503,7 @@ export default function Landing() {
 
       {/* WhatsApp Floating Button */}
       <a 
-        href="https://wa.me/201000000000" 
+        href="https://wa.me/201141973834" 
         target="_blank" 
         rel="noopener noreferrer"
         className="fixed bottom-8 start-8 w-14 h-14 bg-[#25D366] text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-transform z-50"

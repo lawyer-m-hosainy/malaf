@@ -228,18 +228,18 @@ async function handleSalesFlow(message, phone, source, supabase) {
       await upsertConversationState(phone, source, { state: 'interested', selected_plan: 'standard' }, supabase);
       const result = await createPaymentLink(null, 'standard', 'monthly', { phone });
       if (result.success) {
-        return `اختيار ممتاز! 🎉\n\n*الباقة الأساسية — 600 ج.م/شهرياً*\n\nاضغط على الرابط التالي لإتمام الدفع:\n${result.paymentUrl}\n\n⏰ الرابط صالح لمدة ساعة واحدة.`;
+        return `اختيار ممتاز! 🎉\n\n*الباقة الأساسية — 599 ج.م/شهرياً*\n\nاضغط على الرابط التالي لإتمام الدفع:\n${result.paymentUrl}\n\n⏰ الرابط صالح لمدة ساعة واحدة.`;
       }
-      return `اختيار ممتاز! 🎉 الباقة الأساسية — 600 ج.م/شهرياً\n\nجاري تجهيز رابط الدفع... تواصل معنا على الرقم المباشر لإتمام الاشتراك.`;
+      return `اختيار ممتاز! 🎉 الباقة الأساسية — 599 ج.م/شهرياً\n\nجاري تجهيز رابط الدفع... تواصل معنا على الرقم المباشر لإتمام الاشتراك.`;
     }
 
     if (lowerMsg.includes('متقدمة') || lowerMsg.includes('premium') || lowerMsg === '2') {
       await upsertConversationState(phone, source, { state: 'interested', selected_plan: 'premium' }, supabase);
       const result = await createPaymentLink(null, 'premium', 'monthly', { phone });
       if (result.success) {
-        return `اختيار رائع! ⭐\n\n*الباقة المتقدمة — 1300 ج.م/شهرياً*\nمع كل المميزات بلا حدود!\n\nاضغط على الرابط التالي لإتمام الدفع:\n${result.paymentUrl}\n\n⏰ الرابط صالح لمدة ساعة واحدة.`;
+        return `اختيار رائع! ⭐\n\n*الباقة المتقدمة — 999 ج.م/شهرياً*\nمع كل المميزات بلا حدود!\n\nاضغط على الرابط التالي لإتمام الدفع:\n${result.paymentUrl}\n\n⏰ الرابط صالح لمدة ساعة واحدة.`;
       }
-      return `اختيار رائع! ⭐ الباقة المتقدمة — 1300 ج.م/شهرياً\n\nجاري تجهيز رابط الدفع... تواصل معنا على الرقم المباشر لإتمام الاشتراك.`;
+      return `اختيار رائع! ⭐ الباقة المتقدمة — 999 ج.م/شهرياً\n\nجاري تجهيز رابط الدفع... تواصل معنا على الرقم المباشر لإتمام الاشتراك.`;
     }
 
     // هفكر / مش متأكد
@@ -255,7 +255,7 @@ async function handleSalesFlow(message, phone, source, supabase) {
     // غالي
     if (lowerMsg.includes('غالي') || lowerMsg.includes('كتير') || lowerMsg.includes('سعر')) {
       await upsertConversationState(phone, source, { state: 'hesitant' }, supabase);
-      return `أفهمك! 😊 بس خلي بالك:\n\n• 600 ج.م = *20 جنيه في اليوم* — أقل من ثمن كوباية قهوة!\n• المنصة بتوفرلك ساعات من الشغل اليدوي يومياً\n• لو القضية الواحدة بتجيب 3000+ جنيه، المنصة بتدفع ثمنها من أول قضية\n\n💡 جرب الباقة المجانية الأول (5 قضايا) وقرر بنفسك!`;
+      return `أفهمك! 😊 بس خلي بالك:\n\n• 599 ج.م = *20 جنيه في اليوم* — أقل من ثمن كوباية قهوة!\n• المنصة بتوفرلك ساعات من الشغل اليدوي يومياً\n• لو القضية الواحدة بتجيب 3000+ جنيه، المنصة بتدفع ثمنها من أول قضية\n\n💡 جرب الباقة المجانية الأول (5 قضايا) وقرر بنفسك!`;
     }
 
     // عايز يعرف أكتر

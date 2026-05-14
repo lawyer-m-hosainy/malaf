@@ -36,6 +36,7 @@ import { fetchClients, fetchCases, fetchTrustAccounts, fetchEnforcement, fetchTa
 import { useFinanceStore } from "@/store/useFinanceStore";
 import { useTeamStore } from "@/store/useTeamStore";
 import { useEnforcementStore } from "@/store/useEnforcementStore";
+import { formatDateEG } from "@/lib/formatEG";
 
 const ClientRow = React.memo(({ client, onEdit, onDelete }: { client: any, onEdit: (c: any) => void, onDelete: (id: string) => void }) => {
   return (
@@ -490,7 +491,7 @@ export default function Clients() {
                             <TableCell>{poa.poaYear}</TableCell>
                             <TableCell>{poa.office}</TableCell>
                             <TableCell><Badge variant="outline">{poa.type}</Badge></TableCell>
-                            <TableCell>{new Date(poa.issueDate).toLocaleDateString('ar-EG')}</TableCell>
+                            <TableCell>{formatDateEG(new Date(poa.issueDate))}</TableCell>
                             <TableCell>
                               <Badge className={
                                 poa.status === 'ساري' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20' :

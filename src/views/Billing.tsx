@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/useAuthStore";
 import { PLANS } from "@/modules/subscriptions/subscriptionService";
+import { formatDateEG } from "@/lib/formatEG";
 
 interface SubscriptionData {
   plan: string;
@@ -296,7 +297,7 @@ export default function Billing() {
               )}
               {subscription?.auto_renew === false && (
                 <Badge className="bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 px-3 py-1.5">
-                  لن يتم التجديد — ينتهي {renewalDate?.toLocaleDateString('ar-EG')}
+                  لن يتم التجديد — ينتهي {renewalDate ? formatDateEG(renewalDate) : ''}
                 </Badge>
               )}
             </div>

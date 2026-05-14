@@ -15,6 +15,7 @@ import { useCasesStore } from '@/store/useCasesStore';
 import { useTeamStore } from '@/store/useTeamStore';
 import { cn } from "@/lib/utils";
 import { fetchTimeEntries, saveTimeEntry, deleteTimeEntryRecord } from "@/services/legalDataService";
+import { formatDateEG } from "@/lib/formatEG";
 export default function TimeTracking() {
   const timeEntries = useFinanceStore((state) => state.timeEntries);
   const setTimeEntries = useFinanceStore((state) => state.setTimeEntries);
@@ -367,7 +368,7 @@ export default function TimeTracking() {
                     <TableCell>
                       <div className="flex items-center gap-2 text-xs">
                         <Calendar size={14} className="text-slate-400" />
-                        {new Date(entry.date).toLocaleDateString('ar-EG')}
+                        {formatDateEG(new Date(entry.date))}
                       </div>
                     </TableCell>
                     <TableCell className="font-bold">

@@ -13,6 +13,7 @@ import {
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { formatDateEG } from "@/lib/formatEG";
 import { useAnalyticsStore } from '@/store/useAnalyticsStore';
 import { useComplianceStore } from '@/store/useComplianceStore';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -232,7 +233,7 @@ export default function ConflictCheck() {
                   <h2 className="text-2xl font-bold mb-1">
                     {currentResult.status === 'Clear' ? 'النتيجة: لا يوجد تعارض' : 'تنبيه: تم رصد تعارض محتمل'}
                   </h2>
-                  <p className="text-slate-500 dark:text-white/60">لفحص: <span className="font-bold text-navy-900 dark:text-white">"{currentResult.query}"</span> • بتاريخ {new Date(currentResult.checkedAt).toLocaleDateString('ar-EG')}</p>
+                  <p className="text-slate-500 dark:text-white/60">لفحص: <span className="font-bold text-navy-900 dark:text-white">"{currentResult.query}"</span> • بتاريخ {formatDateEG(new Date(currentResult.checkedAt))}</p>
                 </div>
               </div>
               <div className="flex gap-3">

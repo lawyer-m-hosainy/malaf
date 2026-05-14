@@ -7,6 +7,7 @@ import { Fingerprint, Plus, Search, Calendar, User, Shield } from "lucide-react"
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useIPStore } from '@/store/useIPStore';
+import { formatDateEG } from "@/lib/formatEG";
 
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -131,7 +132,7 @@ export default function IPManagement() {
                   <TableCell>
                     <div className="flex items-center gap-2 text-xs">
                       <Calendar size={14} className="text-slate-400" />
-                      {new Date(record.expiryDate).toLocaleDateString('ar-EG')}
+                      {formatDateEG(new Date(record.expiryDate))}
                     </div>
                   </TableCell>
                   <TableCell>

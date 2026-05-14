@@ -23,6 +23,8 @@ import { AppDataLoader } from "@/components/AppDataLoader";
 
 const Login = lazy(() => import("./views/Login"));
 const Landing = lazy(() => import("./views/Landing"));
+const Terms = lazy(() => import("./views/Terms"));
+const Privacy = lazy(() => import("./views/Privacy"));
 const Dashboard = lazy(() => import("./views/Dashboard"));
 const Clients = lazy(() => import("./views/Clients"));
 const Cases = lazy(() => import("./views/Cases"));
@@ -113,6 +115,8 @@ export default function App() {
               <AppDataLoader>
                 <Routes>
                   <Route path="/" element={<Landing />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/privacy" element={<Privacy />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/onboarding" element={<OnboardingFlow />} />
                 <Route path="/client-portal" element={<ClientPortal />} />

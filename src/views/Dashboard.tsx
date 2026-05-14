@@ -278,7 +278,7 @@ export default function Dashboard() {
               <Sparkles size={18} />
               صياغة ذكية
             </DialogTrigger>
-            <DialogContent className="max-w-3xl bg-white dark:bg-navy-900">
+            <DialogContent className="max-w-[800px] min-w-[65vw] max-h-[80vh] overflow-y-auto bg-white dark:bg-navy-900">
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2 text-navy-900 dark:text-white">
                   <Sparkles className="text-primary-500" />
@@ -345,7 +345,7 @@ export default function Dashboard() {
                     </div>
                     <ScrollArea className="flex-1 bg-white dark:bg-navy-800 border border-slate-200 dark:border-white/10 rounded-md overflow-hidden">
                       {draftResult ? (
-                        <div id="draft-result-content" className="p-6 md:p-10 text-[13px] leading-relaxed whitespace-pre-wrap dark:text-slate-900 font-serif bg-white text-black min-h-[600px] w-full max-w-[800px] mx-auto shadow-sm" dir="rtl">
+                        <div id="draft-result-content" className="p-[32px] text-[15px] md:text-[16px] leading-loose text-right whitespace-pre-wrap dark:text-slate-900 font-serif bg-white text-black min-h-[600px] w-full mx-auto shadow-sm" dir="rtl">
                           {/* Letterhead */}
                           <div className="border-b-2 border-primary-800 pb-4 mb-8 flex justify-between items-start">
                             <div className="text-right">

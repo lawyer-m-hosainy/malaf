@@ -6,6 +6,7 @@
 
 import express from 'express';
 import pino from 'pino';
+import { authMiddleware } from '../middleware/auth.js';
 import {
   createPaymentLink,
   verifyPaymobHmac,

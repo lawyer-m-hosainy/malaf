@@ -36,6 +36,15 @@ CREATE INDEX idx_manual_payments_org_id ON manual_payment_requests(org_id);
 CREATE INDEX idx_manual_payments_status ON manual_payment_requests(status);
 CREATE INDEX idx_manual_payments_created ON manual_payment_requests(created_at DESC);
 
+-- Ensure the updated_at function exists
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
 -- updated_at trigger
 CREATE TRIGGER update_manual_payment_requests_updated_at
   BEFORE UPDATE ON manual_payment_requests

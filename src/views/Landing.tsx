@@ -18,12 +18,10 @@ export default function Landing() {
       <nav className="fixed top-0 w-full z-50 bg-white/80 dark:bg-navy-900/80 backdrop-blur-md border-b border-slate-200 dark:border-white/10 transition-all">
         <div className="container mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo(0,0)}>
-            <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/20">
-              <Scale className="text-white w-6 h-6" />
-            </div>
+            <img src="/logo.png" alt="شعار ملف - محمد الحسيني" className="h-16 w-auto object-contain" />
             <div className="flex flex-col">
               <span className="text-2xl font-black tracking-tighter text-navy-900 dark:text-white leading-none">مَلَف</span>
-              <span className="text-[10px] font-bold text-primary-600 tracking-widest uppercase">MALAF</span>
+              <span className="text-[10px] font-bold text-primary-600 tracking-widest uppercase">محمد الحسيني</span>
             </div>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600 dark:text-slate-300">
@@ -84,6 +82,34 @@ export default function Landing() {
               <div className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-green-500" /> تشفير بيانات بنكي</div>
               <div className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-green-500" /> نسخ احتياطي يومي</div>
             </div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+              className="pt-16 flex flex-col items-center justify-center w-full"
+            >
+              <div className="relative group rounded-[2rem] overflow-hidden shadow-2xl shadow-primary-500/20 border-[6px] border-white dark:border-navy-800 hover:scale-[1.02] transition-all duration-300 max-w-[320px]">
+                <a href="https://app.heygen.com/videos/f2fd5c4f361a4036b3ce158cdb6291d3" target="_blank" rel="noopener noreferrer" className="block relative">
+                  <div className="absolute top-4 right-4 z-20 bg-black/60 backdrop-blur-md text-white px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                    مقدمة المنصة
+                  </div>
+                  <img 
+                    src="https://resource2.heygen.ai/video/f2fd5c4f361a4036b3ce158cdb6291d3/v80e6505d3c014f7087e7899ed6643f17/gif.gif" 
+                    alt="مقدمة منصة مَلَف القانونية" 
+                    className="w-full h-auto object-cover" 
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent opacity-60 group-hover:opacity-40 transition-opacity"></div>
+                  <div className="absolute bottom-6 left-0 right-0 flex justify-center">
+                    <div className="bg-white/20 backdrop-blur-sm border border-white/30 text-white px-6 py-2 rounded-full font-bold text-sm flex items-center gap-2 group-hover:bg-primary-600 group-hover:border-primary-500 transition-colors">
+                      <div className="w-0 h-0 border-y-[6px] border-y-transparent border-l-[10px] border-l-white mr-1"></div>
+                      شاهد الفيديو
+                    </div>
+                  </div>
+                </a>
+              </div>
+            </motion.div>
           </motion.div>
         </div>
       </section>
@@ -404,13 +430,11 @@ export default function Landing() {
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
             <div className="space-y-6">
-              <div className="flex items-center gap-2">
-                <div className="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center">
-                  <Scale className="text-white w-6 h-6" />
-                </div>
+              <div className="flex items-center gap-3">
+                <img src="/logo.png" alt="شعار ملف - محمد الحسيني" className="h-14 w-auto object-contain bg-white/10 rounded-xl p-1" />
                 <div className="flex flex-col">
                   <span className="text-xl font-black tracking-tighter text-white leading-none">مَلَف</span>
-                  <span className="text-[8px] font-bold text-primary-400 tracking-widest uppercase">MALAF</span>
+                  <span className="text-[8px] font-bold text-primary-400 tracking-widest uppercase">محمد الحسيني</span>
                 </div>
               </div>
               <p className="text-sm leading-relaxed text-slate-400">

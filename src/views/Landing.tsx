@@ -17,11 +17,11 @@ export default function Landing() {
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 bg-white/80 dark:bg-navy-900/80 backdrop-blur-md border-b border-slate-200 dark:border-white/10 transition-all">
         <div className="container mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo(0,0)}>
-            <img src="/logo.png" alt="شعار ملف - محمد الحسيني" className="h-16 w-auto object-contain" />
+          <div className="flex items-center gap-2 md:gap-3 cursor-pointer" onClick={() => window.scrollTo(0,0)}>
+            <img src="/logo.png" alt="شعار ملف - محمد الحسيني" className="h-10 md:h-16 w-auto object-contain" />
             <div className="flex flex-col">
-              <span className="text-2xl font-black tracking-tighter text-navy-900 dark:text-white leading-none">مَلَف</span>
-              <span className="text-[10px] font-bold text-primary-600 tracking-widest uppercase">محمد الحسيني</span>
+              <span className="text-xl md:text-2xl font-black tracking-tighter text-navy-900 dark:text-white leading-none">مَلَف</span>
+              <span className="text-[8px] md:text-[10px] font-bold text-primary-600 tracking-widest uppercase">محمد الحسيني</span>
             </div>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600 dark:text-slate-300">
@@ -53,13 +53,22 @@ export default function Landing() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
-            className="max-w-4xl mx-auto space-y-8"
+            className="max-w-4xl mx-auto space-y-6 md:space-y-8"
           >
-            <Badge className="bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400 border border-primary-100 dark:border-primary-800/30 px-4 py-1.5 text-sm font-medium">
+            <div className="flex justify-center mb-6 md:mb-10">
+              <img 
+                src="/logo.png" 
+                alt="شعار ملف - محمد الحسيني" 
+                className="h-28 md:h-40 w-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-500" 
+              />
+            </div>
+            
+            <Badge className="bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400 border border-primary-100 dark:border-primary-800/30 px-4 py-1.5 text-xs md:text-sm font-medium">
               أول نظام إدارة متكامل لمكاتب المحاماة في مصر
             </Badge>
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-black leading-[1.05] tracking-tight text-navy-900 dark:text-white">
-              حوّل مكتبك إلى <br />
+            
+            <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black leading-[1.1] tracking-tight text-navy-900 dark:text-white">
+              حوّل مكتبك إلى <br className="hidden sm:block" />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 via-emerald-600 to-blue-600 animate-gradient">
                 مكتب ذكي
               </span>
@@ -93,19 +102,19 @@ export default function Landing() {
                 href="https://app.heygen.com/videos/f2fd5c4f361a4036b3ce158cdb6291d3" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="relative block w-full max-w-[600px] rounded-[2rem] overflow-hidden shadow-2xl shadow-primary-500/20 border-[6px] border-white dark:border-navy-800 bg-gradient-to-br from-primary-900 to-navy-900 aspect-video hover:scale-[1.02] hover:shadow-primary-500/40 transition-all duration-300 group"
+                className="relative block w-full max-w-[600px] rounded-2xl md:rounded-[2rem] overflow-hidden shadow-2xl shadow-primary-500/20 border-4 md:border-[6px] border-white dark:border-navy-800 bg-gradient-to-br from-primary-900 to-navy-900 aspect-[4/3] md:aspect-video min-h-[200px] hover:scale-[1.02] hover:shadow-primary-500/40 transition-all duration-300 group"
               >
                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20"></div>
                 
-                <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary-500 rounded-full mix-blend-screen filter blur-3xl opacity-50"></div>
-                <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-emerald-500 rounded-full mix-blend-screen filter blur-3xl opacity-50"></div>
+                <div className="absolute -top-10 -right-10 w-32 md:w-40 h-32 md:h-40 bg-primary-500 rounded-full mix-blend-screen filter blur-2xl md:blur-3xl opacity-50"></div>
+                <div className="absolute -bottom-10 -left-10 w-32 md:w-40 h-32 md:h-40 bg-emerald-500 rounded-full mix-blend-screen filter blur-2xl md:blur-3xl opacity-50"></div>
                 
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-10">
-                  <div className="w-20 h-20 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center mb-6 group-hover:bg-primary-600 transition-all duration-500 border border-white/20 shadow-xl group-hover:scale-110 group-hover:border-primary-500">
-                    <div className="w-0 h-0 border-y-[12px] border-y-transparent border-l-[18px] border-l-white ml-2"></div>
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-4 md:p-6 text-center z-10">
+                  <div className="w-16 h-16 md:w-20 md:h-20 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center mb-4 md:mb-6 group-hover:bg-primary-600 transition-all duration-500 border border-white/20 shadow-xl group-hover:scale-110 group-hover:border-primary-500">
+                    <div className="w-0 h-0 border-y-[10px] md:border-y-[12px] border-y-transparent border-l-[14px] md:border-l-[18px] border-l-white ml-2"></div>
                   </div>
-                  <h3 className="text-2xl md:text-3xl font-black text-white mb-3">مقدمة منصة مَلَف القانونية</h3>
-                  <p className="text-primary-100/80 font-medium max-w-sm">انقر لمشاهدة العرض التوضيحي القصير وتعرف على مميزات النظام</p>
+                  <h3 className="text-xl md:text-3xl font-black text-white mb-2 md:mb-3 px-2">مقدمة منصة مَلَف القانونية</h3>
+                  <p className="text-primary-100/80 text-sm md:text-base font-medium max-w-sm px-4">انقر لمشاهدة العرض التوضيحي القصير وتعرف على مميزات النظام</p>
                 </div>
               </a>
             </motion.div>

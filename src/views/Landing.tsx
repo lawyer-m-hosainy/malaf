@@ -89,18 +89,25 @@ export default function Landing() {
               transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
               className="pt-16 flex flex-col items-center justify-center w-full"
             >
-              <div className="relative w-full max-w-[600px] rounded-[2rem] overflow-hidden shadow-2xl shadow-primary-500/20 border-[6px] border-white dark:border-navy-800 bg-slate-100 dark:bg-navy-900 aspect-video hover:scale-[1.02] transition-transform duration-300">
-                <iframe
-                  width="100%"
-                  height="100%"
-                  src="https://app.heygen.com/embeds/f2fd5c4f361a4036b3ce158cdb6291d3"
-                  title="HeyGen video player"
-                  frameBorder="0"
-                  allow="encrypted-media; fullscreen;"
-                  allowFullScreen
-                  className="w-full h-full"
-                ></iframe>
-              </div>
+              <a 
+                href="https://app.heygen.com/videos/f2fd5c4f361a4036b3ce158cdb6291d3" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="relative block w-full max-w-[600px] rounded-[2rem] overflow-hidden shadow-2xl shadow-primary-500/20 border-[6px] border-white dark:border-navy-800 bg-gradient-to-br from-primary-900 to-navy-900 aspect-video hover:scale-[1.02] hover:shadow-primary-500/40 transition-all duration-300 group"
+              >
+                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20"></div>
+                
+                <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary-500 rounded-full mix-blend-screen filter blur-3xl opacity-50"></div>
+                <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-emerald-500 rounded-full mix-blend-screen filter blur-3xl opacity-50"></div>
+                
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-10">
+                  <div className="w-20 h-20 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center mb-6 group-hover:bg-primary-600 transition-all duration-500 border border-white/20 shadow-xl group-hover:scale-110 group-hover:border-primary-500">
+                    <div className="w-0 h-0 border-y-[12px] border-y-transparent border-l-[18px] border-l-white ml-2"></div>
+                  </div>
+                  <h3 className="text-2xl md:text-3xl font-black text-white mb-3">مقدمة منصة مَلَف القانونية</h3>
+                  <p className="text-primary-100/80 font-medium max-w-sm">انقر لمشاهدة العرض التوضيحي القصير وتعرف على مميزات النظام</p>
+                </div>
+              </a>
             </motion.div>
           </motion.div>
         </div>

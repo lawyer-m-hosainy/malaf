@@ -4,6 +4,7 @@ import { Topbar } from "./Topbar";
 import { ChatAssistant } from "../ai/ChatAssistant";
 import { useUIStore } from "../../store/useUIStore";
 import { AlertCircle } from "lucide-react";
+import { FirstLoginWizard } from "@/components/FirstLoginWizard";
 
 export function RootLayout() {
   const isAiFallback = useUIStore((state) => state.isAiFallback);
@@ -24,6 +25,7 @@ export function RootLayout() {
         </main>
       </div>
       <ChatAssistant />
+      <FirstLoginWizard />
     </div>
   );
 }

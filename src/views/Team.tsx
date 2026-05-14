@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Edit, Trash2 } from "lucide-react";
+import { EmptyState } from "@/components/EmptyState";
 
 export default function Team() {
   const teamMembers = useTeamStore((state) => state.teamMembers);
@@ -149,7 +150,7 @@ export default function Team() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {teamMembers.map((member) => (
+        {teamMembers.length > 0 ? teamMembers.map((member) => (
           <Card key={member.id} className="border-none shadow-sm dark:bg-navy-800 overflow-hidden">
             <CardHeader className="pb-4 border-b border-slate-50 dark:border-white/5">
               <div className="flex items-start justify-between">
@@ -234,7 +235,17 @@ export default function Team() {
               </div>
             </CardContent>
           </Card>
-        ))}
+        )) : (
+          <div className="col-span-1 lg:col-span-2 xl:col-span-3">
+            <EmptyState 
+              icon={Users}
+              title="لا يوجد أعضاء في الفريق"
+              description="لم تقم بإضافة أي أعضاء لفريق عملك بعد."
+              actionLabel="إضافة عضو جديد"
+              onAction={() => setAddOpen(true)}
+            />
+          </div>
+        )}
       </div>
 
       {/* Profile Dialog */}

@@ -179,10 +179,8 @@ function RouteLayoutWrapper() {
   return <RootLayout />;
 }
 
+import { FullPageLoader } from "@/components/LoadingSpinner";
+
 function RouteLoadingFallback() {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-navy-900">
-      <span className="text-sm text-slate-500 dark:text-slate-300">جاري تحميل الصفحة...</span>
-    </div>
-  );
+  return <FullPageLoader text="جاري تحميل الصفحة..." />;
 }

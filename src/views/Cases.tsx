@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetchCases, fetchClients, fetchEnforcement, fetchTasks, fetchTeam, fetchTrustAccounts, saveCase } from "@/services/legalDataService";
 import { CSVImporter } from "@/components/CSVImporter";
+import { EmptyState } from "@/components/EmptyState";
 
 import { 
   DropdownMenu, 
@@ -361,11 +362,14 @@ export default function Cases() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={8} className="h-64 text-center">
-                    <div className="flex flex-col items-center justify-center text-slate-400 gap-2">
-                      <Scale size={48} className="opacity-20" />
-                      <p>لا توجد قضايا تطابق فلاتر البحث</p>
-                    </div>
+                  <TableCell colSpan={8} className="p-0 border-b-0">
+                    <EmptyState 
+                      icon={Scale}
+                      title="لا توجد قضايا"
+                      description={searchQuery ? "لم يتم العثور على قضايا تطابق بحثك." : "لم تقم بإضافة أي قضايا بعد. ابدأ بإضافة قضيتك الأولى."}
+                      actionLabel={!searchQuery ? "إضافة قضية" : undefined}
+                      onAction={!searchQuery ? () => setIsNewCaseOpen(true) : undefined}
+                    />
                   </TableCell>
                 </TableRow>
               )}

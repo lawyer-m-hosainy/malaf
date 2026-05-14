@@ -33,6 +33,7 @@ import { useUsageStore } from "@/store/useUsageStore";
 import { formatDateEG } from "@/lib/formatEG";
 
 import { TrialBanner } from "@/components/TrialBanner";
+import { OnboardingWidget } from "@/components/OnboardingWidget";
 
 const CATEGORY_COLORS: Record<string, { color: string; bgClass: string }> = {
   'تجاري': { color: 'var(--color-primary-500)', bgClass: 'bg-primary-500' },
@@ -262,6 +263,9 @@ export default function Dashboard() {
     >
       {/* Subscription Trial/Expiry Banner */}
       <TrialBanner />
+      
+      {/* New Office Setup Progress */}
+      <OnboardingWidget />
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

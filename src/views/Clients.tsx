@@ -28,6 +28,7 @@ import { useClientsStore } from "@/store/useClientsStore";
 import { useState } from "react";
 import { CSVImporter } from "@/components/CSVImporter";
 import { saveClient } from "@/services/legalDataService";
+import { EmptyState } from "@/components/EmptyState";
 
 import { useUsageStore } from "@/store/useUsageStore";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -352,11 +353,14 @@ export default function Clients() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-64 text-center">
-                    <div className="flex flex-col items-center justify-center text-slate-400 gap-2">
-                      <Users size={48} className="opacity-20" />
-                      <p>لا يوجد موكلون يطابقون فلاتر البحث</p>
-                    </div>
+                  <TableCell colSpan={6} className="p-0 border-b-0">
+                    <EmptyState 
+                      icon={Users}
+                      title="لا يوجد موكلون"
+                      description={searchQuery ? "لم يتم العثور على موكلين يطابقون بحثك." : "لم تقم بإضافة أي موكلين بعد. ابدأ بإضافة الموكل الأول."}
+                      actionLabel={!searchQuery ? "إضافة عميل" : undefined}
+                      onAction={!searchQuery ? openNewClientDialog : undefined}
+                    />
                   </TableCell>
                 </TableRow>
               )}

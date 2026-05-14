@@ -5,6 +5,7 @@
 // ═══════════════════════════════════════════════════════
 
 import express from 'express';
+import pino from 'pino';
 import {
   createPaymentLink,
   verifyPaymobHmac,
@@ -13,6 +14,7 @@ import {
   isPaymobConfigured,
 } from '../services/payment/paymobService.js';
 
+const logger = pino();
 const router = express.Router();
 
 /**
@@ -23,7 +25,7 @@ router.get('/plans', async (req, res) => {
     const plans = await getAllPlans();
     return res.json({ success: true, plans });
   } catch (err) {
-    console.error('Plans fetch error:', err.message);
+    logger.error({ err: err.message }, 'Plans fetch error');
     return res.status(500).json({ success: false, error: 'فشل في جلب الباقات' });
   }
 });
@@ -50,7 +52,7 @@ router.post('/create', async (req, res) => {
 
     return res.json(result);
   } catch (err) {
-    console.error('Payment create error:', err.message);
+    logger.error({ err: err.message }, 'Payment create error');
     return res.status(500).json({ success: false, error: 'فشل في إنشاء رابط الدفع' });
   }
 });
@@ -64,20 +66,20 @@ router.post('/callback', async (req, res) => {
     // 1. التحقق من HMAC signature
     const hmac = req.query.hmac || req.body.hmac;
     if (!verifyPaymobHmac(req.body, hmac)) {
-      console.warn('⚠️ Invalid Paymob HMAC signature');
+      logger.warn({ event: 'INVALID_HMAC', ip: req.ip }, 'Invalid Paymob HMAC signature');
       return res.status(403).json({ error: 'Invalid signature' });
     }
 
     const txData = req.body.obj || req.body;
     const isSuccess = txData.success === true || txData.success === 'true';
 
-    console.log(`💳 Payment callback: ${isSuccess ? 'SUCCESS' : 'FAILED'} — Amount: ${txData.amount_cents / 100} EGP`);
+    logger.info({ event: 'PAYMENT_CALLBACK', success: isSuccess, gateway: 'paymob' }, 'Payment callback received');
 
     if (isSuccess) {
       const result = await handleSuccessfulPayment(txData);
 
       if (result.success) {
-        console.log(`✅ Subscription activated: org=${result.orgId}, plan=${result.plan}, expires=${result.expiresAt}`);
+        logger.info({ event: 'SUBSCRIPTION_ACTIVATED', orgId: result.orgId, plan: result.plan }, 'Subscription activated');
 
         // TODO: إرسال رسالة واتساب تأكيدية (يتم ربطها في المرحلة التالية)
         // await sendWhatsAppConfirmation(result);
@@ -87,7 +89,7 @@ router.post('/callback', async (req, res) => {
     // Paymob يتوقع 200 OK دائماً
     return res.status(200).json({ received: true });
   } catch (err) {
-    console.error('Payment callback error:', err.message);
+    logger.error({ err: err.message }, 'Payment callback error');
     return res.status(200).json({ received: true }); // لا نرجع error لـ Paymob
   }
 });

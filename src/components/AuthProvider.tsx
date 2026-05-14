@@ -44,8 +44,12 @@ function resetAllStores() {
   useAnalyticsStore.getState().reset(); // R2-FIX: كان مفقوداً
   setTenantIdCache(null);
   clearDecryptCache();
-  localStorage.removeItem('malaf-auth-storage');
-  localStorage.removeItem('malaf-ui-storage');
+  // R1-FIX: مسح شامل لكل بيانات المنصة من التخزين المحلي
+  const keysToRemove = Object.keys(localStorage).filter(
+    k => k.startsWith('malaf') || k.startsWith('auth') || k.startsWith('sb-') || k === 'demoStartedAt'
+  );
+  keysToRemove.forEach(k => localStorage.removeItem(k));
+  sessionStorage.clear();
 }
 
 interface AuthContextType {

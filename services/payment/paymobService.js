@@ -7,6 +7,9 @@
 
 import crypto from 'crypto';
 import { createClient } from '@supabase/supabase-js';
+import pino from 'pino';
+
+const logger = pino();
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -43,7 +46,7 @@ async function getPaymobAuthToken() {
     const data = await resp.json();
     return data.token;
   } catch (err) {
-    console.error('Paymob auth error:', err.message);
+    logger.error({ err: err.message }, 'Paymob auth error');
     return null;
   }
 }
@@ -86,13 +89,13 @@ export async function createPaymentLink(orgId, planKey, billingCycle, buyerInfo 
       .single();
 
     if (txError) {
-      console.error('Failed to create payment transaction:', txError.message);
+        logger.error({ err: txError.message }, 'Payment link creation error');
       return { success: false, error: 'فشل في تسجيل المعاملة' };
     }
 
     // 3. إذا Paymob غير مُعد — نرجع رابط وهمي (للتطوير)
     if (!isPaymobConfigured()) {
-      console.warn('⚠️ Paymob not configured — returning stub payment link');
+      logger.warn('Paymob not configured — returning stub payment link');
       return {
         success: true,
         paymentUrl: `https://malaf-platform.onrender.com/payment/stub?tx=${tx.id}&amount=${amount}&plan=${planKey}`,
@@ -167,7 +170,7 @@ export async function createPaymentLink(orgId, planKey, billingCycle, buyerInfo 
       orderId: orderData.id,
     };
   } catch (err) {
-    console.error('Payment link creation error:', err.message);
+    logger.error({ err: err.message }, 'Payment link creation error');
     return { success: false, error: 'حدث خطأ أثناء إنشاء رابط الدفع' };
   }
 }
@@ -177,7 +180,7 @@ export async function createPaymentLink(orgId, planKey, billingCycle, buyerInfo 
  */
 export function verifyPaymobHmac(requestBody, receivedHmac) {
   if (!PAYMOB_HMAC_SECRET) {
-    console.warn('⚠️ PAYMOB_HMAC_SECRET not set — skipping verification');
+    logger.warn('PAYMOB_HMAC_SECRET not set — skipping verification');
     return true; // Skip in dev
   }
 
@@ -236,7 +239,7 @@ export async function handleSuccessfulPayment(transactionData) {
       .single();
 
     if (!tx) {
-      console.error('Transaction not found:', merchantOrderId);
+      logger.error({ merchantOrderId }, 'Transaction not found');
       return { success: false, error: 'المعاملة غير موجودة' };
     }
 
@@ -265,7 +268,7 @@ export async function handleSuccessfulPayment(transactionData) {
       }, { onConflict: 'org_id' });
 
     if (subError) {
-      console.error('Subscription upsert error:', subError.message);
+      logger.error({ err: subError.message }, 'Subscription upsert error');
     }
 
     // 4. تحديث المكتب
@@ -282,7 +285,7 @@ export async function handleSuccessfulPayment(transactionData) {
       amount: tx.amount,
     };
   } catch (err) {
-    console.error('Payment processing error:', err.message);
+    logger.error({ err: err.message }, 'Payment processing error');
     return { success: false, error: 'فشل في معالجة الدفع' };
   }
 }

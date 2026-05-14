@@ -94,11 +94,11 @@ export default function Landing() {
                   width="100%"
                   height="100%"
                   src="https://app.heygen.com/embeds/f2fd5c4f361a4036b3ce158cdb6291d3"
-                  title="مقدمة منصة مَلَف القانونية"
+                  title="HeyGen video player"
                   frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allow="encrypted-media; fullscreen;"
                   allowFullScreen
-                  className="w-full h-full object-cover"
+                  className="w-full h-full"
                 ></iframe>
               </div>
             </motion.div>

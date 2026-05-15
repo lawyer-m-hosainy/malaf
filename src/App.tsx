@@ -56,6 +56,7 @@ const AuditLogs = lazy(() => import("./views/AuditLogs"));
 const InternalWiki = lazy(() => import("./views/InternalWiki"));
 const NotFound = lazy(() => import("./views/NotFound"));
 const Billing = lazy(() => import("./views/Billing"));
+const Chat = lazy(() => import("./components/chat/ChatLayout"));
 
 // Enterprise Modules
 const OnboardingFlow = lazy(() => import("./modules/onboarding/OnboardingFlow"));
@@ -145,6 +146,7 @@ export default function App() {
                 <Route path="audit-logs" element={<PermissionGate permission="org_admin"><AuditLogs /></PermissionGate>} />
                 <Route path="ai-analyzer" element={<PermissionGate permission="documents"><AIDocumentAnalyzer /></PermissionGate>} />
                 <Route path="wiki" element={<PermissionGate permission="view_wiki"><InternalWiki /></PermissionGate>} />
+                <Route path="chat" element={<Chat />} />
                 <Route path="field-checkins" element={<PermissionGate permission="org_admin"><FieldCheckins /></PermissionGate>} />
                 <Route path="platform-admin" element={<PermissionGate permission="platform_admin"><GlobalAdmin /></PermissionGate>} />
                 {/* Egyptian Modules */}

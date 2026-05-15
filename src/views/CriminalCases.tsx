@@ -117,7 +117,7 @@ export default function CriminalCases() {
               </h4>
               <p className="text-sm text-slate-600 leading-relaxed pr-6">أنشأت محاكم جنايات مستأنفة لأول مرة في تاريخ القضاء المصري — أصبح الاستئناف في الجنايات حقاً مكفولاً خلال ٤٠ يوماً من تاريخ الحكم.</p>
             </div>
-            <button onClick={() => setAlerts(a => ({...a, legislative: false}))} className="text-slate-400 hover:text-slate-600"><X size={18}/></button>
+            <button onClick={() => setAlerts(a => ({...a, legislative: false}))} className="text-slate-400 hover:text-slate-600" title="إغلاق" aria-label="إغلاق"><X size={18}/></button>
           </motion.div>
         )}
       </AnimatePresence>
@@ -136,7 +136,7 @@ export default function CriminalCases() {
                   <Button size="sm" variant="outline" className="h-7 text-xs border-[#e53e3e] text-[#e53e3e] hover:bg-[#e53e3e] hover:text-white bg-white">إجراءات الاستئناف <ChevronLeft size={12} className="ml-1" /></Button>
                 </div>
               </div>
-              <button onClick={() => setAlerts(a => ({...a, red: false}))} className="text-[#e53e3e]/50 hover:text-[#e53e3e]"><X size={16}/></button>
+              <button onClick={() => setAlerts(a => ({...a, red: false}))} className="text-[#e53e3e]/50 hover:text-[#e53e3e]" title="إغلاق" aria-label="إغلاق"><X size={16}/></button>
             </motion.div>
           )}
           
@@ -151,7 +151,7 @@ export default function CriminalCases() {
                   <Button size="sm" variant="outline" className="h-7 text-xs border-[#d69e2e] text-[#d69e2e] hover:bg-[#d69e2e] hover:text-white bg-white">مواعيد الطعن <ChevronLeft size={12} className="ml-1" /></Button>
                 </div>
               </div>
-              <button onClick={() => setAlerts(a => ({...a, yellow: false}))} className="text-[#d69e2e]/50 hover:text-[#d69e2e]"><X size={16}/></button>
+              <button onClick={() => setAlerts(a => ({...a, yellow: false}))} className="text-[#d69e2e]/50 hover:text-[#d69e2e]" title="إغلاق" aria-label="إغلاق"><X size={16}/></button>
             </motion.div>
           )}
 
@@ -166,7 +166,7 @@ export default function CriminalCases() {
                   <Button size="sm" variant="outline" className="h-7 text-xs border-[#3182ce] text-[#3182ce] hover:bg-[#3182ce] hover:text-white bg-white">أبرز التعديلات <ChevronLeft size={12} className="ml-1" /></Button>
                 </div>
               </div>
-              <button onClick={() => setAlerts(a => ({...a, blue: false}))} className="text-[#3182ce]/50 hover:text-[#3182ce]"><X size={16}/></button>
+              <button onClick={() => setAlerts(a => ({...a, blue: false}))} className="text-[#3182ce]/50 hover:text-[#3182ce]" title="إغلاق" aria-label="إغلاق"><X size={16}/></button>
             </motion.div>
           )}
         </AnimatePresence>

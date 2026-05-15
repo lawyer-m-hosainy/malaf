@@ -260,7 +260,7 @@ export default function RealEstateRegistry() {
 
       {/* Registry Request Wizard Modal */}
       <Dialog open={isWizardOpen} onOpenChange={setIsWizardOpen}>
-        <DialogContent className="max-w-[850px] p-0 overflow-hidden dark:bg-navy-900 border-slate-200 dark:border-white/10 shadow-2xl rounded-xl">
+        <DialogContent showCloseButton={false} className="sm:max-w-[850px] w-[95vw] p-0 overflow-hidden dark:bg-navy-900 border-slate-200 dark:border-white/10 shadow-2xl rounded-xl">
           
           <div className="flex bg-slate-50/80 dark:bg-navy-950 border-b border-slate-200 dark:border-white/10">
             {STEPS.map((step, idx) => (

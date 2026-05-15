@@ -41,16 +41,16 @@ export async function fetchClients(): Promise<Client[]> {
   try {
     const { data, error } = await supabase
       .from(CLIENTS_TABLE)
-      .select("id, name, type, phone, email, national_id, commercial_reg")
-      .eq("org_id", orgId)
+      .select("id, name, type, phone, national_id_encrypted, commercial_registration_encrypted")
+      .eq("organization_id", orgId)
       .is("deleted_at", null)
       .order("name")
       .limit(20);
 
     if (error) throw error;
 
-    const nationalIdsToDecrypt = data?.map((d: any) => d.national_id) || [];
-    const commercialRegsToDecrypt = data?.map((d: any) => d.commercial_reg) || [];
+    const nationalIdsToDecrypt = data?.map((d: any) => d.national_id_encrypted) || [];
+    const commercialRegsToDecrypt = data?.map((d: any) => d.commercial_registration_encrypted) || [];
     
     const [decryptedNationalIds, decryptedCommercialRegs] = await Promise.all([
       batchDecryptFields(nationalIdsToDecrypt),
@@ -79,16 +79,16 @@ export async function fetchClientsPaginated(
   try {
     const { data, error, count } = await supabase
       .from(CLIENTS_TABLE)
-      .select("id, name, type, phone, email, national_id, commercial_reg", { count: "exact" })
-      .eq("org_id", orgId)
+      .select("id, name, type, phone, national_id_encrypted, commercial_registration_encrypted", { count: "exact" })
+      .eq("organization_id", orgId)
       .is("deleted_at", null)
       .order("name")
       .range(page * pageSize, (page + 1) * pageSize - 1);
 
     if (error) throw error;
 
-    const nationalIdsToDecrypt = data?.map((d: any) => d.national_id) || [];
-    const commercialRegsToDecrypt = data?.map((d: any) => d.commercial_reg) || [];
+    const nationalIdsToDecrypt = data?.map((d: any) => d.national_id_encrypted) || [];
+    const commercialRegsToDecrypt = data?.map((d: any) => d.commercial_registration_encrypted) || [];
     
     const [decryptedNationalIds, decryptedCommercialRegs] = await Promise.all([
       batchDecryptFields(nationalIdsToDecrypt),
@@ -114,21 +114,26 @@ export async function fetchClientsPaginated(
 export async function saveClient(client: Client): Promise<void> {
   const orgId = requireOrgId();
   try {
-    const encryptedClient = {
-      id: client.id,
-      org_id: orgId, // ✅ ربط المكتب دائماً
+    const encryptedClient: any = {
+      organization_id: orgId,
       name: client.name,
       type: client.type,
-      national_id: client.nationalId ? await encryptField(client.nationalId) : null,
-      commercial_reg: client.commercialRegistration
+      national_id_encrypted: client.nationalId ? await encryptField(client.nationalId) : null,
+      commercial_registration_encrypted: client.commercialRegistration
         ? await encryptField(client.commercialRegistration)
         : null,
       phone: client.phone,
-      email: client.email,
     };
 
-    const { error } = await supabase.from(CLIENTS_TABLE).upsert(encryptedClient);
+    // عند التعديل، نحدد الـ id — عند الإضافة، ندع الـ DB يولّده تلقائياً
+    if (client.id && !client.id.startsWith('C-')) {
+      encryptedClient.id = client.id;
+    }
+
+    const { data, error } = await supabase.from(CLIENTS_TABLE).upsert(encryptedClient).select('id').single();
     if (error) throw error;
+    // تحديث الـ id المحلي بالـ UUID الحقيقي من قاعدة البيانات
+    if (data?.id) client.id = data.id;
     await logAuditAction("CREATE/UPDATE", "clients", client.id, `حفظ موكل: ${client.name}`);
   } catch (error) {
     console.error("خطأ في حفظ الموكل:", error);
@@ -143,7 +148,7 @@ export async function deleteClient(clientId: string): Promise<void> {
     .from(CLIENTS_TABLE)
     .update({ deleted_at: new Date().toISOString() })
     .eq("id", clientId)
-    .eq("org_id", orgId);
+    .eq("organization_id", orgId);
   if (error) throw error;
   await logAuditAction("DELETE_SOFT", "clients", clientId, "حذف موكل (ناعم)");
 }

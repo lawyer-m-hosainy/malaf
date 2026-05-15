@@ -24,7 +24,7 @@ export async function logAuditAction(
     const orgId = getCurrentTenantId();
     if (!orgId) return; // لا نسجّل في حالة وضع العرض التجريبي
     await supabase.from("audit_logs").insert({
-      org_id: orgId,
+      organization_id: orgId,
       action,
       entity_type: entityType,
       entity_id: entityId,
@@ -156,25 +156,21 @@ export async function deleteClient(clientId: string): Promise<void> {
 // ─── مساعدات التحويل (Mapping Helpers) ──────────────────────────
 function mapCaseToDB(c: any, orgId: string) {
   const mapped: any = {
-    id: c.id,
-    org_id: orgId,
+    organization_id: orgId,
     client_id: c.clientId || c.client_id,
-    title: c.title || "",
-    case_number: c.automatedNumber || c.case_number || "",
     court: c.court || c.court_location || "",
     type: c.type || c.court_category || "",
     status: c.status || "متداولة",
     plaintiff: c.plaintiff || "",
     defendant: c.defendant || "",
-    client_role: c.clientRole || c.client_role || "مدعي",
-    court_category: c.court_category || c.type || "",
-    court_sub_type: c.court_sub_type || "",
-    court_location: c.court_location || c.court || "",
     first_instance_number: c.firstInstanceNumber || c.first_instance_number || "",
     appeal_number: c.appealNumber || c.appeal_number || "",
     cassation_number: c.cassationNumber || c.cassation_number || "",
-    created_at: c.createdAt || c.created_at || new Date().toISOString(),
   };
+  // عند التعديل نحدد الـ id — عند الإضافة ندع DB يولّد UUID تلقائياً
+  if (c.id && typeof c.id === 'string' && c.id.length > 10) {
+    mapped.id = c.id;
+  }
   return mapped;
 }
 
@@ -197,8 +193,8 @@ export async function fetchCases(): Promise<Case[]> {
   try {
     const { data, error } = await supabase
       .from(CASES_TABLE)
-      .select("id, client_id, title, type, court, status, plaintiff, defendant, first_instance_number, appeal_number, cassation_number, created_at") // جلب كل الأعمدة المتاحة
-      .eq("org_id", orgId)
+      .select("id, client_id, type, court, status, plaintiff, defendant, first_instance_number, appeal_number, cassation_number, created_at")
+      .eq("organization_id", orgId)
       .is("deleted_at", null)
       .order("created_at", { ascending: false })
       .limit(50);
@@ -232,9 +228,10 @@ export async function saveCase(caseData: Partial<Case>): Promise<void> {
   const orgId = requireOrgId();
   try {
     const mappedCase = mapCaseToDB(caseData, orgId);
-    const { error } = await supabase.from(CASES_TABLE).upsert(mappedCase);
+    const { data, error } = await supabase.from(CASES_TABLE).upsert(mappedCase).select('id').single();
     if (error) throw error;
-    await logAuditAction("UPSERT", "cases", caseData.id!, `حفظ قضية: ${caseData.title || caseData.id}`);
+    if (data?.id) (caseData as any).id = data.id;
+    await logAuditAction("UPSERT", "cases", caseData.id!, `حفظ قضية: ${caseData.type || caseData.id}`);
   } catch (error) {
     console.error("خطأ في حفظ القضية:", error);
     throw error;
@@ -245,9 +242,9 @@ export async function deleteCase(caseId: string): Promise<void> {
   const orgId = requireOrgId();
   const { error } = await supabase
     .from(CASES_TABLE)
-    .update({ deleted_at: new Date().toISOString() }) // ✅ حذف ناعم
+    .update({ deleted_at: new Date().toISOString() })
     .eq("id", caseId)
-    .eq("org_id", orgId);
+    .eq("organization_id", orgId);
   if (error) throw error;
   await logAuditAction("DELETE_SOFT", "cases", caseId, "حذف قضية (ناعم)");
 }
@@ -259,7 +256,7 @@ export async function fetchInvoices(): Promise<Invoice[]> {
     const { data, error } = await supabase
       .from("invoices")
       .select("id, client_id, amount, total, status, date, created_at")
-      .eq("org_id", orgId)
+      .eq("organization_id", orgId)
       .is("deleted_at", null)
       .order("created_at", { ascending: false })
       .limit(20);
@@ -275,7 +272,7 @@ export async function fetchInvoices(): Promise<Invoice[]> {
 function mapInvoiceToDB(inv: any, orgId: string) {
   return {
     id: inv.id,
-    org_id: orgId,
+    organization_id: orgId,
     client_id: inv.clientId,
     amount: inv.base || inv.amount,
     total: inv.total,
@@ -315,7 +312,7 @@ export async function deleteInvoice(invoiceId: string): Promise<void> {
     .from("invoices")
     .update({ deleted_at: new Date().toISOString() }) // ✅ حذف ناعم
     .eq("id", invoiceId)
-    .eq("org_id", orgId);
+    .eq("organization_id", orgId);
   if (error) throw error;
   await logAuditAction("DELETE_SOFT", "invoices", invoiceId, "حذف فاتورة (ناعم)");
 }
@@ -324,7 +321,7 @@ export async function deleteInvoice(invoiceId: string): Promise<void> {
 function mapTaskToDB(task: any, orgId: string) {
   return {
     id: task.id,
-    org_id: orgId,
+    organization_id: orgId,
     title: task.title,
     description: task.description,
     status: task.status,
@@ -341,7 +338,7 @@ export async function fetchTasks(): Promise<any[]> {
     const { data, error } = await supabase
       .from("tasks")
       .select("id, case_id, assigned_to, title, description, due_date, status, priority, created_at")
-      .eq("org_id", orgId)
+      .eq("organization_id", orgId)
       .is("deleted_at", null)
       .order("due_date")
       .limit(50);
@@ -376,7 +373,7 @@ export async function deleteTask(taskId: string): Promise<void> {
     .from("tasks")
     .update({ deleted_at: new Date().toISOString() }) // ✅ حذف ناعم
     .eq("id", taskId)
-    .eq("org_id", orgId);
+    .eq("organization_id", orgId);
   if (error) throw error;
   await logAuditAction("DELETE_SOFT", "tasks", taskId, "حذف مهمة (ناعم)");
 }
@@ -388,7 +385,7 @@ export async function fetchTeam(): Promise<any[]> {
     const { data, error } = await supabase
       .from("profiles")
       .select("id, full_name, role, email, created_at")
-      .eq("org_id", orgId) // ✅ عزل المستأجر
+      .eq("organization_id", orgId) // ✅ عزل المستأجر
       .limit(50);
     if (error) throw error;
     return data || [];
@@ -405,7 +402,7 @@ export async function fetchEnforcement(): Promise<any[]> {
     const { data, error } = await supabase
       .from("enforcement")
       .select("id, case_id, amount_claimed, amount_collected, status, created_at")
-      .eq("org_id", orgId)
+      .eq("organization_id", orgId)
       .is("deleted_at", null) // ✅ احترام الحذف الناعم
       .limit(100);
     if (error) throw error;
@@ -422,7 +419,7 @@ export async function deleteEnforcement(id: string): Promise<void> {
     .from("enforcement")
     .update({ deleted_at: new Date().toISOString() }) // ✅ حذف ناعم
     .eq("id", id)
-    .eq("org_id", orgId);
+    .eq("organization_id", orgId);
   if (error) throw error;
   await logAuditAction("DELETE_SOFT", "enforcement", id, "حذف ملف تنفيذ (ناعم)");
 }
@@ -434,7 +431,7 @@ export async function fetchTrustAccounts(): Promise<any[]> {
     const { data, error } = await supabase
       .from("trust_accounts")
       .select("id, client_id, amount, type, status, created_at")
-      .eq("org_id", orgId)
+      .eq("organization_id", orgId)
       .is("deleted_at", null) // ✅ احترام الحذف الناعم
       .limit(100);
     if (error) throw error;
@@ -451,7 +448,7 @@ export async function deleteTrustAccount(id: string): Promise<void> {
     .from("trust_accounts")
     .update({ deleted_at: new Date().toISOString() }) // ✅ حذف ناعم
     .eq("id", id)
-    .eq("org_id", orgId);
+    .eq("organization_id", orgId);
   if (error) throw error;
   await logAuditAction("DELETE_SOFT", "trust_accounts", id, "حذف حساب أمانة (ناعم)");
 }
@@ -460,7 +457,7 @@ export async function deleteTrustAccount(id: string): Promise<void> {
 function mapSessionToDB(session: any, orgId: string) {
   return {
     id: session.id,
-    org_id: orgId,
+    organization_id: orgId,
     case_id: session.caseId,
     date: session.date,
     time: session.time,
@@ -476,7 +473,7 @@ export async function fetchSessions(caseId?: string): Promise<any[]> {
     let query = supabase
       .from("sessions")
       .select("id, case_id, date, time, court, circuit, status, previous_decision, postponement_reason, next_session_date, lawyer_id, notes, created_at")
-      .eq("org_id", orgId) 
+      .eq("organization_id", orgId) 
       .order("date", { ascending: false })
       .limit(200);
 
@@ -513,7 +510,7 @@ export async function saveSession(session: any): Promise<void> {
 function mapPOAToDB(poa: any, orgId: string) {
   return {
     id: poa.id,
-    org_id: orgId,
+    organization_id: orgId,
     client_id: poa.clientId,
     number: poa.number,
     year: poa.year,
@@ -530,8 +527,8 @@ export async function fetchPOAs(): Promise<any[]> {
   try {
     const { data, error } = await supabase
       .from("poas")
-      .select("*, clients!inner(org_id)")
-      .eq("clients.org_id", orgId) 
+      .select("*, clients!inner(organization_id)")
+      .eq("clients.organization_id", orgId) 
       .limit(100);
     if (error) throw error;
     return (data || []).map(p => ({
@@ -562,7 +559,7 @@ export async function savePOA(poa: any): Promise<void> {
 function mapExpenseToDB(exp: any, orgId: string) {
   return {
     id: exp.id,
-    org_id: orgId,
+    organization_id: orgId,
     case_id: exp.caseId || exp.case_id,
     amount: exp.amount,
     category: exp.category,
@@ -578,7 +575,7 @@ export async function fetchExpenses(): Promise<any[]> {
     const { data, error } = await supabase
       .from("expenses")
       .select("id, case_id, client_id, category, amount, date, status, description, requires_partner_approval, created_at")
-      .eq("org_id", orgId)
+      .eq("organization_id", orgId)
       .is("deleted_at", null) 
       .order("date", { ascending: false })
       .limit(100);
@@ -612,7 +609,7 @@ export async function deleteExpense(id: string): Promise<void> {
     .from("expenses")
     .update({ deleted_at: new Date().toISOString() }) // ✅ حذف ناعم
     .eq("id", id)
-    .eq("org_id", orgId);
+    .eq("organization_id", orgId);
   if (error) throw error;
   await logAuditAction("DELETE_SOFT", "expenses", id, "حذف مصروف (ناعم)");
 }
@@ -656,8 +653,8 @@ export async function fetchETAInvoices(): Promise<any[]> {
   try {
     const { data, error } = await supabase
       .from("eta_invoices")
-      .select("id, org_id, amount, status, created_at")
-      .eq("org_id", orgId)
+      .select("id, organization_id, amount, status, created_at")
+      .eq("organization_id", orgId)
       .order("created_at", { ascending: false });
     if (error) throw error;
     return data || [];
@@ -672,7 +669,7 @@ export async function saveETAInvoice(invoice: any): Promise<void> {
   try {
     const { error } = await supabase
       .from("eta_invoices")
-      .upsert({ ...invoice, org_id: orgId });
+      .upsert({ ...invoice, organization_id: orgId });
     if (error) throw error;
   } catch (error) {
     console.error("خطأ في حفظ فاتورة ETA:", error);
@@ -686,8 +683,8 @@ export async function fetchConflictChecks(): Promise<any[]> {
   try {
     const { data, error } = await supabase
       .from("conflict_checks")
-      .select("id, org_id, entity_name, check_date, status, created_at")
-      .eq("org_id", orgId)
+      .select("id, organization_id, entity_name, check_date, status, created_at")
+      .eq("organization_id", orgId)
       .order("created_at", { ascending: false });
     if (error) throw error;
     return data || [];
@@ -702,7 +699,7 @@ export async function saveConflictCheck(record: any): Promise<void> {
   try {
     const { error } = await supabase
       .from("conflict_checks")
-      .upsert({ ...record, org_id: orgId });
+      .upsert({ ...record, organization_id: orgId });
     if (error) throw error;
   } catch (error) {
     console.error("خطأ في حفظ سجل التعارض:", error);
@@ -716,8 +713,8 @@ export async function fetchWikiArticles(): Promise<any[]> {
   try {
     const { data, error } = await supabase
       .from("wiki_articles")
-      .select("id, org_id, title, content, created_at")
-      .eq("org_id", orgId)
+      .select("id, organization_id, title, content, created_at")
+      .eq("organization_id", orgId)
       .order("created_at", { ascending: false });
     if (error) throw error;
     return data || [];
@@ -732,7 +729,7 @@ export async function saveWikiArticle(article: any): Promise<void> {
   try {
     const { error } = await supabase
       .from("wiki_articles")
-      .upsert({ ...article, org_id: orgId });
+      .upsert({ ...article, organization_id: orgId });
     if (error) throw error;
   } catch (error) {
     console.error("خطأ في حفظ المقال:", error);
@@ -746,7 +743,7 @@ export async function saveSpecializedCase(table: string, record: any): Promise<v
   try {
     const { error } = await supabase
       .from(table)
-      .upsert({ ...record, org_id: orgId });
+      .upsert({ ...record, organization_id: orgId });
     if (error) throw error;
   } catch (error) {
     console.error(`خطأ في حفظ سجل ${table}:`, error);
@@ -759,8 +756,8 @@ export async function fetchSpecializedCases(table: string): Promise<any[]> {
   try {
     const { data, error } = await supabase
       .from(table)
-      .select("id, org_id, created_at") // Dynamic table select
-      .eq("org_id", orgId)
+      .select("id, organization_id, created_at") // Dynamic table select
+      .eq("organization_id", orgId)
       .order("created_at", { ascending: false });
     if (error) throw error;
     return data || [];
@@ -777,7 +774,7 @@ export async function fetchDocuments(): Promise<any[]> {
     const { data, error } = await supabase
       .from("documents")
       .select("id, case_id, client_id, file_name, file_url, category, shared_with_client, size, created_at")
-      .eq("org_id", orgId)
+      .eq("organization_id", orgId)
       .is("deleted_at", null)
       .order("created_at", { ascending: false });
     if (error) throw error;
@@ -793,7 +790,7 @@ export async function saveDocument(doc: any): Promise<void> {
   try {
     const { error } = await supabase
       .from("documents")
-      .upsert({ ...doc, org_id: orgId });
+      .upsert({ ...doc, organization_id: orgId });
     if (error) throw error;
     await logAuditAction("CREATE/UPDATE", "documents", doc.id, `حفظ مستند: ${doc.name}`);
   } catch (error) {
@@ -808,7 +805,7 @@ export async function deleteDocumentRecord(id: string): Promise<void> {
     .from("documents")
     .update({ deleted_at: new Date().toISOString() })
     .eq("id", id)
-    .eq("org_id", orgId);
+    .eq("organization_id", orgId);
   if (error) throw error;
   await logAuditAction("DELETE_SOFT", "documents", id, "حذف مستند (ناعم)");
 }
@@ -855,7 +852,7 @@ export async function fetchTimeEntries(): Promise<any[]> {
     const { data, error } = await supabase
       .from("time_entries")
       .select("*")
-      .eq("org_id", orgId)
+      .eq("organization_id", orgId)
       .is("deleted_at", null)
       .order("created_at", { ascending: false });
     if (error) throw error;
@@ -871,7 +868,7 @@ export async function saveTimeEntry(entry: any): Promise<void> {
   try {
     const { error } = await supabase
       .from("time_entries")
-      .upsert({ ...entry, org_id: orgId });
+      .upsert({ ...entry, organization_id: orgId });
     if (error) throw error;
   } catch (error) {
     console.error("خطأ في حفظ سجل الوقت:", error);
@@ -885,7 +882,7 @@ export async function deleteTimeEntryRecord(id: string): Promise<void> {
     .from("time_entries")
     .update({ deleted_at: new Date().toISOString() })
     .eq("id", id)
-    .eq("org_id", orgId);
+    .eq("organization_id", orgId);
   if (error) throw error;
 }
 
@@ -896,7 +893,7 @@ export async function fetchReceivables(): Promise<any[]> {
     const { data, error } = await supabase
       .from("receivables")
       .select("*")
-      .eq("org_id", orgId)
+      .eq("organization_id", orgId)
       .is("deleted_at", null)
       .order("created_at", { ascending: false });
     if (error) throw error;
@@ -912,7 +909,7 @@ export async function saveReceivable(rec: any): Promise<void> {
   try {
     const { error } = await supabase
       .from("receivables")
-      .upsert({ ...rec, org_id: orgId });
+      .upsert({ ...rec, organization_id: orgId });
     if (error) throw error;
   } catch (error) {
     console.error("خطأ في حفظ المطالبة:", error);
@@ -926,7 +923,7 @@ export async function deleteReceivableRecord(id: string): Promise<void> {
     .from("receivables")
     .update({ deleted_at: new Date().toISOString() })
     .eq("id", id)
-    .eq("org_id", orgId);
+    .eq("organization_id", orgId);
   if (error) throw error;
 }
 
@@ -936,7 +933,7 @@ export async function fetchCollectionActions(receivableId: string): Promise<any[
     const { data, error } = await supabase
       .from("collection_actions")
       .select("*")
-      .eq("org_id", orgId)
+      .eq("organization_id", orgId)
       .eq("receivable_id", receivableId)
       .order("created_at", { ascending: false });
     if (error) throw error;
@@ -952,7 +949,7 @@ export async function saveCollectionAction(action: any): Promise<void> {
   try {
     const { error } = await supabase
       .from("collection_actions")
-      .upsert({ ...action, org_id: orgId });
+      .upsert({ ...action, organization_id: orgId });
     if (error) throw error;
   } catch (error) {
     console.error("خطأ في حفظ إجراء التحصيل:", error);
@@ -967,7 +964,7 @@ export async function fetchExpertMissions(): Promise<any[]> {
     const { data, error } = await supabase
       .from("expert_missions")
       .select("*")
-      .eq("org_id", orgId)
+      .eq("organization_id", orgId)
       .is("deleted_at", null)
       .order("created_at", { ascending: false });
     if (error) throw error;
@@ -983,7 +980,7 @@ export async function saveExpertMission(mission: any): Promise<void> {
   try {
     const { error } = await supabase
       .from("expert_missions")
-      .upsert({ ...mission, org_id: orgId });
+      .upsert({ ...mission, organization_id: orgId });
     if (error) throw error;
   } catch (error) {
     console.error("خطأ في حفظ المأمورية:", error);
@@ -997,7 +994,7 @@ export async function deleteExpertMissionRecord(id: string): Promise<void> {
     .from("expert_missions")
     .update({ deleted_at: new Date().toISOString() })
     .eq("id", id)
-    .eq("org_id", orgId);
+    .eq("organization_id", orgId);
   if (error) throw error;
 }
 
@@ -1007,7 +1004,7 @@ export async function fetchExpertSessions(missionId: string): Promise<any[]> {
     const { data, error } = await supabase
       .from("expert_sessions")
       .select("*")
-      .eq("org_id", orgId)
+      .eq("organization_id", orgId)
       .eq("mission_id", missionId)
       .order("date", { ascending: false });
     if (error) throw error;
@@ -1023,7 +1020,7 @@ export async function saveExpertSession(session: any): Promise<void> {
   try {
     const { error } = await supabase
       .from("expert_sessions")
-      .upsert({ ...session, org_id: orgId });
+      .upsert({ ...session, organization_id: orgId });
     if (error) throw error;
   } catch (error) {
     console.error("خطأ في حفظ جلسة الخبير:", error);
@@ -1038,7 +1035,7 @@ export async function fetchELitigationCases(): Promise<any[]> {
     const { data, error } = await supabase
       .from("e_litigation_cases")
       .select("*")
-      .eq("org_id", orgId)
+      .eq("organization_id", orgId)
       .order("created_at", { ascending: false });
     if (error) throw error;
     return data || [];
@@ -1053,7 +1050,7 @@ export async function saveELitigationCase(caseRef: any): Promise<void> {
   try {
     const { error } = await supabase
       .from("e_litigation_cases")
-      .upsert({ ...caseRef, org_id: orgId });
+      .upsert({ ...caseRef, organization_id: orgId });
     if (error) throw error;
   } catch (error) {
     console.error("خطأ في حفظ قضية التقاضي الإلكتروني:", error);
@@ -1067,7 +1064,7 @@ export async function deleteELitigationCase(caseId: string): Promise<void> {
     .from("e_litigation_cases")
     .delete()
     .eq("case_id", caseId)
-    .eq("org_id", orgId);
+    .eq("organization_id", orgId);
   if (error) throw error;
 }
 
@@ -1077,7 +1074,7 @@ export async function deleteFieldCheckin(id: string): Promise<void> {
     .from("field_checkins")
     .delete()
     .eq("id", id)
-    .eq("org_id", orgId);
+    .eq("organization_id", orgId);
   if (error) throw error;
 }
 
@@ -1087,7 +1084,7 @@ export async function fetchContractTemplates(): Promise<any[]> {
   const { data, error } = await supabase
     .from("contract_templates")
     .select("*")
-    .eq("org_id", orgId)
+    .eq("organization_id", orgId)
     .is("deleted_at", null)
     .order("created_at", { ascending: false });
   if (error) throw error;
@@ -1099,7 +1096,7 @@ export async function saveContractTemplate(templateData: any): Promise<void> {
   try {
     const { error } = await supabase
       .from("contract_templates")
-      .upsert({ ...templateData, org_id: orgId });
+      .upsert({ ...templateData, organization_id: orgId });
     if (error) throw error;
   } catch (error) {
     console.error("خطأ في حفظ نموذج العقد:", error);
@@ -1113,7 +1110,7 @@ export async function deleteContractTemplate(id: string): Promise<void> {
     .from("contract_templates")
     .update({ deleted_at: new Date().toISOString() })
     .eq("id", id)
-    .eq("org_id", orgId);
+    .eq("organization_id", orgId);
   if (error) throw error;
 }
 
@@ -1124,7 +1121,7 @@ export async function fetchFieldCheckins(): Promise<any[]> {
     const { data, error } = await supabase
       .from("field_checkins")
       .select("*")
-      .eq("org_id", orgId)
+      .eq("organization_id", orgId)
       .order("created_at", { ascending: false });
     if (error) throw error;
     return data || [];
@@ -1139,7 +1136,7 @@ export async function saveFieldCheckin(checkin: any): Promise<void> {
   try {
     const { error } = await supabase
       .from("field_checkins")
-      .upsert({ ...checkin, org_id: orgId });
+      .upsert({ ...checkin, organization_id: orgId });
     if (error) throw error;
   } catch (error) {
     console.error("خطأ في حفظ الزيارة الميدانية:", error);
@@ -1154,7 +1151,7 @@ export async function fetchContracts(): Promise<any[]> {
     const { data, error } = await supabase
       .from("contracts")
       .select("*")
-      .eq("org_id", orgId)
+      .eq("organization_id", orgId)
       .is("deleted_at", null)
       .order("created_at", { ascending: false });
     if (error) throw error;
@@ -1170,7 +1167,7 @@ export async function saveContract(contract: any): Promise<void> {
   try {
     const { error } = await supabase
       .from("contracts")
-      .upsert({ ...contract, org_id: orgId });
+      .upsert({ ...contract, organization_id: orgId });
     if (error) throw error;
   } catch (error) {
     console.error("خطأ في حفظ العقد:", error);
@@ -1184,7 +1181,9 @@ export async function deleteContractRecord(id: string): Promise<void> {
     .from("contracts")
     .update({ deleted_at: new Date().toISOString() })
     .eq("id", id)
-    .eq("org_id", orgId);
+    .eq("organization_id", orgId);
   if (error) throw error;
 }
+
+
 

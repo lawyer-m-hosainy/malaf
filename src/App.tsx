@@ -59,9 +59,6 @@ const Billing = lazy(() => import("./views/Billing"));
 
 // Enterprise Modules
 const OnboardingFlow = lazy(() => import("./modules/onboarding/OnboardingFlow"));
-const WhatsAppSettings = lazy(() => import("./pages/dashboard/WhatsAppSettings").then(m => ({ default: m.WhatsAppSettings })));
-const VideoRoom = lazy(() => import("./pages/dashboard/VideoRoom"));
-const VideoRoomManager = lazy(() => import("./pages/dashboard/VideoRoomManager"));
 const FieldCheckins = lazy(() => import("./views/FieldCheckins"));
 
 // Egyptian Modules
@@ -148,10 +145,7 @@ export default function App() {
                 <Route path="audit-logs" element={<PermissionGate permission="org_admin"><AuditLogs /></PermissionGate>} />
                 <Route path="ai-analyzer" element={<PermissionGate permission="documents"><AIDocumentAnalyzer /></PermissionGate>} />
                 <Route path="wiki" element={<PermissionGate permission="view_wiki"><InternalWiki /></PermissionGate>} />
-                <Route path="whatsapp" element={<PermissionGate permission="org_admin"><WhatsAppSettings /></PermissionGate>} />
-                <Route path="video-rooms" element={<PermissionGate permission="view_cases"><VideoRoomManager /></PermissionGate>} />
                 <Route path="field-checkins" element={<PermissionGate permission="org_admin"><FieldCheckins /></PermissionGate>} />
-                <Route path="video/:caseId" element={<PermissionGate permission="view_cases"><VideoRoom /></PermissionGate>} />
                 <Route path="platform-admin" element={<PermissionGate permission="platform_admin"><GlobalAdmin /></PermissionGate>} />
                 {/* Egyptian Modules */}
                 <Route path="bar-association" element={<PermissionGate permission="view_cases"><BarAssociation /></PermissionGate>} />

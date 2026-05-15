@@ -15,14 +15,8 @@ import { randomUUID } from 'crypto';
 import healthRouter from './routes/health.js';
 import aiRouter from './routes/ai.js';
 import cryptoRouter from './routes/crypto.js';
-import whatsappRouter from './routes/whatsapp.js';
-// Note: videoRouter is TS, we import it as .ts or let the loader handle it
-import videoRouter from './routes/video.js';
 import paymentRouter from './routes/payment.js';
-import messengerRouter from './routes/messenger.js';
-import { initScheduler } from './services/whatsapp/notificationScheduler.js';
 import { initSubscriptionCron } from './services/subscription/subscriptionCron.js';
-import { sendWhatsAppMessage } from './services/whatsapp/messageSender.js';
 
 // Import Middlewares
 import { authMiddleware } from './middleware/auth.js';
@@ -184,20 +178,12 @@ app.use('/api/health', healthRouter);
 // Protected Routes — with security logging
 app.use('/api/ai', authMiddleware, securityRequestLogger, aiRouter);
 app.use('/api/crypto', authMiddleware, securityRequestLogger, cryptoRouter);
-app.use('/api/video', authMiddleware, securityRequestLogger, videoRouter);
-// ✅ R2-FIX: WhatsApp — webhook routes عامة (مطلوبة من Meta)، باقي الـ routes محمية
-app.use('/api/whatsapp/webhook', whatsappRouter); // GET/POST webhook — عامة
-app.use('/api/whatsapp', authMiddleware, securityRequestLogger, whatsappRouter); // /send, /settings, /stats, /messages — محمية
 
 // Payment Routes — callback عام (Paymob webhook)، باقي الـ routes محمية
 app.use('/api/payment/callback', paymentRouter); // POST callback — عام
 app.use('/api/payment/plans', paymentRouter); // GET plans — عام
 app.use('/api/payment/status', paymentRouter); // GET status — عام
 app.use('/api/payment', authMiddleware, securityRequestLogger, paymentRouter); // /create — محمي
-
-// Facebook Messenger — webhook عام (مطلوب من Meta)
-app.use('/api/messenger/webhook', messengerRouter); // GET/POST webhook — عام
-app.use('/api/messenger', authMiddleware, messengerRouter); // /status — محمي
 
 // --- Frontend Serving ---
 const distPath = path.join(__dirname, 'dist');
@@ -241,17 +227,9 @@ app.listen(PORT, () => {
 
     // Initialize Subscription Cron Jobs (renewal reminders, expiration, win-back)
     try {
-        initSubscriptionCron(sendWhatsAppMessage);
+        initSubscriptionCron();
         logger.info('📅 Subscription Cron Jobs activated');
     } catch (err) {
         logger.warn({ err: err.message }, 'Subscription Cron init skipped (non-critical)');
-    }
-
-    // Initialize WhatsApp session reminders & invoice notifications
-    try {
-        initScheduler(sendWhatsAppMessage);
-        logger.info('📅 WhatsApp Notification Scheduler activated');
-    } catch (err) {
-        logger.warn({ err: err.message }, 'WhatsApp Scheduler init skipped (non-critical)');
     }
 });

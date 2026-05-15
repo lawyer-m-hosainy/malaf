@@ -166,7 +166,9 @@ export default function ExpertMissions() {
               </div>
               <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v)}>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="حالة المأمورية" />
+                  <SelectValue placeholder="حالة المأمورية">
+                    {statusFilter && statusFilter !== 'all' ? STATUS_LABELS[statusFilter as MissionStatus] : "جميع الحالات"}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">جميع الحالات</SelectItem>
@@ -438,7 +440,9 @@ export default function ExpertMissions() {
                     <Label className="text-[12px] text-slate-700 dark:text-slate-300">نوع المأمورية <span className="text-red-500">*</span></Label>
                     <Select value={formData.mission_type} onValueChange={v => setFormData({...formData, mission_type: v as MissionType})}>
                       <SelectTrigger className={formErrors.mission_type ? "border-red-500" : ""}>
-                        <SelectValue placeholder="اختر نوع المأمورية" />
+                        <SelectValue placeholder="اختر نوع المأمورية">
+                          {formData.mission_type ? MISSION_TYPES[formData.mission_type] : undefined}
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         {Object.entries(MISSION_TYPES).map(([k, v]) => (
@@ -490,7 +494,9 @@ export default function ExpertMissions() {
                   <Label className="text-[12px] text-slate-700 dark:text-slate-300">الحالة <span className="text-red-500">*</span></Label>
                   <Select value={formData.status} onValueChange={v => setFormData({...formData, status: v as MissionStatus})}>
                     <SelectTrigger>
-                      <SelectValue placeholder="اختر الحالة" />
+                      <SelectValue placeholder="اختر الحالة">
+                        {formData.status ? STATUS_LABELS[formData.status] : undefined}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {Object.entries(STATUS_LABELS).map(([k, v]) => (

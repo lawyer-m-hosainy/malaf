@@ -282,7 +282,7 @@ export default function RealEstateRegistry() {
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-2 col-span-2 md:col-span-1">
                     <Label className="text-sm font-bold text-slate-700 dark:text-slate-300">نوع الطلب <span className="text-red-500">*</span></Label>
-                    <Select value={formData.contractType} onValueChange={v => setFormData({...formData, contractType: v})}>
+                    <Select value={formData.contractType} onValueChange={(v) => setFormData({...formData, contractType: v as string})}>
                       <SelectTrigger><SelectValue placeholder="اختر نوع العقد" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="sale">تسجيل عقد بيع عقاري</SelectItem>
@@ -330,7 +330,7 @@ export default function RealEstateRegistry() {
                   </div>
                   <div className="space-y-2">
                     <Label className="text-sm font-bold text-slate-700 dark:text-slate-300">نوع العقار <span className="text-red-500">*</span></Label>
-                    <Select value={formData.propertyType} onValueChange={v => setFormData({...formData, propertyType: v})}>
+                    <Select value={formData.propertyType} onValueChange={(v) => setFormData({...formData, propertyType: v as string})}>
                       <SelectTrigger><SelectValue/></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="apartment">شقة سكنية</SelectItem>

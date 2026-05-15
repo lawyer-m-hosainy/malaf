@@ -54,9 +54,12 @@ export function WhatsAppSettings() {
 
   const fetchSettings = async () => {
     try {
-      // ✅ BUG-003 FIX: استخدام apiGet مع Authorization header
-      const data = await apiGet(`/api/whatsapp/settings/${orgId}`);
-      if (data.org_id) setSettings(data);
+      const { data, error } = await supabase
+        .from('whatsapp_settings')
+        .select('*')
+        .eq('org_id', orgId)
+        .maybeSingle();
+      if (!error && data) setSettings(data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -85,19 +88,29 @@ export function WhatsAppSettings() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await apiPut(`/api/whatsapp/settings/${orgId}`, settings);
+      const payload = {
+        org_id: orgId,
+        is_active: settings.is_active,
+        wa_phone_number: settings.wa_phone_number || '',
+        api_token_encrypted: settings.api_token_encrypted || '',
+        provider: settings.provider || 'meta_cloud',
+        welcome_message: settings.welcome_message || '',
+        away_message: settings.away_message || '',
+        notifications: settings.notifications || {},
+        updated_at: new Date().toISOString(),
+      };
+
+      const { error } = await supabase
+        .from('whatsapp_settings')
+        .upsert(payload, { onConflict: 'org_id' });
+
+      if (error) throw error;
+
       toast.success("تم حفظ إعدادات الواتساب بنجاح ✅");
-      // تحديث الإعدادات بعد الحفظ
       fetchSettings();
     } catch (err: any) {
-      const errorMsg = err?.message || '';
-      if (errorMsg.includes('500')) {
-        toast.error("خطأ في الخادم — تأكد من تنفيذ migration جداول الواتساب في Supabase", { duration: 6000 });
-      } else if (errorMsg.includes('401') || errorMsg.includes('403')) {
-        toast.error("مطلوب تسجيل دخول — يرجى تسجيل الدخول مرة أخرى");
-      } else {
-        toast.error("حدث خطأ أثناء الحفظ — تحقق من اتصال الإنترنت والخادم");
-      }
+      console.error('Save error:', err);
+      toast.error(err?.message || "حدث خطأ أثناء الحفظ");
     } finally {
       setSaving(false);
     }

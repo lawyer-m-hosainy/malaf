@@ -19,6 +19,7 @@ type SidebarItem =
 const sidebarStructure: SidebarItem[] = [
   // ── أقسام ثابتة ──
   { type: 'link', name: "الرئيسية", href: "/dashboard", icon: LayoutDashboard },
+  { type: 'link', name: "المحادثات", href: "/dashboard/chat", icon: MessageSquare },
   { type: 'link', name: "الموكلين", href: "/dashboard/clients", icon: Users },
   { type: 'link', name: "القضايا", href: "/dashboard/cases", icon: Scale },
 

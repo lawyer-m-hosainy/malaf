@@ -122,9 +122,29 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
         toast.error("يرجى اختيار نوع القضية والتصنيف والمحكمة");
         return;
       }
-      caseSchema.parse(newCaseData);
+
+      // ── تكوين أسماء المدعي/المدعى عليه تلقائياً من الموكل ──
+      const selectedClient = clients.find(c => c.id === newCaseData.clientId);
+      const clientName = selectedClient?.name || "";
+      const isPlaintiffRole = ['مدعي', 'مدعي ومدعى عليه فرعياً', 'مستأنف', 'طاعن', 'متدخل هجومي', 'متدخل انضمامي'].includes(newCaseData.clientRole);
+
+      let finalPlaintiff = '';
+      let finalDefendant = '';
+
+      if (isPlaintiffRole) {
+        // الموكل = مدعي → اسمه أولاً + أي موكلين إضافيين
+        finalPlaintiff = newCaseData.plaintiff ? `${clientName} وآخرون: ${newCaseData.plaintiff}` : clientName;
+        finalDefendant = newCaseData.defendant; // الخصوم
+      } else {
+        // الموكل = مدعى عليه → اسمه أولاً + أي موكلين إضافيين
+        finalDefendant = newCaseData.defendant ? `${clientName} وآخرون: ${newCaseData.defendant}` : clientName;
+        finalPlaintiff = newCaseData.plaintiff; // الخصوم
+      }
+
+      const dataToValidate = { ...newCaseData, plaintiff: finalPlaintiff, defendant: finalDefendant };
+      caseSchema.parse(dataToValidate);
       
-      let finalCaseData = { ...newCaseData } as any;
+      let finalCaseData = { ...dataToValidate } as any;
 
       if (caseToEdit) {
         if (finalCaseData.status === "محفوظة" && !caseToEdit.archiveCode) {

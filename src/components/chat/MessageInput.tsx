@@ -83,7 +83,7 @@ export function MessageInput({ channel }: { channel: any }) {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${import.meta.env.VITE_DAILY_API_KEY}` 
+          Authorization: `Bearer ${(import.meta as any).env.VITE_DAILY_API_KEY}` 
         },
         body: JSON.stringify({ properties: { exp: Math.floor(Date.now() / 1000) + 3600 } })
       });

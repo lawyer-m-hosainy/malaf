@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS public.chat_rooms (
   tenant_id UUID REFERENCES tenants(id) NOT NULL,
   name TEXT,
   type TEXT CHECK (type IN ('internal','client')),
-  case_id UUID REFERENCES cases(id) NULLABLE,
+  case_id UUID REFERENCES cases(id) NULL,
   created_by UUID REFERENCES profiles(id),
   created_at TIMESTAMPTZ DEFAULT now()
 );
@@ -16,8 +16,8 @@ CREATE TABLE IF NOT EXISTS public.chat_messages (
   room_id UUID REFERENCES chat_rooms(id) ON DELETE CASCADE,
   sender_id UUID REFERENCES profiles(id),
   content TEXT,
-  attachment_url TEXT NULLABLE,
-  attachment_type TEXT CHECK (attachment_type IN ('image','pdf','doc')) NULLABLE,
+  attachment_url TEXT NULL,
+  attachment_type TEXT CHECK (attachment_type IN ('image','pdf','doc')) NULL,
   is_system BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT now()
 );

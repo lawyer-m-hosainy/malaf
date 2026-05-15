@@ -227,10 +227,10 @@ export default function Dashboard() {
   const todaySessions = sessions.filter(s => s.date === today);
 
   const upcomingDeadlines = deadlines.filter(d => {
-    if (!d.type?.includes('استئناف') && !d.title.includes('استئناف') && !d.title.includes('تمييز')) return false;
+    if (!d.type?.includes('استئناف') && !d.title.includes('استئناف') && !d.title.includes('نقض')) return false;
     const diffTime = new Date(d.date).getTime() - new Date(today).getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays >= 0 && diffDays <= 30;
+    return diffDays >= 0 && diffDays <= 40;
   }).map(d => {
     const diffTime = new Date(d.date).getTime() - new Date(today).getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -436,7 +436,7 @@ export default function Dashboard() {
           <CardHeader className="border-b border-slate-50 dark:border-white/5 pb-4">
             <CardTitle className="text-lg font-bold text-navy-900 dark:text-white flex items-center gap-2">
               <AlertCircle className="w-5 h-5 text-red-500" />
-              تنبيهات الاستئناف والتمييز (خلال 30 يوم)
+              تنبيهات الطعون - استئناف ونقض (خلال 40 يوم القادمة)
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">

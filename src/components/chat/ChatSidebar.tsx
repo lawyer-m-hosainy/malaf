@@ -3,6 +3,7 @@ import { Search, Plus, Users, UserCircle, MessageCircle } from "lucide-react";
 import { useChatStore, ChatRoom } from "@/store/chatStore";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useClientsStore } from "@/store/useClientsStore";
 import { toast } from "sonner";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
@@ -38,12 +39,14 @@ function relativeTime(dateStr?: string): string {
 
 export function ChatSidebar() {
   const currentUser = useAuthStore((s) => s.currentUser);
-  const { activeRoomId, setActiveRoom, rooms, setRooms, unreadCounts, markAsRead, onlineUserIds } = useChatStore();
+  const { activeRoomId, setActiveRoom, rooms, setRooms, unreadCounts, markAsRead } = useChatStore();
+  const clients = useClientsStore((s) => s.clients);
 
   const [search, setSearch] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
   const [newRoomName, setNewRoomName] = useState("");
   const [newRoomType, setNewRoomType] = useState<"internal" | "client">("internal");
+  const [selectedClientId, setSelectedClientId] = useState("");
 
   /* ─── Fetch rooms from DB ─── */
   useEffect(() => {
@@ -53,7 +56,12 @@ export function ChatSidebar() {
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (!error && data) {
+      if (error) {
+        console.error("خطأ في جلب غرف المحادثة:", error);
+        return;
+      }
+
+      if (data) {
         // Fetch last message for each room
         const roomsWithMeta: ChatRoom[] = await Promise.all(
           data.map(async (room: any) => {
@@ -79,23 +87,55 @@ export function ChatSidebar() {
 
   /* ─── Create room ─── */
   const handleCreateRoom = async () => {
-    if (!newRoomName.trim()) return;
+    if (!newRoomName.trim()) {
+      toast.error("يرجى كتابة اسم المحادثة");
+      return;
+    }
+
+    // جلب orgId من مصادر متعددة
     const orgId = currentUser?.orgId;
-    if (!orgId) {
+    const userId = currentUser?.id;
+
+    if (!userId) {
       toast.error("لا يمكن إنشاء غرفة بدون تسجيل دخول");
       return;
     }
 
-    const { data, error } = await supabase.from("chat_rooms").insert({
-      tenant_id: orgId,
+    // بناء بيانات الغرفة
+    const roomPayload: any = {
       name: newRoomName.trim(),
       type: newRoomType,
-      created_by: currentUser?.id,
-    }).select().single();
+      created_by: userId,
+    };
+
+    // tenant_id إجباري — نجرب orgId أولاً، ثم نجلبه من profiles
+    if (orgId) {
+      roomPayload.tenant_id = orgId;
+    } else {
+      // جلب organization_id من profiles
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("organization_id")
+        .eq("id", userId)
+        .single();
+      
+      if (profile?.organization_id) {
+        roomPayload.tenant_id = profile.organization_id;
+      } else {
+        toast.error("لم يتم ربط حسابك بمكتب — يرجى التواصل مع المدير");
+        return;
+      }
+    }
+
+    const { data, error } = await supabase
+      .from("chat_rooms")
+      .insert(roomPayload)
+      .select()
+      .single();
 
     if (error) {
-      toast.error("فشل إنشاء الغرفة");
-      console.error(error);
+      console.error("خطأ إنشاء الغرفة:", error);
+      toast.error(`فشل إنشاء الغرفة: ${error.message}`);
       return;
     }
 
@@ -103,7 +143,7 @@ export function ChatSidebar() {
     if (data) {
       await supabase.from("chat_members").insert({
         room_id: data.id,
-        user_id: currentUser?.id,
+        user_id: userId,
       });
 
       setRooms([{ ...data, lastMessage: "", lastMessageAt: data.created_at }, ...rooms]);
@@ -111,8 +151,18 @@ export function ChatSidebar() {
     }
 
     setNewRoomName("");
+    setSelectedClientId("");
     setCreateOpen(false);
     toast.success("تم إنشاء الغرفة بنجاح");
+  };
+
+  /* ─── When type changes to client, auto-fill name from selected client ─── */
+  const handleClientSelect = (clientId: string) => {
+    setSelectedClientId(clientId);
+    const client = clients.find(c => c.id === clientId);
+    if (client) {
+      setNewRoomName(client.name);
+    }
   };
 
   /* ─── Click handler ─── */
@@ -251,20 +301,12 @@ export function ChatSidebar() {
             <DialogTitle className="font-bold text-lg">محادثة جديدة</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-2">
-            <div className="space-y-2">
-              <Label>اسم المحادثة</Label>
-              <Input
-                value={newRoomName}
-                onChange={(e) => setNewRoomName(e.target.value)}
-                placeholder="مثال: الفريق القانوني"
-                onKeyDown={(e) => e.key === "Enter" && handleCreateRoom()}
-              />
-            </div>
+            {/* نوع المحادثة */}
             <div className="space-y-2">
               <Label>نوع المحادثة</Label>
               <div className="flex gap-2">
                 <button
-                  onClick={() => setNewRoomType("internal")}
+                  onClick={() => { setNewRoomType("internal"); setNewRoomName(""); setSelectedClientId(""); }}
                   className={`flex-1 py-2 rounded-lg text-sm font-bold transition-colors ${
                     newRoomType === "internal"
                       ? "bg-[#0d1b2a] text-white"
@@ -275,7 +317,7 @@ export function ChatSidebar() {
                   داخلي
                 </button>
                 <button
-                  onClick={() => setNewRoomType("client")}
+                  onClick={() => { setNewRoomType("client"); setNewRoomName(""); setSelectedClientId(""); }}
                   className={`flex-1 py-2 rounded-lg text-sm font-bold transition-colors ${
                     newRoomType === "client"
                       ? "bg-[#0d1b2a] text-white"
@@ -287,6 +329,44 @@ export function ChatSidebar() {
                 </button>
               </div>
             </div>
+
+            {/* اختيار الموكل (يظهر فقط لنوع "موكل") */}
+            {newRoomType === "client" && (
+              <div className="space-y-2">
+                <Label>اختر الموكل</Label>
+                {clients.length === 0 ? (
+                  <p className="text-xs text-amber-600 bg-amber-50 dark:bg-amber-900/20 p-2 rounded-md">
+                    ⚠️ لا يوجد موكلون مسجلون — أضف موكل أولاً من قسم "الموكلون"
+                  </p>
+                ) : (
+                  <select
+                    title="اختر الموكل"
+                    className="w-full h-10 rounded-md border border-slate-200 dark:border-white/10 bg-transparent px-3 py-2 text-sm"
+                    value={selectedClientId}
+                    onChange={(e) => handleClientSelect(e.target.value)}
+                  >
+                    <option value="">— اختر موكلاً —</option>
+                    {clients.map(client => (
+                      <option key={client.id} value={client.id}>
+                        {client.name} ({client.type}) {client.phone ? `— ${client.phone}` : ''}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+            )}
+
+            {/* اسم المحادثة */}
+            <div className="space-y-2">
+              <Label>اسم المحادثة</Label>
+              <Input
+                value={newRoomName}
+                onChange={(e) => setNewRoomName(e.target.value)}
+                placeholder={newRoomType === "internal" ? "مثال: الفريق القانوني" : "اسم الموكل يُملأ تلقائياً"}
+                onKeyDown={(e) => e.key === "Enter" && handleCreateRoom()}
+              />
+            </div>
+
             <Button onClick={handleCreateRoom} className="w-full bg-[#c9a84c] hover:bg-[#b0933f] text-[#0d1b2a] font-bold">
               إنشاء
             </Button>

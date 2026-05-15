@@ -118,6 +118,8 @@ export function MessageInput({ channel }: { channel: any }) {
             ref={fileInputRef} 
             className="hidden" 
             accept="image/*,.pdf,.doc,.docx"
+            title="إرفاق ملف"
+            aria-label="إرفاق ملف"
             onChange={(e) => handleFileUpload(e, e.target.files?.[0]?.type.includes('image') ? 'image' : 'doc')}
           />
           <button 
@@ -165,6 +167,8 @@ export function MessageInput({ channel }: { channel: any }) {
         <button 
           onClick={handleSend}
           disabled={!message.trim() || isUploading}
+          title="إرسال"
+          aria-label="إرسال"
           className="p-2.5 bg-[#0d1b2a] hover:bg-[#1a2c42] dark:bg-[#c9a84c] dark:hover:bg-[#b0933f] text-white dark:text-[#0d1b2a] rounded-lg transition-colors disabled:opacity-50 shrink-0"
         >
           <Send size={18} className="rtl:rotate-180" />

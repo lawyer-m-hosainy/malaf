@@ -26,6 +26,8 @@ export function VideoCallBar() {
         </button>
         <button 
           onClick={() => setActiveVideoCall(null)}
+          title="رفض"
+          aria-label="رفض"
           className="bg-slate-800 hover:bg-red-900/50 text-slate-300 hover:text-red-400 font-bold text-xs px-3 py-2 rounded-lg transition-colors border border-white/10"
         >
           <PhoneOff size={16} />

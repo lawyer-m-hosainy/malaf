@@ -1,177 +1,239 @@
-import { useState, useRef } from "react";
-import { Send, Image as ImageIcon, Paperclip, Video, Loader2 } from "lucide-react";
+import { useState, useRef, useCallback } from "react";
+import { Send, Paperclip, Video, Loader2, X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useChatStore } from "@/store/chatStore";
+import { useAuthStore } from "@/store/useAuthStore";
 import { toast } from "sonner";
 import { getCurrentTenantId } from "@/lib/tenant";
 
-export function MessageInput({ channel }: { channel: any }) {
-  const [message, setMessage] = useState("");
-  const [isUploading, setIsUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+interface MessageInputProps {
+  channel: any;
+  roomType?: "internal" | "client";
+  roomName?: string;
+}
+
+export function MessageInput({ channel, roomType, roomName }: MessageInputProps) {
+  const currentUser = useAuthStore((s) => s.currentUser);
   const { activeRoomId, setActiveVideoCall } = useChatStore();
 
-  const handleSend = async () => {
-    if (!message.trim() || !activeRoomId) return;
+  const [message, setMessage] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const content = message;
+  const charCount = message.length;
+  const placeholder = roomType === "client"
+    ? `راسل ${roomName || "الموكل"}...`
+    : "راسل الفريق...";
+
+  /* ─── Send text message ─── */
+  const handleSend = useCallback(async () => {
+    if (!message.trim() || !activeRoomId || isSending) return;
+
+    const content = message.trim();
     setMessage("");
+    setIsSending(true);
 
     try {
-      // In a real app, you'd fetch the current user's ID
-      // const { data: { user } } = await supabase.auth.getUser();
-      
-      await supabase.from("chat_messages").insert({
+      const { error } = await supabase.from("chat_messages").insert({
         room_id: activeRoomId,
-        content: content,
-        // sender_id: user?.id,
+        content,
+        sender_id: currentUser?.id || null,
         is_system: false,
       });
+
+      if (error) throw error;
     } catch (error) {
       console.error("Error sending message:", error);
       toast.error("فشل إرسال الرسالة");
+      setMessage(content); // Restore message on failure
+    } finally {
+      setIsSending(false);
     }
-  };
+  }, [message, activeRoomId, currentUser?.id, isSending]);
 
+  /* ─── Keyboard ─── */
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
-    } else if (activeRoomId && channel) {
+    } else if (activeRoomId && channel && e.key !== "Enter") {
+      // Broadcast typing event
       channel.send({
-        type: 'broadcast',
-        event: 'typing',
-        payload: { user_id: 'current_user_id_mock' } // In real app, use auth user ID
+        type: "broadcast",
+        event: "typing",
+        payload: { user_id: currentUser?.id, user_name: currentUser?.name || "شخص ما" },
       });
     }
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'image' | 'doc') => {
-    const file = e.target.files?.[0];
-    if (!file || !activeRoomId) return;
-
+  /* ─── File upload ─── */
+  const uploadFile = async (file: File) => {
+    if (!activeRoomId) return;
     setIsUploading(true);
+
     try {
-      const tenantId = getCurrentTenantId();
+      const tenantId = getCurrentTenantId() || "public";
+      const isImage = file.type.startsWith("image/");
+      const attachmentType = isImage ? "image" : "doc";
+      const path = `${tenantId}/${activeRoomId}/${Date.now()}-${file.name}`;
+
       const { data, error } = await supabase.storage
-        .from('chat-attachments')
-        .upload(`${tenantId}/${activeRoomId}/${Date.now()}-${file.name}`, file);
+        .from("chat-attachments")
+        .upload(path, file);
 
       if (error) throw error;
 
-      const { data: { publicUrl } } = supabase.storage.from('chat-attachments').getPublicUrl(data.path);
+      const { data: urlData } = supabase.storage.from("chat-attachments").getPublicUrl(data.path);
 
       await supabase.from("chat_messages").insert({
         room_id: activeRoomId,
-        content: type === 'image' ? 'صورة مرفقة' : 'مستند مرفق',
-        attachment_url: publicUrl,
-        attachment_type: type,
-        // sender_id: user?.id,
+        content: isImage ? "📷 صورة مرفقة" : `📎 ${file.name}`,
+        attachment_url: urlData.publicUrl,
+        attachment_type: attachmentType,
+        sender_id: currentUser?.id || null,
+        is_system: false,
       });
+
+      toast.success("تم رفع الملف بنجاح");
     } catch (error) {
       console.error("Upload error:", error);
-      toast.error("فشل رفع الملف");
+      toast.error("فشل رفع الملف — تأكد من إنشاء bucket 'chat-attachments' في Supabase Storage");
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) uploadFile(file);
+  };
+
+  /* ─── Drag & Drop ─── */
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) uploadFile(file);
+  };
+
+  /* ─── Video call ─── */
   const startVideoCall = async () => {
     try {
-      const res = await fetch('https://api.daily.co/v1/rooms', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${(import.meta as any).env.VITE_DAILY_API_KEY}` 
+      const apiKey = (import.meta as any).env.VITE_DAILY_API_KEY;
+      if (!apiKey || apiKey === "your_daily_api_key_here") {
+        toast.error("يرجى إعداد VITE_DAILY_API_KEY في ملف .env.local");
+        return;
+      }
+
+      const res = await fetch("https://api.daily.co/v1/rooms", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
         },
-        body: JSON.stringify({ properties: { exp: Math.floor(Date.now() / 1000) + 3600 } })
+        body: JSON.stringify({ properties: { exp: Math.floor(Date.now() / 1000) + 3600 } }),
       });
-      
+
       const { url } = await res.json();
+      if (!url) throw new Error("No URL returned");
+
       setActiveVideoCall(url);
-      
-      // Send a system message about the call
+
+      // Send system message about the call
       if (activeRoomId) {
         await supabase.from("chat_messages").insert({
           room_id: activeRoomId,
-          content: 'بدأ مكالمة فيديو جديدة',
+          content: `📹 ${currentUser?.name || "شخص ما"} بدأ مكالمة فيديو — اضغط للانضمام`,
           is_system: true,
           attachment_url: url,
         });
       }
-      
-      window.open(url, '_blank');
+
+      window.open(url, "_blank");
     } catch (error) {
       console.error("Video call error:", error);
-      toast.error("فشل بدء المكالمة. تأكد من إعدادات VITE_DAILY_API_KEY");
+      toast.error("فشل بدء المكالمة");
     }
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-white/10 p-4" dir="rtl">
-      <div className="flex items-end gap-2 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-white/5 p-2 focus-within:ring-2 focus-within:ring-[#c9a84c] focus-within:border-transparent transition-all">
-        
-        <div className="flex items-center gap-1">
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            className="hidden" 
-            accept="image/*,.pdf,.doc,.docx"
+    <div
+      className={`bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-white/10 p-3 transition-colors ${dragOver ? "bg-[#c9a84c]/10 dark:bg-[#c9a84c]/5" : ""}`}
+      dir="rtl"
+      onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+      onDragLeave={() => setDragOver(false)}
+      onDrop={handleDrop}
+    >
+      {/* Drag overlay */}
+      {dragOver && (
+        <div className="text-center py-4 text-[#c9a84c] text-sm font-bold border-2 border-dashed border-[#c9a84c]/40 rounded-xl mb-2">
+          أفلت الملف هنا لإرساله
+        </div>
+      )}
+
+      {/* Character counter */}
+      {charCount > 500 && (
+        <div className="text-left mb-1">
+          <span className={`text-[10px] font-bold ${charCount > 1000 ? "text-red-500" : "text-amber-500"}`}>
+            {charCount} حرف
+          </span>
+        </div>
+      )}
+
+      <div className="flex items-end gap-2 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-white/5 p-2 focus-within:ring-2 focus-within:ring-[#c9a84c]/50 focus-within:border-[#c9a84c]/30 transition-all">
+        {/* Action buttons */}
+        <div className="flex items-center gap-0.5">
+          <input
+            type="file"
+            ref={fileInputRef}
+            className="hidden"
+            accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
             title="إرفاق ملف"
             aria-label="إرفاق ملف"
-            onChange={(e) => handleFileUpload(e, e.target.files?.[0]?.type.includes('image') ? 'image' : 'doc')}
+            onChange={handleFileInput}
           />
-          <button 
+          <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="p-2 text-slate-400 hover:text-[#c9a84c] hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
+            className="p-2 text-slate-400 hover:text-[#c9a84c] hover:bg-slate-200/50 dark:hover:bg-slate-700 rounded-lg transition-colors"
             title="إرفاق ملف"
             disabled={isUploading}
           >
-            {isUploading ? <Loader2 size={20} className="animate-spin" /> : <Paperclip size={20} />}
+            {isUploading ? <Loader2 size={18} className="animate-spin" /> : <Paperclip size={18} />}
           </button>
-          <button 
-            type="button"
-            onClick={() => {
-              if (fileInputRef.current) {
-                fileInputRef.current.accept = "image/*";
-                fileInputRef.current.click();
-              }
-            }}
-            className="p-2 text-slate-400 hover:text-[#c9a84c] hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
-            title="إرسال صورة"
-            disabled={isUploading}
-          >
-            <ImageIcon size={20} />
-          </button>
-          <button 
+          <button
             type="button"
             onClick={startVideoCall}
-            className="p-2 text-slate-400 hover:text-[#c9a84c] hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
+            className="p-2 text-slate-400 hover:text-[#c9a84c] hover:bg-slate-200/50 dark:hover:bg-slate-700 rounded-lg transition-colors"
             title="مكالمة فيديو"
           >
-            <Video size={20} />
+            <Video size={18} />
           </button>
         </div>
 
+        {/* Text input */}
         <textarea
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="اكتب رسالتك هنا... (Shift + Enter لسطر جديد)"
-          className="flex-1 max-h-32 min-h-[44px] bg-transparent border-none resize-none focus:outline-none text-slate-700 dark:text-white px-2 py-2"
+          placeholder={placeholder}
+          className="flex-1 max-h-28 min-h-[40px] bg-transparent border-none resize-none focus:outline-none text-slate-700 dark:text-white text-sm px-2 py-2 placeholder:text-slate-400"
           rows={1}
+          disabled={isSending}
         />
 
-        <button 
+        {/* Send button */}
+        <button
           onClick={handleSend}
-          disabled={!message.trim() || isUploading}
+          disabled={!message.trim() || isSending}
           title="إرسال"
           aria-label="إرسال"
-          className="p-2.5 bg-[#0d1b2a] hover:bg-[#1a2c42] dark:bg-[#c9a84c] dark:hover:bg-[#b0933f] text-white dark:text-[#0d1b2a] rounded-lg transition-colors disabled:opacity-50 shrink-0"
+          className="p-2.5 bg-[#0d1b2a] hover:bg-[#1a2c42] dark:bg-[#c9a84c] dark:hover:bg-[#b0933f] text-white dark:text-[#0d1b2a] rounded-lg transition-all disabled:opacity-40 shrink-0"
         >
-          <Send size={18} className="rtl:rotate-180" />
+          {isSending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} className="rtl:rotate-180" />}
         </button>
       </div>
     </div>

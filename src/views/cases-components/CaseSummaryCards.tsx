@@ -52,7 +52,7 @@ export default function CaseSummaryCards({ caseId, totalExpenses, caseSessions, 
   const hours = Math.floor(totalTimeMinutes / 60);
   const minutes = totalTimeMinutes % 60;
 
-  const estimatedProfit = (caseRetainer || 10000) - totalExpenses - caseTimeCost;
+  const estimatedProfit = caseRetainer - totalExpenses - caseTimeCost;
 
   return (
     <div className="space-y-4">
@@ -101,7 +101,7 @@ export default function CaseSummaryCards({ caseId, totalExpenses, caseSessions, 
         <div className="p-4 rounded-xl bg-slate-50 dark:bg-navy-900 border border-slate-100 dark:border-white/5 space-y-3">
           <div className="flex justify-between items-center text-xs">
             <span className="text-slate-500">مقدم الأتعاب</span>
-            <span className="font-bold text-navy-900 dark:text-white">{formatEGP(caseRetainer || 10000)}</span>
+            <span className="font-bold text-navy-900 dark:text-white">{formatEGP(caseRetainer)}</span>
           </div>
           <div className="flex justify-between items-center text-xs">
             <span className="text-slate-500">إجمالي المصروفات</span>

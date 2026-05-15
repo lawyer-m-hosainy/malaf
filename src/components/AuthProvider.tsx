@@ -73,7 +73,7 @@ async function resolveUserProfile(
     // 1. Try to fetch existing profile
     let { data: profile, error } = await supabase
       .from("profiles")
-      .select("role, org_id")
+      .select("role, organization_id")
       .eq("id", user.id)
       .maybeSingle();
 
@@ -82,7 +82,7 @@ async function resolveUserProfile(
       await new Promise(resolve => setTimeout(resolve, 1500));
       const retry = await supabase
         .from("profiles")
-        .select("role, org_id")
+        .select("role, organization_id")
         .eq("id", user.id)
         .maybeSingle();
       profile = retry.data;
@@ -91,10 +91,10 @@ async function resolveUserProfile(
 
     // 3. If profile exists, sync org_id to JWT metadata for RLS
     if (profile && !error) {
-      if (user.user_metadata?.org_id !== profile.org_id) {
+      if (user.user_metadata?.org_id !== profile.organization_id) {
         try {
           await supabase.auth.updateUser({
-            data: { org_id: profile.org_id, role: profile.role }
+            data: { org_id: profile.organization_id, role: profile.role }
           });
         } catch (e) {
           console.error("Failed to sync org_id to JWT:", e);
@@ -103,7 +103,7 @@ async function resolveUserProfile(
       
       return {
         role: (profile.role as UserRole) || DEFAULT_ROLE,
-        orgId: profile.org_id || "",
+        orgId: profile.organization_id || "",
       };
     }
 
@@ -137,7 +137,7 @@ async function resolveUserProfile(
       
       await supabase.from("profiles").upsert({
         id: user.id,
-        org_id: orgId,
+        organization_id: orgId,
         full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || "المستخدم",
         email: user.email || "",
         role: DEFAULT_ROLE,
@@ -157,7 +157,7 @@ async function resolveUserProfile(
     // 5. Create profile linked to new org
     const { error: profileError } = await supabase.from("profiles").upsert({
       id: user.id,
-      org_id: org.id,
+      organization_id: org.id,
       full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || "المستخدم",
       email: user.email || "",
       role: DEFAULT_ROLE,

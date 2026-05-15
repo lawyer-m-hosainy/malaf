@@ -255,7 +255,7 @@ export default function FamilyCourts() {
             
             <div className="space-y-2">
               <Label className="font-bold text-slate-700">نوع الدعوى</Label>
-              <Select value={calcType} onValueChange={setCalcType}>
+              <Select value={calcType} onValueChange={(v) => setCalcType(v as string)}>
                 <SelectTrigger><SelectValue/></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="تسوية">دعوى موضوعية (طلاق، خلع، نفقة، رؤية)</SelectItem>
@@ -364,14 +364,16 @@ export default function FamilyCourts() {
               <TableBody>
                 {LEGAL_REFERENCE.map((item, idx) => (
                   <Dialog key={idx}>
-                    <DialogTrigger asChild>
-                      <TableRow className="cursor-pointer hover:bg-slate-50 transition-colors">
+                      <TableRow className="hover:bg-slate-50 transition-colors">
                         <TableCell className="font-bold text-slate-800">{item.action}</TableCell>
                         <TableCell className="font-bold text-[#8B2252]">{item.duration}</TableCell>
                         <TableCell className="font-mono text-xs text-slate-500">{item.law}</TableCell>
-                        <TableCell><Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full bg-slate-100"><Info size={14}/></Button></TableCell>
+                        <TableCell>
+                          <DialogTrigger className="inline-flex items-center justify-center h-8 w-8 p-0 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer">
+                            <Info size={14}/>
+                          </DialogTrigger>
+                        </TableCell>
                       </TableRow>
-                    </DialogTrigger>
                     <DialogContent className="sm:max-w-[425px]" dir="rtl">
                       <DialogHeader>
                         <DialogTitle className="text-[#8B2252]">{item.action}</DialogTitle>
@@ -399,5 +401,5 @@ export default function FamilyCourts() {
   );
 }
 
-// Temporary shim for BookOpen and Gavel since they weren't imported at the top
-import { BookOpen, Gavel } from "lucide-react";
+// Temporary shim for BookOpen, Gavel, Users since they weren't imported at the top
+import { BookOpen, Gavel, Users } from "lucide-react";

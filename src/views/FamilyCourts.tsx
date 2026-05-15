@@ -100,7 +100,7 @@ export default function FamilyCourts() {
       {/* Header */}
       <div className="flex justify-between items-end">
         <div>
-          <h1 className="text-3xl font-bold" style={{ color: "#8B2252" }}>محاكم الأسرة / الأحوال الشخصية</h1>
+          <h1 className="text-3xl font-bold text-[#8B2252]">محاكم الأسرة / الأحوال الشخصية</h1>
           <p className="text-slate-500 mt-2 text-sm">إدارة قضايا الأسرة أمام محاكم الأحوال الشخصية المصرية (قانون ١٠ لسنة ٢٠٠٤)</p>
         </div>
         <div className="text-sm font-bold text-[#C9963A] bg-[#C9963A]/10 px-4 py-2 rounded-lg">
@@ -120,7 +120,7 @@ export default function FamilyCourts() {
                 <Button size="sm" className="mt-3 bg-red-600 hover:bg-red-700 text-white">رفع الدعوى الآن</Button>
               </div>
             </div>
-            <button onClick={() => setAlerts(a => ({...a, red: false}))} className="text-red-400 hover:text-red-600"><X size={18} /></button>
+            <button onClick={() => setAlerts(a => ({...a, red: false}))} className="text-red-400 hover:text-red-600" title="إغلاق" aria-label="إغلاق"><X size={18} /></button>
           </motion.div>
         )}
 
@@ -134,7 +134,7 @@ export default function FamilyCourts() {
                 <Button size="sm" variant="outline" className="mt-3 border-amber-600 text-amber-700 hover:bg-amber-100">عرض القضية</Button>
               </div>
             </div>
-            <button onClick={() => setAlerts(a => ({...a, yellow: false}))} className="text-amber-400 hover:text-amber-600"><X size={18} /></button>
+            <button onClick={() => setAlerts(a => ({...a, yellow: false}))} className="text-amber-400 hover:text-amber-600" title="إغلاق" aria-label="إغلاق"><X size={18} /></button>
           </motion.div>
         )}
 
@@ -147,7 +147,7 @@ export default function FamilyCourts() {
                 <p className="text-sm text-blue-700 mt-1">وفقاً لقانون ١٠/٢٠٠٤ — مهلة ١٥ يوم إلزامية قبل رفع الدعوى. الاستثناءات: النفقة المستعجلة، الحضانة المؤقتة، المسائل الوقتية.</p>
               </div>
             </div>
-            <button onClick={() => setAlerts(a => ({...a, blue: false}))} className="text-blue-400 hover:text-blue-600"><X size={18} /></button>
+            <button onClick={() => setAlerts(a => ({...a, blue: false}))} className="text-blue-400 hover:text-blue-600" title="إغلاق" aria-label="إغلاق"><X size={18} /></button>
           </motion.div>
         )}
       </div>

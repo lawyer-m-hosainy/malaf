@@ -89,7 +89,6 @@ export function WhatsAppSettings() {
     setSaving(true);
     try {
       const payload = {
-        org_id: orgId,
         is_active: settings.is_active,
         wa_phone_number: settings.wa_phone_number || '',
         api_token_encrypted: settings.api_token_encrypted || '',
@@ -100,9 +99,26 @@ export function WhatsAppSettings() {
         updated_at: new Date().toISOString(),
       };
 
-      const { error } = await supabase
+      // Check if record already exists
+      const { data: existing } = await supabase
         .from('whatsapp_settings')
-        .upsert(payload, { onConflict: 'org_id' });
+        .select('id')
+        .eq('org_id', orgId)
+        .maybeSingle();
+
+      let error;
+      if (existing) {
+        // Update existing record
+        ({ error } = await supabase
+          .from('whatsapp_settings')
+          .update(payload)
+          .eq('org_id', orgId));
+      } else {
+        // Insert new record
+        ({ error } = await supabase
+          .from('whatsapp_settings')
+          .insert({ ...payload, org_id: orgId }));
+      }
 
       if (error) throw error;
 

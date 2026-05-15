@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useCasesStore } from "@/store/useCasesStore";
 import { Case } from "@/types";
+import { NewCaseDialog } from "./cases-components";
 
 const services = [
   { title: "توثيق التوكيلات الرسمية", desc: "توكيلات عامة وخاصة في القضايا" },
@@ -20,6 +21,7 @@ const services = [
 export default function RealEstateRegistry() {
   const cases = useCasesStore(state => state.cases);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isNewCaseOpen, setIsNewCaseOpen] = useState(false);
 
   const registryCases = cases.filter(c => c.type === 'عقاري').filter(c => {
     const matchesSearch = `${c.plaintiff} ${c.defendant} ${c.firstInstanceNumber || ''}`.includes(searchTerm);
@@ -70,7 +72,7 @@ export default function RealEstateRegistry() {
                 <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                 <Input placeholder="بحث برقم الطلب..." className="pr-10 dark:bg-navy-900" />
               </div>
-              <Button className="bg-primary-500 text-white gap-2"><Plus size={16}/> طلب جديد</Button>
+              <Button className="bg-primary-500 hover:bg-primary-600 text-white gap-2" onClick={() => setIsNewCaseOpen(true)}><Plus size={16}/> طلب جديد</Button>
             </div>
           </div>
         </CardHeader>
@@ -105,6 +107,10 @@ export default function RealEstateRegistry() {
           </Table>
         </CardContent>
       </Card>
+      <NewCaseDialog 
+        open={isNewCaseOpen} 
+        onOpenChange={setIsNewCaseOpen} 
+      />
     </motion.div>
   );
 }

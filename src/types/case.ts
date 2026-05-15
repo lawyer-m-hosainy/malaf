@@ -134,7 +134,7 @@ export interface SpecializedTrack {
   id: string;
   tenantId?: string;
   caseId: string;
-  caseType: 'عمالي' | 'جنائي' | 'أحوال شخصية' | 'اقتصادي' | 'إداري';
+  caseType: 'عمالي' | 'جنائي' | 'أحوال شخصية' | 'اقتصادي' | 'إداري' | 'مدني' | 'شركات' | string;
   stage: string;
   slaDueAt?: string;
   status: 'نشط' | 'متأخر' | 'مغلق';

@@ -404,13 +404,11 @@ export default function Clients() {
           <div className="space-y-2 max-w-sm">
             <Label>اختر الموكل لعرض ملفه</Label>
             <Select 
-              value={selectedClientForProfile?.id || ""} 
+              value={selectedClientForProfile?.id || undefined} 
               onValueChange={(v: any) => setSelectedClientForProfile(clients.find(c => c.id === v) || null)}
             >
               <SelectTrigger className="dark:bg-white/5 dark:border-white/10">
-                <SelectValue placeholder="اختر موكلاً...">
-                  {selectedClientForProfile ? selectedClientForProfile.name : ""}
-                </SelectValue>
+                <SelectValue placeholder="اختر موكلاً..." />
               </SelectTrigger>
               <SelectContent className="dark:bg-navy-800 dark:border-white/10">
                 {clients.map(c => (

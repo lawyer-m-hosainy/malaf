@@ -132,13 +132,25 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
       let finalDefendant = '';
 
       if (isPlaintiffRole) {
-        // الموكل = مدعي → اسمه أولاً + أي موكلين إضافيين
-        finalPlaintiff = newCaseData.plaintiff ? `${clientName} وآخرون: ${newCaseData.plaintiff}` : clientName;
-        finalDefendant = newCaseData.defendant; // الخصوم
+        // الموكل = مدعي → اسمه + أي موكلين إضافيين = كل المدعين
+        const additionalPlaintiffs = newCaseData.plaintiff?.trim();
+        finalPlaintiff = additionalPlaintiffs ? `${clientName}، ${additionalPlaintiffs}` : clientName;
+        finalDefendant = newCaseData.defendant?.trim() || ''; // الخصوم (إجباري)
+
+        if (!finalDefendant) {
+          toast.error("يجب كتابة اسم الخصم (المدعى عليه) على الأقل");
+          return;
+        }
       } else {
-        // الموكل = مدعى عليه → اسمه أولاً + أي موكلين إضافيين
-        finalDefendant = newCaseData.defendant ? `${clientName} وآخرون: ${newCaseData.defendant}` : clientName;
-        finalPlaintiff = newCaseData.plaintiff; // الخصوم
+        // الموكل = مدعى عليه → اسمه + أي موكلين إضافيين = كل المدعى عليهم
+        const additionalDefendants = newCaseData.defendant?.trim();
+        finalDefendant = additionalDefendants ? `${clientName}، ${additionalDefendants}` : clientName;
+        finalPlaintiff = newCaseData.plaintiff?.trim() || ''; // الخصوم (إجباري)
+
+        if (!finalPlaintiff) {
+          toast.error("يجب كتابة اسم الخصم (المدعي) على الأقل");
+          return;
+        }
       }
 
       const dataToValidate = { ...newCaseData, plaintiff: finalPlaintiff, defendant: finalDefendant };

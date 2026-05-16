@@ -29,6 +29,9 @@ interface EnforcementState {
   addEnforcementCase: (newCase: EnforcementCase) => void;
   addEnforcementAction: (caseId: string, action: EnforcementCase['actions'][number]) => void;
   
+  /** تحديث مرحلة ملف التنفيذ */
+  updateEnforcementStage: (caseId: string, updates: Partial<EnforcementCase>) => void;
+  
   /** إنشاء ملف تنفيذ تلقائي من قضية مكتب */
   createEnforcementFromCase: (
     caseData: Case,
@@ -145,6 +148,12 @@ export const useEnforcementStore = create<EnforcementState>((set, get) => ({
   addEnforcementAction: (enforcementCaseId, action) => set((state) => ({
     enforcementCases: state.enforcementCases.map((ec) =>
       ec.id === enforcementCaseId ? { ...ec, actions: [...ec.actions, action] } : ec
+    ),
+  })),
+
+  updateEnforcementStage: (caseId, updates) => set((state) => ({
+    enforcementCases: state.enforcementCases.map((ec) =>
+      ec.id === caseId ? { ...ec, ...updates } : ec
     ),
   })),
 

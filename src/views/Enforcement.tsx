@@ -5,11 +5,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Bell, CalendarClock, HandCoins, Scale, ShieldAlert, Plus, Briefcase, FileText, Hash, Link2, ClipboardList } from "lucide-react";
+import { Bell, CalendarClock, HandCoins, Scale, ShieldAlert, Plus, Briefcase, FileText, Hash, Link2, ClipboardList, ArrowUpCircle } from "lucide-react";
 import { useEnforcementStore } from '@/store/useEnforcementStore';
 import { useUIStore } from '@/store/useUIStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import NewEnforcementDialog from "./enforcement-components/NewEnforcementDialog";
+import UpdateStageDialog from "./enforcement-components/UpdateStageDialog";
 import { formatEGP, formatDateEG } from "@/lib/formatEG";
 
 function statusClass(status: string) {
@@ -34,6 +35,7 @@ export default function Enforcement() {
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(enforcementCases[0]?.id || null);
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isUpdateOpen, setIsUpdateOpen] = useState(false);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -88,6 +90,7 @@ export default function Enforcement() {
       </div>
 
       <NewEnforcementDialog open={isAddOpen} onOpenChange={setIsAddOpen} />
+      <UpdateStageDialog open={isUpdateOpen} onOpenChange={setIsUpdateOpen} enforcementCase={selected || null} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-1 border-none shadow-sm dark:bg-navy-800">
@@ -150,7 +153,13 @@ export default function Enforcement() {
         <Card className="lg:col-span-2 border-none shadow-sm dark:bg-navy-800">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-base text-navy-900 dark:text-white">تفاصيل ملف التنفيذ</CardTitle>
-            <Button size="sm" variant="outline" className="dark:border-white/20 dark:text-white dark:hover:bg-white/10" onClick={logSensitiveAction} disabled={!selected}>تسجيل تدقيق العرض</Button>
+            <div className="flex items-center gap-2">
+              <Button size="sm" className="bg-primary-600 hover:bg-primary-700 text-white gap-1.5 shadow-md shadow-primary-500/20" onClick={() => setIsUpdateOpen(true)} disabled={!selected || selected.status === 'منفذ'}>
+                <ArrowUpCircle size={14} />
+                تحديث المرحلة
+              </Button>
+              <Button size="sm" variant="outline" className="dark:border-white/20 dark:text-white dark:hover:bg-white/10" onClick={logSensitiveAction} disabled={!selected}>تسجيل تدقيق</Button>
+            </div>
           </CardHeader>
           <CardContent>
             {!selected ? (

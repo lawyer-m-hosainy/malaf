@@ -150,7 +150,7 @@ export default function SessionsRoll() {
         return {
           id: session.id,
           date: session.date,
-          caseId: session.caseId,
+          caseId: relatedCase?.caseNumber || session.caseId,
           court: session.court,
           circuit: session.circuit || '-',
           opponent: relatedCase?.clientRole === 'مدعي' ? relatedCase?.defendant : relatedCase?.plaintiff,

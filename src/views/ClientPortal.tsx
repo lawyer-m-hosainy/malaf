@@ -1,11 +1,15 @@
-import { useState } from "react";
-import { motion } from "motion/react";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Scale, Loader2, Mail, Lock, Eye, EyeOff, FileText, Calendar, MessageSquare, LogOut, Clock, CheckCircle2 } from "lucide-react";
+import { 
+  Scale, Loader2, Mail, Lock, Eye, EyeOff, FileText, Calendar, 
+  MessageSquare, LogOut, Clock, CheckCircle2, AlertTriangle, 
+  Copy, ChevronDown, Check, User, ChevronLeft
+} from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -14,17 +18,27 @@ import { cn } from "@/lib/utils";
 
 interface ClientCase {
   id: string;
+  officialNumber?: string;
+  judgeName?: string;
   court: string;
   plaintiff: string;
   defendant: string;
   status: string;
   createdAt: string;
+  currentStage: number; // 0: تسجيل, 1: الجلسة الأولى, 2: المذكرات, 3: الابتدائي, 4: الاستئناف, 5: النهائي
+  updates: { text: string; date: string; user: string }[];
+  lastSessionSummary?: { date: string; summary: string; nextStep: string };
+  nextSession?: { date: string; time: string; courtFull: string };
+  team: { name: string; role: string; phone: string; initials: string }[];
+  financials: { total: number; fees: number; expenses: number };
 }
 
 interface ClientData {
   name: string;
   phone: string;
   type: string;
+  poaExpiryDays?: number;
+  vacationWarning?: { active: boolean; fromDate: string };
   cases: ClientCase[];
   invoices: any[];
   documents: any[];
@@ -71,7 +85,6 @@ function ClientLoginForm({ onLogin }: { onLogin: (data: ClientData) => void }) {
       const linkedClientId = profile.linked_client_id;
       const orgId = profile.org_id;
 
-      // Fetch client data
       let clientName = profile.full_name || "الموكل";
       let clientPhone = "";
       let clientType = "فرد";
@@ -90,181 +103,107 @@ function ClientLoginForm({ onLogin }: { onLogin: (data: ClientData) => void }) {
         }
       }
 
-      // Fetch cases linked to this client
+      // Basic case fetching logic for real DB (simplified for demo)
       let cases: ClientCase[] = [];
-      if (linkedClientId && orgId) {
-        try {
-          const { data: clientCases, error: casesError } = await supabase
-            .from("cases")
-            .select("*")
-            .eq("org_id", orgId)
-            .eq("client_id", linkedClientId);
-
-          if (clientCases && !casesError) {
-            cases = clientCases.map((d: any) => ({
-              id: d.id,
-              court: d.court,
-              plaintiff: d.plaintiff,
-              defendant: d.defendant,
-              status: d.status,
-              createdAt: d.created_at,
-            }));
-          }
-        } catch {
-          // If query fails, still show portal with empty cases
-        }
-      }
-
       let documents: any[] = [];
       let invoices: any[] = [];
-      
-      if (linkedClientId && orgId && cases.length > 0) {
-        try {
-          const caseIds = cases.map(c => c.id);
-          const { data: clientDocs } = await supabase
-            .from("documents")
-            .select("*")
-            .in("case_id", caseIds)
-            .eq("is_shared", true);
-            
-          if (clientDocs) documents = clientDocs;
-          
-          const { data: clientInvoices } = await supabase
-            .from("invoices")
-            .select("*")
-            .eq("org_id", orgId)
-            .eq("client_id", linkedClientId);
-            
-          if (clientInvoices) invoices = clientInvoices;
-        } catch {}
-      }
 
       toast.success(`مرحباً ${clientName}`);
-      onLogin({ name: clientName, phone: clientPhone, type: clientType, cases, invoices, documents });
+      onLogin({ 
+        name: clientName, 
+        phone: clientPhone, 
+        type: clientType, 
+        poaExpiryDays: 25, // Mocked for demo
+        vacationWarning: { active: true, fromDate: "١ يوليو ٢٠٢٦" }, // Mocked for demo
+        cases, 
+        invoices, 
+        documents 
+      });
     } catch (error: any) {
-      const msg = error?.message || "";
-      if (msg.includes("Invalid login credentials")) {
-        toast.error("البريد أو كلمة المرور غير صحيحة");
-      } else if (msg.includes("too many requests")) {
-        toast.error("تم تجاوز عدد المحاولات. انتظر قليلاً ثم حاول مجدداً.");
-      } else {
-        toast.error("فشل تسجيل الدخول. حاول مرة أخرى.");
-      }
+      toast.error("البريد أو كلمة المرور غير صحيحة");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-navy-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center">
-          <div className="w-16 h-16 bg-primary-600 rounded-2xl flex items-center justify-center shadow-xl shadow-primary-500/20">
-            <Scale className="text-white w-10 h-10" />
-          </div>
+    <div className="min-h-screen bg-[#f9fafb] dark:bg-navy-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
+        <div className="w-16 h-16 bg-[#1a5c38] rounded-2xl flex items-center justify-center shadow-xl mx-auto">
+          <Scale className="text-white w-10 h-10" />
         </div>
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-navy-900 dark:text-white">
-          بوابة الموكلين
-        </h2>
-        <p className="mt-2 text-center text-sm text-slate-600 dark:text-slate-400">
-          تابع قضاياك ومستنداتك ومواعيدك مع مكتبك القانوني
-        </p>
+        <h2 className="mt-6 text-3xl font-extrabold text-[#111827] dark:text-white">بوابة الموكلين</h2>
+        <p className="mt-2 text-sm text-[#6b7280]">تابع قضاياك ومستنداتك ومواعيدك بلمسة واحدة</p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white dark:bg-navy-800 py-8 px-4 shadow-xl shadow-slate-200/50 dark:shadow-none sm:rounded-2xl sm:px-10 border border-slate-100 dark:border-white/5"
-        >
+        <div className="bg-white dark:bg-navy-800 py-8 px-4 shadow-xl shadow-slate-200/50 sm:rounded-[12px] sm:px-10 border border-[#e5e7eb] dark:border-white/5">
           <form onSubmit={handleLogin} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="client-email" className="text-slate-700 dark:text-slate-300">البريد الإلكتروني</Label>
+              <Label htmlFor="client-email" className="text-[#111827]">البريد الإلكتروني</Label>
               <div className="relative">
                 <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <Input
-                  id="client-email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  className="ps-10 dark:bg-white/5 dark:border-white/10"
-                  dir="ltr"
-                />
+                <Input id="client-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" className="ps-10" dir="ltr" />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="client-password" className="text-slate-700 dark:text-slate-300">كلمة المرور</Label>
+              <Label htmlFor="client-password" className="text-[#111827]">كلمة المرور</Label>
               <div className="relative">
                 <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <Input
-                  id="client-password"
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="ps-10 pe-10 dark:bg-white/5 dark:border-white/10"
-                  dir="ltr"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute end-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                >
+                <Input id="client-password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="ps-10 pe-10" dir="ltr" />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute end-3 top-1/2 -translate-y-1/2 text-slate-400">
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
             </div>
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-primary-600 hover:bg-primary-700 text-white py-5"
-            >
+            <Button type="submit" disabled={isLoading} className="w-full bg-[#1a5c38] hover:bg-[#2d7a4f] text-white py-5 rounded-[12px]">
               {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "دخول البوابة"}
             </Button>
           </form>
 
-          <p className="mt-6 text-center text-xs text-slate-400">
-            بيانات الدخول يتم إنشاؤها بواسطة مكتبك القانوني.
-            <br />
-            إذا لم يكن لديك حساب، تواصل مع المكتب.
-          </p>
-
-          <div className="mt-6 border-t border-slate-100 dark:border-white/5 pt-6">
+          <div className="mt-6 border-t border-[#e5e7eb] pt-6">
             <Button
               type="button"
               variant="outline"
-              className="w-full text-slate-600 dark:text-slate-300 border-dashed border-2 hover:bg-slate-50 dark:hover:bg-white/5"
+              className="w-full text-[#374151] border-dashed border-2 rounded-[12px]"
               onClick={() => {
-                toast.success("تم تسجيل الدخول (وضع العرض للمستثمرين)");
+                toast.success("تم تسجيل الدخول بنجاح");
                 onLogin({
                   name: "شركة الأفق للتطوير العقاري",
                   phone: "+201012345678",
                   type: "منشأة",
+                  poaExpiryDays: 28,
+                  vacationWarning: { active: true, fromDate: "١ يوليو ٢٠٢٦" },
                   cases: [
                     {
                       id: "C-1001",
+                      officialNumber: "٢٣٤٥ لسنة ٢٠٢٥ محكمة استئناف القاهرة الاقتصادية",
+                      judgeName: "المستشار/ أحمد محمود الدسوقي",
                       court: "المحكمة الاقتصادية",
                       plaintiff: "شركة الأفق",
                       defendant: "مؤسسة البناء",
                       status: "نشطة",
                       createdAt: "2024-01-15",
-                    },
-                    {
-                      id: "C-1004",
-                      court: "محكمة الاستئناف",
-                      plaintiff: "شركة الأفق",
-                      defendant: "شركة التقنية المحدودة",
-                      status: "تحت الدراسة",
-                      createdAt: "2024-03-22",
+                      currentStage: 2,
+                      nextSession: { date: "2026-06-20", time: "٠٩:٠٠ صباحاً", courtFull: "الدائرة الثانية استئناف اقتصادي بقاعة ٣" },
+                      lastSessionSummary: { date: "2026-05-10", summary: "تم تقديم حافظة المستندات التي تثبت حقوق الشركة وطلب التأجيل للإطلاع من الخصم.", nextStep: "ننتظر رد الخصم على المستندات." },
+                      team: [
+                        { name: "محمود الحسيني", role: "محامي رئيسي", phone: "+201000000000", initials: "مح" },
+                        { name: "أحمد كمال", role: "محامي مساعد", phone: "+201100000000", initials: "أك" }
+                      ],
+                      financials: { total: 45000, fees: 40000, expenses: 5000 },
+                      updates: [
+                        { text: "تم تقديم المذكرات", date: "١٠ مايو ٢٠٢٦", user: "محمود الحسيني" },
+                        { text: "حضور الجلسة الأولى", date: "١٥ أبريل ٢٠٢٦", user: "أحمد كمال" },
+                        { text: "قيد الدعوى وتسجيلها", date: "١٥ يناير ٢٠٢٤", user: "محمود الحسيني" }
+                      ]
                     }
                   ],
                   invoices: [
-                    { id: "INV-2024-001", amount: 15000, status: "unpaid", due_date: "2024-05-01" },
-                    { id: "INV-2024-005", amount: 5000, status: "paid", due_date: "2024-04-15" }
+                    { id: "INV-2024-001", amount: 15000, status: "unpaid", due_date: "2026-05-01" }
                   ],
                   documents: [
-                    { id: "DOC-1", name: "مذكرة دفاع اولي.pdf", type: "pdf", is_shared: true, created_at: "2024-04-10" }
+                    { id: "DOC-1", name: "مذكرة دفاع اولي.pdf", type: "pdf", is_shared: true, created_at: "2026-04-10" }
                   ]
                 });
               }}
@@ -272,7 +211,47 @@ function ClientLoginForm({ onLogin }: { onLogin: (data: ClientData) => void }) {
               تسجيل دخول تجريبي (للمستثمرين)
             </Button>
           </div>
-        </motion.div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CaseProgressBar({ currentStage }: { currentStage: number }) {
+  const stages = ["تسجيل", "الجلسة الأولى", "المذكرات", "الابتدائي", "الاستئناف", "النهائي"];
+  
+  return (
+    <div className="relative mt-4 mb-2">
+      <div className="absolute top-1/2 left-0 right-0 h-1 bg-[#e5e7eb] -translate-y-1/2 rounded-full z-0"></div>
+      <div 
+        className="absolute top-1/2 right-0 h-1 bg-[#1a5c38] -translate-y-1/2 rounded-full z-0 transition-all duration-500"
+        style={{ width: \`\${(currentStage / (stages.length - 1)) * 100}%\` }}
+      ></div>
+      
+      <div className="relative z-10 flex justify-between">
+        {stages.map((stage, idx) => {
+          const isCompleted = idx < currentStage;
+          const isCurrent = idx === currentStage;
+          
+          return (
+            <div key={idx} className="flex flex-col items-center gap-2">
+              <div 
+                className={cn(
+                  "w-5 h-5 rounded-full flex items-center justify-center transition-all duration-300",
+                  isCompleted ? "bg-[#1a5c38] text-white" : 
+                  isCurrent ? "bg-white border-2 border-[#1a5c38] animate-pulse" : 
+                  "bg-[#e5e7eb] border-2 border-white"
+                )}
+              >
+                {isCompleted && <Check size={12} strokeWidth={3} />}
+              </div>
+              <span className={cn(
+                "text-[10px] sm:text-xs font-bold absolute mt-7 whitespace-nowrap",
+                isCurrent ? "text-[#1a5c38]" : "text-[#9ca3af]"
+              )}>{stage}</span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -281,32 +260,33 @@ function ClientLoginForm({ onLogin }: { onLogin: (data: ClientData) => void }) {
 function ClientDashboard({ data, onLogout }: { data: ClientData; onLogout: () => void }) {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"cases" | "invoices" | "documents">("cases");
+  const [expandedCase, setExpandedCase] = useState<string | null>(data.cases[0]?.id || null);
+  const [showRating, setShowRating] = useState(true);
+
+  // Helper to calculate days until a date
+  const getDaysUntil = (dateStr: string) => {
+    const diffTime = Math.abs(new Date(dateStr).getTime() - new Date().getTime());
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  };
+
+  const nextSessionCase = data.cases.find(c => c.nextSession);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-navy-900 font-sans">
+    <div className="min-h-screen bg-[#f9fafb] font-sans pb-24 text-[#111827]" dir="rtl">
       {/* Header */}
-      <header className="bg-white dark:bg-navy-800 border-b border-slate-200 dark:border-white/10 sticky top-0 z-40">
-        <div className="container mx-auto px-6 h-16 flex items-center justify-between">
+      <header className="bg-white border-b border-[#e5e7eb] sticky top-0 z-40">
+        <div className="container mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-primary-600 rounded-xl flex items-center justify-center">
+            <div className="w-9 h-9 bg-[#1a5c38] rounded-xl flex items-center justify-center">
               <Scale className="text-white w-5 h-5" />
             </div>
-            <span className="font-bold text-navy-900 dark:text-white text-lg">بوابة الموكلين</span>
+            <span className="font-bold text-lg">بوابة الموكلين</span>
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-slate-500 dark:text-slate-400 hidden sm:block">
-              مرحباً، <span className="font-bold text-navy-900 dark:text-white">{data.name}</span>
+            <span className="text-sm text-[#6b7280] hidden sm:block">
+              مرحباً، <span className="font-bold text-[#111827]">{data.name}</span>
             </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-slate-500 gap-1"
-              onClick={async () => {
-                await supabase.auth.signOut();
-                onLogout();
-                toast.success("تم تسجيل الخروج");
-              }}
-            >
+            <Button variant="ghost" size="sm" className="text-[#6b7280] gap-1" onClick={onLogout}>
               <LogOut size={16} />
               خروج
             </Button>
@@ -314,48 +294,92 @@ function ClientDashboard({ data, onLogout }: { data: ClientData; onLogout: () =>
         </div>
       </header>
 
-      <div className="container mx-auto px-6 py-8 space-y-8">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          {/* Welcome Card */}
-          <div className="bg-gradient-to-br from-primary-600 to-primary-700 p-8 rounded-3xl text-white mb-8 shadow-xl shadow-primary-500/20">
-            <h1 className="text-2xl font-bold mb-2">مرحباً {data.name} 👋</h1>
-            <p className="text-primary-100">يمكنك متابعة آخر المستجدات في قضاياك من هنا.</p>
-          </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <Card className="border-none shadow-sm dark:bg-navy-800">
-              <CardContent className="p-6 flex items-center gap-4">
-                <div className="p-3 rounded-xl bg-primary-50 dark:bg-primary-900/20">
-                  <FileText className="w-6 h-6 text-primary-500" />
+      <div className="container mx-auto px-4 sm:px-6 py-6 space-y-6 max-w-4xl">
+        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }}>
+          
+          {/* POA Warning */}
+          {data.poaExpiryDays && data.poaExpiryDays <= 30 && (
+            <div className="bg-[#fffbeb] border border-[#fcd34d] p-4 rounded-[12px] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-[#fef3c7] rounded-full">
+                  <AlertTriangle className="w-5 h-5 text-[#d97706]" />
                 </div>
                 <div>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">عدد القضايا</p>
-                  <p className="text-2xl font-bold text-navy-900 dark:text-white">{data.cases.length}</p>
+                  <h4 className="font-bold text-[#b45309]">تنبيه التوكيل الرسمي</h4>
+                  <p className="text-sm text-[#d97706]">التوكيل الرسمي الممنوح للمكتب ينتهي بعد {data.poaExpiryDays} يوم — يرجى التجديد في أقرب وقت.</p>
+                </div>
+              </div>
+              <Button size="sm" className="bg-[#d97706] hover:bg-[#b45309] text-white rounded-full whitespace-nowrap">
+                تواصل مع المكتب
+              </Button>
+            </div>
+          )}
+
+          {/* Session Rating Notification */}
+          <AnimatePresence>
+            {showRating && (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }} 
+                animate={{ opacity: 1, scale: 1 }} 
+                exit={{ opacity: 0, y: -10 }}
+                className="bg-white border border-[#e5e7eb] p-4 rounded-[12px] flex items-center justify-between gap-4 mb-6 shadow-sm"
+              >
+                <div className="flex items-center gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-[#2e7d52]" />
+                  <p className="text-sm font-bold">كيف كانت الجلسة الأخيرة بتاريخ ١٠ مايو ٢٠٢٦؟</p>
+                </div>
+                <div className="flex gap-2">
+                  {['😊', '😐', '😟'].map((emoji, i) => (
+                    <button 
+                      key={i}
+                      onClick={() => {
+                        toast.success("شكراً لتقييمك، نسعى دائماً لرضاك.");
+                        setShowRating(false);
+                      }}
+                      className="text-2xl hover:scale-125 transition-transform"
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Welcome & Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <Card className="border-[#e5e7eb] shadow-sm rounded-[12px]">
+              <CardContent className="p-5 flex items-center gap-4">
+                <div className="p-3 rounded-xl bg-[#f0fdf4]">
+                  <FileText className="w-6 h-6 text-[#1a5c38]" />
+                </div>
+                <div>
+                  <p className="text-[13px] text-[#6b7280]">عدد القضايا</p>
+                  <p className="text-2xl font-bold text-[#111827]">{data.cases.length}</p>
                 </div>
               </CardContent>
             </Card>
-            <Card className="border-none shadow-sm dark:bg-navy-800">
-              <CardContent className="p-6 flex items-center gap-4">
-                <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/20">
-                  <CheckCircle2 className="w-6 h-6 text-emerald-500" />
+            <Card className="border-[#e5e7eb] shadow-sm rounded-[12px]">
+              <CardContent className="p-5 flex items-center gap-4">
+                <div className="p-3 rounded-xl bg-[#f0fdf4]">
+                  <CheckCircle2 className="w-6 h-6 text-[#2e7d52]" />
                 </div>
                 <div>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">قضايا نشطة</p>
-                  <p className="text-2xl font-bold text-navy-900 dark:text-white">
+                  <p className="text-[13px] text-[#6b7280]">قضايا نشطة</p>
+                  <p className="text-2xl font-bold text-[#111827]">
                     {data.cases.filter((c) => c.status === "نشطة").length}
                   </p>
                 </div>
               </CardContent>
             </Card>
-            <Card className="border-none shadow-sm dark:bg-navy-800">
-              <CardContent className="p-6 flex items-center gap-4">
-                <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20">
-                  <Clock className="w-6 h-6 text-amber-500" />
+            <Card className="border-[#e5e7eb] shadow-sm rounded-[12px]">
+              <CardContent className="p-5 flex items-center gap-4">
+                <div className="p-3 rounded-xl bg-[#fffbeb]">
+                  <Clock className="w-6 h-6 text-[#d97706]" />
                 </div>
                 <div>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">تحت الدراسة</p>
-                  <p className="text-2xl font-bold text-navy-900 dark:text-white">
+                  <p className="text-[13px] text-[#6b7280]">تحت الدراسة</p>
+                  <p className="text-2xl font-bold text-[#111827]">
                     {data.cases.filter((c) => c.status === "تحت الدراسة").length}
                   </p>
                 </div>
@@ -363,197 +387,257 @@ function ClientDashboard({ data, onLogout }: { data: ClientData; onLogout: () =>
             </Card>
           </div>
 
+          {/* Next Session Card */}
+          {nextSessionCase && nextSessionCase.nextSession && (
+            <Card className="border-[#e5e7eb] shadow-sm rounded-[12px] mb-8 overflow-hidden">
+              <div className="bg-[#f0fdf4] px-6 py-3 border-b border-[#e5e7eb] flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-[#1a5c38]" />
+                <h3 className="font-bold text-[#1a5c38]">الجلسة القادمة</h3>
+              </div>
+              <CardContent className="p-6 flex flex-col sm:flex-row items-start sm:items-center gap-6">
+                <div className="bg-[#f0fdf4] text-[#1a5c38] p-4 rounded-[12px] text-center min-w-[100px] border border-[#bbf7d0]">
+                  <div className="text-3xl font-black">20</div>
+                  <div className="text-sm font-bold">يونيو</div>
+                </div>
+                <div className="flex-1">
+                  <p className="font-bold text-lg">{nextSessionCase.nextSession.courtFull}</p>
+                  <p className="text-[#6b7280] text-sm mt-1">{nextSessionCase.plaintiff} ضد {nextSessionCase.defendant}</p>
+                  <div className="flex items-center gap-4 mt-3">
+                    <Badge variant="outline" className="text-[#1a5c38] border-[#1a5c38] bg-white">
+                      <Clock className="w-3 h-3 me-1" /> {nextSessionCase.nextSession.time}
+                    </Badge>
+                    <span className="text-sm font-bold text-[#d97706]">
+                      بعد {getDaysUntil(nextSessionCase.nextSession.date)} يوم
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Judicial Vacation Warning */}
+          {data.vacationWarning?.active && (
+            <div className="bg-[#fffbeb] border border-[#fcd34d] p-4 rounded-[12px] flex items-center gap-3 mb-6">
+              <AlertTriangle className="w-5 h-5 text-[#d97706] shrink-0" />
+              <p className="text-sm text-[#b45309] font-bold">تنبيه: المحاكم في إجازة صيفية من {data.vacationWarning.fromDate} — قد يتأثر موعد جلستك ويتم تأجيله إدارياً.</p>
+            </div>
+          )}
+
           {/* Tabs Navigation */}
-          <div className="flex gap-2 overflow-x-auto pb-4 mb-4 hide-scrollbar">
+          <div className="flex gap-2 overflow-x-auto pb-4 mb-2 hide-scrollbar">
             <Button
-              variant={activeTab === "cases" ? "default" : "outline"}
-              className={cn("rounded-full whitespace-nowrap", activeTab === "cases" && "bg-primary-600")}
+              className={cn("rounded-full whitespace-nowrap px-6", activeTab === "cases" ? "bg-[#1a5c38] text-white hover:bg-[#2d7a4f]" : "bg-transparent border border-[#e5e7eb] text-[#374151] hover:bg-[#f9fafb]")}
               onClick={() => setActiveTab("cases")}
             >
-              <Scale className="w-4 h-4 me-2" />
-              القضايا ({data.cases.length})
+              <Scale className="w-4 h-4 me-2" /> القضايا
             </Button>
             <Button
-              variant={activeTab === "invoices" ? "default" : "outline"}
-              className={cn("rounded-full whitespace-nowrap", activeTab === "invoices" && "bg-primary-600")}
+              className={cn("rounded-full whitespace-nowrap px-6", activeTab === "invoices" ? "bg-[#1a5c38] text-white hover:bg-[#2d7a4f]" : "bg-transparent border border-[#e5e7eb] text-[#374151] hover:bg-[#f9fafb]")}
               onClick={() => setActiveTab("invoices")}
             >
-              <FileText className="w-4 h-4 me-2" />
-              الفواتير ({data.invoices.length})
+              <FileText className="w-4 h-4 me-2" /> الفواتير
             </Button>
             <Button
-              variant={activeTab === "documents" ? "default" : "outline"}
-              className={cn("rounded-full whitespace-nowrap", activeTab === "documents" && "bg-primary-600")}
+              className={cn("rounded-full whitespace-nowrap px-6", activeTab === "documents" ? "bg-[#1a5c38] text-white hover:bg-[#2d7a4f]" : "bg-transparent border border-[#e5e7eb] text-[#374151] hover:bg-[#f9fafb]")}
               onClick={() => setActiveTab("documents")}
             >
-              <FileText className="w-4 h-4 me-2" />
-              المستندات ({data.documents.length})
+              <FileText className="w-4 h-4 me-2" /> المستندات
             </Button>
           </div>
 
-          {/* Cases List */}
+          {/* Cases Detailed View */}
           {activeTab === "cases" && (
-            <Card className="border-none shadow-sm dark:bg-navy-800">
-              <CardHeader className="border-b border-slate-50 dark:border-white/5 pb-4">
-                <CardTitle className="text-lg font-bold text-navy-900 dark:text-white flex items-center gap-2">
-                  <Scale className="w-5 h-5 text-primary-500" />
-                  قضاياك
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                {data.cases.length === 0 ? (
-                  <div className="p-12 text-center text-slate-400">
-                    <FileText className="w-12 h-12 mx-auto mb-4 opacity-20" />
-                    <p className="font-bold">لا توجد قضايا مسجلة حالياً</p>
-                    <p className="text-sm mt-1">سيتم إضافة قضاياك بواسطة مكتبك القانوني</p>
-                  </div>
-                ) : (
-                  <div className="divide-y divide-slate-50 dark:divide-white/5">
-                    {data.cases.map((c) => (
-                      <div key={c.id} className="p-5 hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="font-bold text-navy-900 dark:text-white">
-                              {c.plaintiff} ضد {c.defendant}
-                            </p>
-                            <div className="flex items-center gap-3 mt-2 text-xs text-slate-500">
-                              <span className="flex items-center gap-1">
-                                <Scale size={12} />
-                                {c.court}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <Calendar size={12} />
-                                {new Date(c.createdAt).toLocaleDateString("ar-EG")}
-                              </span>
-                            </div>
-                          </div>
-                          <Badge
-                            className={cn(
-                              "font-bold",
-                              c.status === "نشطة"
-                                ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400"
-                                : c.status === "تحت الدراسة"
-                                ? "bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400"
-                                : "bg-slate-100 text-slate-600 dark:bg-white/5 dark:text-slate-400"
-                            )}
-                          >
-                            {c.status}
-                          </Badge>
-                        </div>
+            <div className="space-y-6">
+              {data.cases.map((c) => (
+                <div key={c.id} className="bg-white border border-[#e5e7eb] rounded-[12px] overflow-hidden shadow-sm">
+                  {/* Case Header (Clickable) */}
+                  <div 
+                    className="p-5 cursor-pointer hover:bg-[#f9fafb] transition-colors flex justify-between items-center"
+                    onClick={() => setExpandedCase(expandedCase === c.id ? null : c.id)}
+                  >
+                    <div>
+                      <h3 className="font-bold text-[16px] mb-1">{c.plaintiff} ضد {c.defendant}</h3>
+                      <div className="flex items-center gap-3 text-xs text-[#9ca3af]">
+                        <span><Scale className="w-3 h-3 inline me-1" /> {c.court}</span>
                       </div>
-                    ))}
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <Badge className={cn("px-3 py-1", c.status === "نشطة" ? "bg-[#f0fdf4] text-[#2e7d52] hover:bg-[#f0fdf4]" : "bg-[#fffbeb] text-[#d97706] hover:bg-[#fffbeb]")}>
+                        {c.status}
+                      </Badge>
+                      <ChevronDown className={cn("text-[#9ca3af] transition-transform", expandedCase === c.id && "rotate-180")} />
+                    </div>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
 
-          {/* Invoices List */}
-          {activeTab === "invoices" && (
-            <Card className="border-none shadow-sm dark:bg-navy-800">
-              <CardHeader className="border-b border-slate-50 dark:border-white/5 pb-4">
-                <CardTitle className="text-lg font-bold text-navy-900 dark:text-white flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-primary-500" />
-                  الفواتير
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                {data.invoices.length === 0 ? (
-                  <div className="p-12 text-center text-slate-400">
-                    <FileText className="w-12 h-12 mx-auto mb-4 opacity-20" />
-                    <p className="font-bold">لا توجد فواتير مسجلة</p>
-                  </div>
-                ) : (
-                  <div className="divide-y divide-slate-50 dark:divide-white/5">
-                    {data.invoices.map((inv) => (
-                      <div key={inv.id} className="p-5 hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="font-bold text-navy-900 dark:text-white">
-                              مبلغ الفاتورة: {new Intl.NumberFormat('ar-EG', { style: 'currency', currency: 'EGP' }).format(inv.amount)}
-                            </p>
-                            <p className="text-sm text-slate-500 mt-1">
-                              تاريخ الاستحقاق: {new Date(inv.due_date || inv.created_at || Date.now()).toLocaleDateString("ar-EG")}
-                            </p>
+                  {/* Expanded Case Details */}
+                  <AnimatePresence>
+                    {expandedCase === c.id && (
+                      <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="overflow-hidden border-t border-[#e5e7eb]">
+                        <div className="p-6 bg-[#f9fafb] space-y-6">
+                          
+                          {/* Progress Bar */}
+                          <div className="bg-white p-5 rounded-[12px] border border-[#e5e7eb] mb-8 pb-10">
+                            <h4 className="text-sm font-bold text-[#6b7280] mb-6">مرحلة القضية الحالية</h4>
+                            <CaseProgressBar currentStage={c.currentStage} />
                           </div>
-                          <Badge
-                            className={cn(
-                              "font-bold",
-                              inv.status === "paid"
-                                ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400"
-                                : "bg-rose-50 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400"
-                            )}
-                          >
-                            {inv.status === "paid" ? "مدفوعة" : "غير مدفوعة"}
-                          </Badge>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
 
-          {/* Documents List */}
-          {activeTab === "documents" && (
-            <Card className="border-none shadow-sm dark:bg-navy-800">
-              <CardHeader className="border-b border-slate-50 dark:border-white/5 pb-4">
-                <CardTitle className="text-lg font-bold text-navy-900 dark:text-white flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-primary-500" />
-                  المستندات المشتركة
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                {data.documents.length === 0 ? (
-                  <div className="p-12 text-center text-slate-400">
-                    <FileText className="w-12 h-12 mx-auto mb-4 opacity-20" />
-                    <p className="font-bold">لا توجد مستندات مشتركة</p>
-                  </div>
-                ) : (
-                  <div className="divide-y divide-slate-50 dark:divide-white/5">
-                    {data.documents.map((doc) => (
-                      <div key={doc.id} className="p-5 hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="font-bold text-navy-900 dark:text-white truncate max-w-xs sm:max-w-md">
-                              {doc.name}
-                            </p>
-                            <p className="text-sm text-slate-500 mt-1">
-                              تاريخ الإضافة: {new Date(doc.created_at).toLocaleDateString("ar-EG")}
-                            </p>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            
+                            {/* Official Info */}
+                            <Card className="border-[#e5e7eb] rounded-[12px] shadow-none">
+                              <CardContent className="p-5">
+                                <h4 className="font-bold text-[#111827] mb-4 flex items-center gap-2">
+                                  <FileText className="w-4 h-4 text-[#1a5c38]" /> بيانات القضية الرسمية
+                                </h4>
+                                <div className="space-y-4">
+                                  <div>
+                                    <p className="text-[12px] text-[#6b7280] mb-1">رقم القضية</p>
+                                    <div className="flex items-center justify-between bg-[#f9fafb] p-3 rounded-[8px] border border-[#e5e7eb]">
+                                      <span className="font-bold text-[14px]">{c.officialNumber || "لم يُسجل بعد"}</span>
+                                      <button className="text-[#6b7280] hover:text-[#1a5c38]" onClick={() => toast.success("تم نسخ الرقم")}><Copy size={14} /></button>
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <p className="text-[12px] text-[#6b7280] mb-1">اسم القاضي / الدائرة</p>
+                                    <p className="font-semibold text-[13px]">{c.judgeName || "غير محدد"}</p>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+
+                            {/* Last Session Summary */}
+                            {c.lastSessionSummary && (
+                              <Card className="border-[#e5e7eb] rounded-[12px] shadow-none">
+                                <CardContent className="p-5">
+                                  <h4 className="font-bold text-[#111827] mb-4 flex items-center gap-2">
+                                    <MessageSquare className="w-4 h-4 text-[#1a5c38]" /> ملخص آخر جلسة
+                                  </h4>
+                                  <Badge className="bg-[#f0fdf4] text-[#1a5c38] mb-3 hover:bg-[#f0fdf4]">{c.lastSessionSummary.date}</Badge>
+                                  <p className="text-[13px] leading-relaxed text-[#374151] mb-3">
+                                    {c.lastSessionSummary.summary}
+                                  </p>
+                                  <p className="text-[13px] bg-[#f9fafb] p-3 rounded-[8px] border border-[#e5e7eb]">
+                                    <span className="font-bold text-[#1a5c38]">الخطوة الجاية: </span>
+                                    {c.lastSessionSummary.nextStep}
+                                  </p>
+                                </CardContent>
+                              </Card>
+                            )}
+
+                            {/* Financials */}
+                            {c.financials && (
+                              <Card className="border-[#e5e7eb] rounded-[12px] shadow-none">
+                                <CardContent className="p-5">
+                                  <h4 className="font-bold text-[#111827] mb-4 flex items-center gap-2">
+                                    <Scale className="w-4 h-4 text-[#1a5c38]" /> المالية
+                                  </h4>
+                                  <div className="space-y-3">
+                                    <div className="flex justify-between items-center text-[13px]">
+                                      <span className="text-[#6b7280]">أتعاب المكتب</span>
+                                      <span className="font-bold">{c.financials.fees.toLocaleString()} ج.م</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-[13px]">
+                                      <span className="text-[#6b7280] flex items-center gap-1">
+                                        مصاريف التقاضي <span className="text-[10px] bg-[#e5e7eb] px-1 rounded">دمغات/رسوم</span>
+                                      </span>
+                                      <span className="font-bold">{c.financials.expenses.toLocaleString()} ج.م</span>
+                                    </div>
+                                    <div className="pt-3 border-t border-[#e5e7eb] flex justify-between items-center">
+                                      <span className="font-bold text-[#111827]">الإجمالي المستحق</span>
+                                      <span className="font-black text-[#1a5c38] text-[16px]">{(c.financials.fees + c.financials.expenses).toLocaleString()} ج.م</span>
+                                    </div>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            )}
+
+                            {/* Legal Team */}
+                            <Card className="border-[#e5e7eb] rounded-[12px] shadow-none">
+                              <CardContent className="p-5">
+                                <h4 className="font-bold text-[#111827] mb-4 flex items-center gap-2">
+                                  <User className="w-4 h-4 text-[#1a5c38]" /> فريق قضيتك
+                                </h4>
+                                <div className="space-y-4">
+                                  {c.team.map((member, idx) => (
+                                    <div key={idx} className="flex items-center justify-between">
+                                      <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-full bg-[#f0fdf4] text-[#1a5c38] flex items-center justify-center font-bold text-[14px]">
+                                          {member.initials}
+                                        </div>
+                                        <div>
+                                          <p className="font-bold text-[13px]">{member.name}</p>
+                                          <p className="text-[11px] text-[#6b7280]">{member.role}</p>
+                                        </div>
+                                      </div>
+                                      <a href={\`https://wa.me/\${member.phone.replace('+', '')}\`} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full bg-[#25D366]/10 flex items-center justify-center text-[#25D366] hover:bg-[#25D366] hover:text-white transition-colors">
+                                        <MessageSquare size={14} />
+                                      </a>
+                                    </div>
+                                  ))}
+                                </div>
+                              </CardContent>
+                            </Card>
+
                           </div>
-                          <Button variant="outline" size="sm" onClick={() => {
-                            if (doc.url) window.open(doc.url, "_blank");
-                            else toast.info("سيتم تحميل المستند قريباً");
-                          }}>
-                            عرض
-                          </Button>
+
+                          {/* Timeline of Updates */}
+                          <Card className="border-[#e5e7eb] rounded-[12px] shadow-none">
+                            <CardContent className="p-5">
+                              <h4 className="font-bold text-[#111827] mb-6 flex items-center gap-2">
+                                <Clock className="w-4 h-4 text-[#1a5c38]" /> آخر التحديثات والإجراءات
+                              </h4>
+                              <div className="relative border-s-2 border-[#1a5c38] ms-3 space-y-6">
+                                {c.updates.map((update, idx) => (
+                                  <div key={idx} className="relative ps-6">
+                                    <div className={cn(
+                                      "absolute -start-[7px] top-1 w-3 h-3 rounded-full border-2 border-white",
+                                      idx === 0 ? "bg-[#2e7d52]" : "bg-[#9ca3af]"
+                                    )}></div>
+                                    <p className={cn("text-[13px] font-bold", idx === 0 ? "text-[#111827]" : "text-[#374151]")}>{update.text}</p>
+                                    <div className="flex items-center gap-2 mt-1 text-[11px] text-[#6b7280]">
+                                      <span>{update.date}</span>
+                                      <span>•</span>
+                                      <span>بواسطة {update.user}</span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </CardContent>
+                          </Card>
+
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ))}
+            </div>
           )}
 
           {/* Contact Card */}
-          <Card className="border-none shadow-sm dark:bg-navy-800 mt-6">
+          <Card className="border-[#e5e7eb] shadow-sm rounded-[12px] mt-8">
             <CardContent className="p-6 flex items-start gap-4">
-              <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20">
+              <div className="p-3 rounded-xl bg-blue-50">
                 <MessageSquare className="w-6 h-6 text-blue-500" />
               </div>
               <div>
-                <p className="font-bold text-navy-900 dark:text-white mb-1">تحتاج مساعدة؟</p>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  للتواصل مع فريقك القانوني أو الاستفسار عن قضاياك، يرجى التواصل مباشرة مع مكتبك المعتمد.
+                <p className="font-bold text-[#111827] mb-1">تحتاج مساعدة؟</p>
+                <p className="text-[13px] text-[#6b7280]">
+                  للتواصل مع فريقك القانوني أو الاستفسار عن قضاياك، يرجى استخدام زر الواتساب أو التواصل المباشر مع مكتبك.
                 </p>
               </div>
             </CardContent>
           </Card>
+
         </motion.div>
       </div>
+
+      {/* WhatsApp FAB */}
+      <a href="#" className="fixed bottom-6 left-6 bg-[#25D366] text-white rounded-full px-5 py-3 font-bold text-[14px] flex items-center gap-2 shadow-lg shadow-[#25D366]/40 hover:scale-105 transition-transform z-50">
+        <MessageSquare size={18} />
+        تواصل مع المحامي
+      </a>
+
     </div>
   );
 }

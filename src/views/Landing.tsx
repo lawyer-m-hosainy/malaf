@@ -370,79 +370,82 @@ export default function Landing() {
             <Badge className="bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400 border-none px-4 py-1.5 text-sm mb-4">
               باقات الاشتراك
             </Badge>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">اختر الباقة المناسبة لمكتبك</h2>
-            <p className="text-slate-600 dark:text-slate-400 text-lg">أسعار شفافة بدون رسوم خفية. جميع الباقات تشمل تحديثات مجانية ودعم فني.</p>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">ابدأ مجاناً — وكبّر مع نمو مكتبك</h2>
+            <p className="text-slate-600 dark:text-slate-400 text-lg">أسعار شفافة بدون رسوم خفية. أقل من تكلفة كوب قهوة يومياً.</p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
             {[
               {
-                name: "الأساسية",
-                price: 599,
-                priceLabel: "599",
-                desc: "مثالية لمكاتب المحاماة الناشئة",
+                name: "المجانية",
+                price: 0,
+                priceLabel: "مجاناً",
+                desc: "جرّب المنصة بدون التزام",
                 popular: false,
                 isCustom: false,
+                isFree: true,
                 features: [
-                  "إدارة العملاء والقضايا",
-                  "الفاتورة الإلكترونية (ETA)",
-                  "التقويم والمواعيد",
-                  "مساعد الذكاء الاصطناعي (محدود)",
-                  "حتى 5 مستخدمين",
-                  "50 قضية",
+                  "3 موكلين",
+                  "5 قضايا",
+                  "أجندة الجلسات",
+                  "1 مستخدم",
+                  "بدون ذكاء اصطناعي",
                 ]
               },
               {
-                name: "المتقدمة",
-                price: 999,
-                priceLabel: "999",
-                desc: "الأنسب للمكاتب المتوسطة والمتنامية",
+                name: "الأساسية",
+                price: 149,
+                priceLabel: "149",
+                desc: "للمحامي الفردي والمكاتب الناشئة",
+                popular: false,
+                isCustom: false,
+                isFree: false,
+                features: [
+                  "30 موكل",
+                  "50 قضية",
+                  "الفاتورة الإلكترونية (ETA)",
+                  "التقويم والمواعيد",
+                  "مساعد AI محدود",
+                  "1 مستخدم",
+                  "دعم بالبريد",
+                ]
+              },
+              {
+                name: "المحترفة",
+                price: 349,
+                priceLabel: "349",
+                desc: "الأنسب للمكاتب المتنامية",
                 popular: true,
                 isCustom: false,
+                isFree: false,
                 features: [
-                  "كل ميزات الأساسية",
+                  "200 موكل",
+                  "300 قضية",
                   "إدارة العقود (CLM)",
-                  "نظام التحصيل",
-                  "فحص تعارض المصالح",
-                  "تتبع الوقت والفوترة",
+                  "التنفيذ القضائي",
+                  "نظام التحصيل الكامل",
+                  "AI غير محدود",
+                  "بوت واتساب الذكي",
+                  "حتى 5 مستخدمين",
                   "تقارير متقدمة",
-                  "حتى 20 مستخدم",
-                  "500 قضية",
                 ]
               },
               {
                 name: "المؤسسات",
-                price: 1599,
-                priceLabel: "1,599",
-                desc: "للشركات القانونية المتنامية",
+                price: 699,
+                priceLabel: "699",
+                desc: "لشركات المحاماة والمكاتب الكبرى",
                 popular: false,
                 isCustom: false,
+                isFree: false,
                 features: [
-                  "كل ميزات المتقدمة",
-                  "إدارة الامتثال (GRC)",
-                  "بوابة العميل الخاصة",
+                  "موكلون وقضايا غير محدودة",
+                  "كل ميزات المحترفة",
+                  "بوابة الموكلين الخاصة",
                   "الملكية الفكرية",
-                  "المسارات المتخصصة",
+                  "إدارة الامتثال",
+                  "حتى 20 مستخدم",
                   "دعم فني ذو أولوية",
-                  "مستخدمون غير محدودون",
-                  "قضايا غير محدودة",
-                ]
-              },
-              {
-                name: "الشركات الكبرى",
-                price: 0,
-                priceLabel: "اتصل بنا",
-                desc: "حلول مخصصة للكيانات القانونية الكبرى",
-                popular: false,
-                isCustom: true,
-                features: [
-                  "كل ميزات المؤسسات",
-                  "مدير حساب مخصص",
-                  "تدريب فريق العمل",
-                  "تخصيص الواجهة والعلامة التجارية",
-                  "SLA ودعم فني على مدار الساعة",
-                  "ربط API مع أنظمتكم",
-                  "فروع متعددة",
-                  "تقارير تنفيذية مخصصة",
+                  "تقارير تنفيذية",
                 ]
               }
             ].map((plan, i) => (
@@ -467,9 +470,10 @@ export default function Landing() {
                   <h3 className="text-xl font-bold text-navy-900 dark:text-white mb-2">{plan.name}</h3>
                   <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">{plan.desc}</p>
                   <div className="flex items-baseline justify-center gap-1">
-                    <span className={`font-black text-navy-900 dark:text-white ${plan.isCustom ? 'text-2xl' : 'text-5xl'}`}>{plan.priceLabel}</span>
-                    {!plan.isCustom && <span className="text-sm text-slate-400 font-medium">ج.م/شهر</span>}
+                    <span className={`font-black text-navy-900 dark:text-white ${plan.isFree ? 'text-3xl' : 'text-5xl'}`}>{plan.priceLabel}</span>
+                    {!plan.isFree && <span className="text-sm text-slate-400 font-medium">ج.م/شهر</span>}
                   </div>
+                  {!plan.isFree && <p className="text-[11px] text-primary-600 dark:text-primary-400 font-medium mt-1">= {Math.round(plan.price / 30)} ج.م/يوم فقط</p>}
                 </div>
                 <ul className="space-y-3 mb-8">
                   {plan.features.map((f, j) => (
@@ -480,21 +484,21 @@ export default function Landing() {
                   ))}
                 </ul>
                 <Button
-                  onClick={() => plan.isCustom ? window.open('https://wa.me/201141973834', '_blank') : navigate('/login')}
+                  onClick={() => navigate('/login')}
                   className={`w-full py-5 rounded-xl font-bold transition-all ${
                     plan.popular
                       ? "bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-500/20"
-                      : plan.isCustom
-                        ? "bg-navy-900 dark:bg-white text-white dark:text-navy-900 hover:bg-navy-800 dark:hover:bg-slate-100"
+                      : plan.isFree
+                        ? "bg-slate-100 dark:bg-white/5 hover:bg-primary-600 hover:text-white text-navy-900 dark:text-white"
                         : "bg-slate-100 dark:bg-white/5 hover:bg-primary-600 hover:text-white text-navy-900 dark:text-white"
                   }`}
                 >
-                  {plan.isCustom ? 'تواصل معنا' : 'ابدأ الآن'}
+                  {plan.isFree ? 'ابدأ مجاناً' : 'ابدأ الآن'}
                 </Button>
               </motion.div>
             ))}
           </div>
-          <p className="text-center text-sm text-slate-400 mt-8">جميع الأسعار بالجنيه المصري وتشمل ضريبة القيمة المضافة. خصم 17% على الاشتراك السنوي.</p>
+          <p className="text-center text-sm text-slate-400 mt-8">جميع الأسعار بالجنيه المصري وتشمل ضريبة القيمة المضافة. خصم 20% على الاشتراك السنوي.</p>
         </div>
       </section>
 

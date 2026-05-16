@@ -3,11 +3,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { useCasesStore } from "@/store/useCasesStore";
-import { Calendar, AlertCircle, Printer, Filter } from "lucide-react";
+import { Calendar, AlertCircle, Printer, Filter, MessageSquare, Send } from "lucide-react";
 import { toast } from "sonner";
+import { useClientsStore } from "@/store/useClientsStore";
+import { supabase } from "@/lib/supabase";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 // R8-FIX: Memoized row component — prevents 100+ rows from re-rendering on filter change
-const SessionRollRow = memo(({ item }: { item: any }) => (
+const SessionRollRow = memo(({ item, onSendSMS }: { item: any; onSendSMS: (item: any) => void }) => (
   <TableRow className={item.isRecess ? 'bg-amber-50/50 dark:bg-amber-900/10' : ''}>
     <TableCell className="font-bold whitespace-nowrap text-sm">
       {new Date(item.date).toLocaleDateString('ar-EG', { weekday: 'short', month: 'short', day: 'numeric' })}
@@ -22,6 +27,11 @@ const SessionRollRow = memo(({ item }: { item: any }) => (
     <TableCell className="text-sm font-medium text-slate-700 dark:text-slate-300">{item.nextSessionDate}</TableCell>
     <TableCell className="text-sm font-medium text-primary-700 dark:text-primary-400">{item.responsibleLawyer}</TableCell>
     <TableCell className="text-sm text-slate-500 dark:text-slate-400 max-w-[150px] truncate" title={item.notes}>{item.notes}</TableCell>
+    <TableCell className="text-center">
+      <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-blue-50 dark:hover:bg-blue-900/20" title="إرسال تذكير SMS للموكل" onClick={() => onSendSMS(item)}>
+        <MessageSquare size={14} className="text-blue-500" />
+      </Button>
+    </TableCell>
   </TableRow>
 ));
 
@@ -33,6 +43,63 @@ export default function SessionsRoll() {
   const [endDate, setEndDate] = useState(new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0]);
   const [courtFilter, setCourtFilter] = useState("");
   const [lawyerFilter, setLawyerFilter] = useState("");
+
+  const clients = useClientsStore(state => state.clients);
+  const addClientLog = useClientsStore(state => state.addClientLog);
+  const [smsDialogOpen, setSmsDialogOpen] = useState(false);
+  const [selectedSession, setSelectedSession] = useState<any>(null);
+  const [smsTemplate, setSmsTemplate] = useState('');
+  const [isSendingSms, setIsSendingSms] = useState(false);
+
+  const handleOpenSmsDialog = (item: any) => {
+    // Attempt to find the client. item.caseId in the table is actually the id, so we need to match it.
+    // We already have cases store.
+    const relatedCase = cases.find(c => c.id === item.caseId);
+    
+    // If not found by caseNumber, we might need to find by session's original caseId
+    const originalSession = sessions.find(s => s.id === item.id);
+    const actualCase = relatedCase || cases.find(c => c.id === originalSession?.caseId);
+
+    const client = clients.find(c => c.id === actualCase?.clientId);
+    
+    if (!client || !client.phone) {
+      toast.error("لا يوجد رقم هاتف مسجل للموكل في هذه القضية");
+      return;
+    }
+    
+    setSelectedSession({ ...item, client });
+    setSmsTemplate(`نذكركم بجلستكم غداً في محكمة ${item.court} الساعة ${item.time || 'الصباحية'}. محاميكم: ${item.responsibleLawyer}`);
+    setSmsDialogOpen(true);
+  };
+
+  const handleSendSms = async () => {
+    if (!selectedSession || !smsTemplate.trim()) return;
+    setIsSendingSms(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-client-sms', {
+        body: {
+          phone: selectedSession.client.phone,
+          message: smsTemplate,
+          clientId: selectedSession.client.id
+        }
+      });
+
+      if (error) throw error;
+
+      toast.success("تم إرسال الرسالة النصية بنجاح");
+      
+      if (addClientLog) {
+        addClientLog(selectedSession.client.id, `تم إرسال تذكير SMS بشأن جلسة قضية ${selectedSession.caseId}: ${smsTemplate}`);
+      }
+      
+      setSmsDialogOpen(false);
+    } catch (error: any) {
+      console.error('SMS Error:', error);
+      toast.error(`فشل الإرسال: ${error.message || 'خطأ غير معروف'}`);
+    } finally {
+      setIsSendingSms(false);
+    }
+  };
 
   const handlePrint = () => {
     if (rollData.length === 0) {
@@ -150,7 +217,7 @@ export default function SessionsRoll() {
         return {
           id: session.id,
           date: session.date,
-          caseId: relatedCase?.caseNumber || session.caseId,
+          caseId: relatedCase?.id || session.caseId,
           court: session.court,
           circuit: session.circuit || '-',
           opponent: relatedCase?.clientRole === 'مدعي' ? relatedCase?.defendant : relatedCase?.plaintiff,
@@ -159,6 +226,7 @@ export default function SessionsRoll() {
           nextSessionDate: session.nextSessionDate || '-',
           responsibleLawyer: session.responsibleLawyer || '-',
           notes: session.notes || '-',
+          time: session.time || '',
           isRecess: isSummerRecess(session.date)
         };
       })
@@ -212,11 +280,12 @@ export default function SessionsRoll() {
                 <TableHead className="font-bold text-navy-900 dark:text-white whitespace-nowrap">الجلسة القادمة</TableHead>
                 <TableHead className="font-bold text-navy-900 dark:text-white whitespace-nowrap">المحامي المسؤول</TableHead>
                 <TableHead className="font-bold text-navy-900 dark:text-white whitespace-nowrap">ملاحظات</TableHead>
+                <TableHead className="font-bold text-navy-900 dark:text-white whitespace-nowrap text-center">إجراءات</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {rollData.length > 0 ? rollData.map((item) => (
-                <SessionRollRow key={item.id} item={item} />
+                <SessionRollRow key={item.id} item={item} onSendSMS={handleOpenSmsDialog} />
               )) : (
                 <TableRow>
                   <TableCell colSpan={10} className="text-center py-8 text-slate-500">
@@ -232,6 +301,48 @@ export default function SessionsRoll() {
           <span>* أيام العمل الرسمية: السبت إلى الخميس</span>
         </div>
       </Card>
+
+      <Dialog open={smsDialogOpen} onOpenChange={setSmsDialogOpen}>
+        <DialogContent className="sm:max-w-[500px] bg-white dark:bg-navy-900">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MessageSquare size={18} className="text-blue-500" />
+              إرسال تذكير SMS للموكل
+            </DialogTitle>
+          </DialogHeader>
+          {selectedSession && (
+            <div className="space-y-4 py-4">
+              <div className="bg-slate-50 dark:bg-white/5 p-3 rounded-md text-sm">
+                <p><span className="font-bold">الموكل:</span> {selectedSession.client.name}</p>
+                <p><span className="font-bold">رقم الهاتف:</span> <span dir="ltr">{selectedSession.client.phone}</span></p>
+                <p><span className="font-bold">القضية:</span> {selectedSession.caseId}</p>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>نص الرسالة</Label>
+                <Textarea 
+                  value={smsTemplate}
+                  onChange={(e) => setSmsTemplate(e.target.value)}
+                  rows={4}
+                  className="resize-none dark:bg-navy-800"
+                />
+                <p className="text-xs text-slate-500">سيتم إرسال هذه الرسالة مباشرة إلى هاتف الموكل وتسجيلها في السجل الخاص به.</p>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSmsDialogOpen(false)}>إلغاء</Button>
+            <Button onClick={handleSendSms} disabled={isSendingSms || !smsTemplate.trim()} className="bg-blue-600 hover:bg-blue-700 text-white gap-2">
+              {isSendingSms ? 'جاري الإرسال...' : (
+                <>
+                  <Send size={16} />
+                  إرسال الرسالة
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

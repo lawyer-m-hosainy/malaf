@@ -30,6 +30,8 @@ export default function AddExpenseDialog({ caseData }: AddExpenseDialogProps) {
       date: String(fd.get('date')),
       status: 'معلق',
       description: String(fd.get('description') || ''),
+      paidBy: String(fd.get('paidBy') || ''),
+      isCollected: fd.get('isCollected') === 'on',
     });
     toast.success("تم إضافة المصروف بنجاح");
     setOpen(false);
@@ -66,16 +68,27 @@ export default function AddExpenseDialog({ caseData }: AddExpenseDialogProps) {
               <Input name="amount" type="number" required placeholder="0.00" />
             </div>
           </div>
-          <div className="space-y-2">
-            <Label>التاريخ</Label>
-            <Input name="date" type="date" required />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>التاريخ</Label>
+              <Input name="date" type="date" title="التاريخ" aria-label="التاريخ" required defaultValue={new Date().toISOString().split('T')[0]} />
+            </div>
+            <div className="space-y-2">
+              <Label>المدفوع بواسطة</Label>
+              <Input name="paidBy" placeholder="اسم المحامي..." />
+            </div>
           </div>
           <div className="space-y-2">
             <Label>الوصف</Label>
             <Input name="description" placeholder="وصف المصروف..." />
           </div>
+          <div className="flex items-center gap-2">
+            <input type="checkbox" name="isCollected" id="isCollected" title="تم تحصيله من الموكل" aria-label="تم تحصيله من الموكل" className="w-4 h-4 rounded border-slate-300" />
+            <Label htmlFor="isCollected" className="cursor-pointer">تم تحصيله من الموكل</Label>
+          </div>
           <Button type="submit" className="w-full bg-primary-500 text-white hover:bg-primary-600">حفظ المصروف</Button>
         </form>
+
       </DialogContent>
     </Dialog>
   );

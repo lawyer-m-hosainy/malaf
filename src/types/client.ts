@@ -93,3 +93,18 @@ export interface KeyAccount {
   growthPlan?: string;
   notes?: string;
 }
+
+export interface PowerOfAttorney {
+  id: string;
+  clientId: string; // ID of the client
+  poaNumber: string; // رقم التوكيل
+  poaLetter: string; // حرف التوكيل
+  poaYear: string; // سنة التوكيل
+  registryOffice: string; // مكتب التوثيق/الشهر العقاري
+  clientRole: string; // صفة الموكل
+  agentRole: string; // صفة الوكيل
+  poaType: 'عام قضايا' | 'خاص' | 'بنوك' | string; // نوع التوكيل
+  issueDate: string; // تاريخ الإصدار
+  fileUrl?: string; // رابط صورة التوكيل المرفوعة
+  createdAt?: string;
+}

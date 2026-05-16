@@ -32,6 +32,7 @@ export function Topbar() {
   const clients = useClientsStore(state => state.clients);
   const cases = useCasesStore(state => state.cases);
   const tasks = useTeamStore(state => state.tasks);
+  const poas = useClientsStore(state => state.poas) || [];
   const [searchQuery, setSearchQuery] = useState("");
   const deferredSearchQuery = useDeferredValue(searchQuery);
   const navigate = useNavigate();
@@ -47,9 +48,14 @@ export function Topbar() {
     const filteredClients = clients.filter(c => c.name.toLowerCase().includes(query)).slice(0, 3);
     const filteredCases = cases.filter(c => c.id.toLowerCase().includes(query) || (c.plaintiff || "").toLowerCase().includes(query) || (c.defendant || "").toLowerCase().includes(query)).slice(0, 3);
     const filteredTasks = tasks.filter(t => t.title.toLowerCase().includes(query)).slice(0, 3);
+    const filteredPOAs = poas.filter(p => {
+      const client = clients.find(c => c.id === p.clientId);
+      const clientName = client ? client.name.toLowerCase() : "";
+      return p.poaNumber.includes(query) || clientName.includes(query);
+    }).slice(0, 3);
     
-    return { clients: filteredClients, cases: filteredCases, tasks: filteredTasks };
-  }, [deferredSearchQuery, clients, cases, tasks]);
+    return { clients: filteredClients, cases: filteredCases, tasks: filteredTasks, poas: filteredPOAs };
+  }, [deferredSearchQuery, clients, cases, tasks, poas]);
 
   const handleMarkAllAsReadClick = () => {
     markAllAsRead();
@@ -180,7 +186,24 @@ export function Topbar() {
                     ))}
                   </div>
                 )}
-                {searchResults.clients.length === 0 && searchResults.cases.length === 0 && searchResults.tasks.length === 0 && (
+                {searchResults.poas.length > 0 && (
+                  <div className="mb-2">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase px-2 mb-1">التوكيلات</p>
+                    {searchResults.poas.map(p => {
+                      const client = clients.find(c => c.id === p.clientId);
+                      return (
+                        <button 
+                          key={p.id}
+                          onClick={() => { navigate('/dashboard/clients'); setSearchQuery(""); }}
+                          className="w-full text-start px-2 py-1.5 rounded-md hover:bg-slate-50 dark:hover:bg-white/5 text-sm transition-colors"
+                        >
+                          <span className="font-bold text-primary-600">{p.poaNumber}</span> - {client?.name || 'غير معروف'}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+                {searchResults.clients.length === 0 && searchResults.cases.length === 0 && searchResults.tasks.length === 0 && searchResults.poas.length === 0 && (
                   <p className="text-center py-4 text-sm text-slate-400">لا توجد نتائج</p>
                 )}
               </div>

@@ -37,7 +37,7 @@ import { useFinanceStore } from "@/store/useFinanceStore";
 import { useTeamStore } from "@/store/useTeamStore";
 import { useEnforcementStore } from "@/store/useEnforcementStore";
 import { formatDateEG } from "@/lib/formatEG";
-
+import { ClientPoaTab } from "@/components/ClientPoaTab";
 const ClientRow = React.memo(({ client, onEdit, onDelete }: { client: any, onEdit: (c: any) => void, onDelete: (id: string) => void }) => {
   return (
     <TableRow className="hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors">
@@ -462,59 +462,7 @@ export default function Clients() {
 
                 {/* Sub-section A: إدارة التوكيلات */}
                 <div className="pt-6 mt-6 border-t border-slate-50 dark:border-white/5">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-bold text-lg text-navy-900 dark:text-white">إدارة التوكيلات</h3>
-                    <Button variant="outline" size="sm" className="dark:border-white/10 gap-1" onClick={() => navigate('/dashboard/poa')}>
-                      <Plus size={14} /> إضافة توكيل
-                    </Button>
-                  </div>
-                  
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="font-bold">رقم التوكيل</TableHead>
-                        <TableHead className="font-bold">سنة التوكيل</TableHead>
-                        <TableHead className="font-bold">مكتب التوثيق</TableHead>
-                        <TableHead className="font-bold">النوع</TableHead>
-                        <TableHead className="font-bold">تاريخ التوثيق</TableHead>
-                        <TableHead className="font-bold">الحالة</TableHead>
-                        <TableHead className="font-bold text-end">تنبيهات</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {poas.filter(p => p.clientId === selectedClientForProfile.id).length > 0 ? (
-                        poas.filter(p => p.clientId === selectedClientForProfile.id).map(poa => (
-                          <TableRow key={poa.id}>
-                            <TableCell className="font-bold text-primary-600">{poa.poaNumber} / {poa.poaLetter}</TableCell>
-                            <TableCell>{poa.poaYear}</TableCell>
-                            <TableCell>{poa.office}</TableCell>
-                            <TableCell><Badge variant="outline">{poa.type}</Badge></TableCell>
-                            <TableCell>{formatDateEG(new Date(poa.issueDate))}</TableCell>
-                            <TableCell>
-                              <Badge className={
-                                poa.status === 'ساري' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20' :
-                                poa.status === 'ملغي' ? 'bg-red-50 text-red-700 dark:bg-red-900/20' : 'bg-slate-50 text-slate-700 dark:bg-white/10'
-                              }>
-                                {poa.status}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="text-end flex justify-end gap-2">
-                              {poa.cancellationRequested && (
-                                <Badge className="bg-red-100 text-red-700 gap-1">طلب إلغاء</Badge>
-                              )}
-                              {poa.expiryDate && (new Date(poa.expiryDate).getTime() - Date.now() < 30 * 86400000) && (
-                                <Badge className="bg-amber-100 text-amber-700 gap-1">يقترب الانتهاء</Badge>
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      ) : (
-                        <TableRow>
-                          <TableCell colSpan={7} className="text-center py-4 text-slate-500">لا توجد توكيلات مسجلة لهذا الموكل</TableCell>
-                        </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
+                  <ClientPoaTab clientId={selectedClientForProfile.id} />
                 </div>
               </div>
             );

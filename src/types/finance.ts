@@ -11,6 +11,8 @@ export interface Expense {
   date: string;
   status: 'تم السداد' | 'معلق' | 'مخصوم من الأمانة';
   description: string;
+  paidBy?: string; // المدفوع بواسطة (اسم المحامي)
+  isCollected?: boolean; // هل تم تحصيلها من الموكل أم لا
 }
 
 export interface TimeEntry {

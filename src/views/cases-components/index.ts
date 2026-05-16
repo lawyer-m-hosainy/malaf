@@ -9,3 +9,4 @@ export { default as CaseSummaryCards } from './CaseSummaryCards';
 export { default as CaseDetailsPanel } from './CaseDetailsPanel';
 export { default as ReferToEnforcementDialog } from './ReferToEnforcementDialog';
 export { useCaseActions } from './useCaseActions';
+export { LegalDeadlinesCalculator } from './LegalDeadlinesCalculator';

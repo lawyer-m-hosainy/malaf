@@ -24,6 +24,7 @@ interface FinanceState {
   updateTimeEntry: (id: string, updates: Partial<TimeEntry>) => void;
   deleteTimeEntry: (id: string) => void;
   toggleTimeEntryBilledStatus: (id: string) => void;
+  toggleExpenseCollected: (id: string) => void;
   setPricingModels: (models: PricingModel[]) => void;
   hasLoaded: boolean;
   reset: () => void;
@@ -84,6 +85,11 @@ export const useFinanceStore = create<FinanceState>((set) => ({
   toggleTimeEntryBilledStatus: (id) => set((state) => ({
     timeEntries: state.timeEntries.map((te) =>
       te.id === id ? { ...te, isBilled: !te.isBilled } : te
+    )
+  })),
+  toggleExpenseCollected: (id) => set((state) => ({
+    expenses: state.expenses.map((e) =>
+      e.id === id ? { ...e, isCollected: !e.isCollected } : e
     )
   })),
   setPricingModels: (pricingModels) => set({ pricingModels }),

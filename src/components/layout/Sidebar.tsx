@@ -56,6 +56,7 @@ const sidebarStructure: SidebarItem[] = [
     { name: "المحلل الذكي", href: "/dashboard/ai-analyzer", icon: Sparkles },
     { name: "إحصائيات الأداء", href: "/dashboard/analytics", icon: BarChart3 },
     { name: "المعرفة القانونية", href: "/dashboard/wiki", icon: BookOpen },
+    { name: "مكتبة الأحكام", href: "/dashboard/law-library", icon: Gavel },
     { name: "فحص تعارض المصالح", href: "/dashboard/conflict-check", icon: Shield },
   ]},
 

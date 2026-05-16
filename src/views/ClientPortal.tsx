@@ -224,8 +224,15 @@ function CaseProgressBar({ currentStage }: { currentStage: number }) {
     <div className="relative mt-4 mb-2">
       <div className="absolute top-1/2 left-0 right-0 h-1 bg-[#e5e7eb] -translate-y-1/2 rounded-full z-0"></div>
       <div 
-        className="absolute top-1/2 right-0 h-1 bg-[#1a5c38] -translate-y-1/2 rounded-full z-0 transition-all duration-500"
-        style={{ width: `${(currentStage / (stages.length - 1)) * 100}%` }}
+        className={cn(
+          "absolute top-1/2 right-0 h-1 bg-[#1a5c38] -translate-y-1/2 rounded-full z-0 transition-all duration-500",
+          currentStage === 0 && "w-0",
+          currentStage === 1 && "w-1/5",
+          currentStage === 2 && "w-2/5",
+          currentStage === 3 && "w-3/5",
+          currentStage === 4 && "w-4/5",
+          currentStage >= 5 && "w-full"
+        )}
       ></div>
       
       <div className="relative z-10 flex justify-between">

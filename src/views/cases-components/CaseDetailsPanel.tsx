@@ -14,6 +14,8 @@ import { useClientsStore } from "@/store/useClientsStore";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import CaseExpenses from "./CaseExpenses";
 
 interface CaseDetailsPanelProps {
   caseData: Case;
@@ -71,7 +73,15 @@ export default function CaseDetailsPanel({ caseData, sessions, expenses, tasks, 
   timelineEvents.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   return (
-    <div className="p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div className="p-8">
+      <Tabs defaultValue="overview" className="w-full" dir="rtl">
+        <TabsList className="grid w-full grid-cols-2 max-w-[400px] mb-8 bg-slate-100 dark:bg-white/5 p-1 rounded-xl">
+          <TabsTrigger value="overview" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-navy-800 data-[state=active]:shadow-sm">نظرة عامة</TabsTrigger>
+          <TabsTrigger value="expenses" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-navy-800 data-[state=active]:shadow-sm">مصروفات القضية</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       {/* Case Info Column */}
       <div className="space-y-6">
         <div>
@@ -309,6 +319,13 @@ export default function CaseDetailsPanel({ caseData, sessions, expenses, tasks, 
         memorandumsCount={caseData.memorandums?.length || 0}
         deadlines={deadlines}
       />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="expenses" className="bg-white dark:bg-navy-900 p-6 rounded-2xl border border-slate-100 dark:border-white/5 shadow-sm">
+          <CaseExpenses caseData={caseData} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

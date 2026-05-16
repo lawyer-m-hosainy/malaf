@@ -13,12 +13,17 @@ export interface PowerOfAttorney {
   poaNumber: string;
   poaLetter: string;
   poaYear: string;
-  office: POAOffice;
-  type: POAType;
+  office: string; // مكتب التوثيق/الشهر العقاري
+  registryOffice?: string; // For compatibility
+  clientRole?: string; // صفة الموكل
+  agentRole?: string; // صفة الوكيل
+  type: POAType | 'عام قضايا' | 'بنوك' | string;
+  poaType?: string; // For compatibility
   issueDate: string;
   expiryDate?: string;
   status: POAStatus;
   cancellationRequested: boolean;
+  fileUrl?: string; // صورة التوكيل
 }
 
 const checkPOAExpiry = (poas: PowerOfAttorney | PowerOfAttorney[]) => {
@@ -59,6 +64,14 @@ const checkPOAExpiry = (poas: PowerOfAttorney | PowerOfAttorney[]) => {
     }
   });
 };
+
+export interface ClientLog {
+  id: string;
+  clientId: string;
+  action: string;
+  date: string;
+}
+
 interface ClientsState {
   clients: Client[];
   leads: Lead[];
@@ -84,6 +97,8 @@ interface ClientsState {
   hasMore: boolean;
   setCurrentPage: (page: number) => void;
   setHasMore: (hasMore: boolean) => void;
+  clientLogs: ClientLog[];
+  addClientLog: (clientId: string, action: string) => void;
   /** مسح جميع بيانات الموكلين عند تسجيل الخروج */
   fetchClients: () => Promise<void>;
   reset: () => void;
@@ -97,6 +112,7 @@ const INITIAL_CLIENTS_STATE = {
   keyAccounts: [] as KeyAccount[],
   proposals: [] as Proposal[],
   poas: [] as PowerOfAttorney[],
+  clientLogs: [] as ClientLog[],
   hasLoaded: false,
   currentPage: 0,
   hasMore: true,
@@ -108,6 +124,7 @@ export const useClientsStore = create<ClientsState>((set) => ({
   keyAccounts: [],
   proposals: [],
   poas: [],
+  clientLogs: [],
 
   hasLoaded: false,
   currentPage: 0,
@@ -133,6 +150,9 @@ export const useClientsStore = create<ClientsState>((set) => ({
   addProposal: (proposal) => set((state) => ({ proposals: [proposal, ...state.proposals] })),
   updateProposalStatus: (id, status) => set((state) => ({
     proposals: state.proposals.map(p => p.id === id ? { ...p, status } : p)
+  })),
+  addClientLog: (clientId, action) => set((state) => ({
+    clientLogs: [{ id: `log-${Date.now()}`, clientId, action, date: new Date().toISOString() }, ...state.clientLogs]
   })),
   setPOAs: (poas) => {
     set({ poas });

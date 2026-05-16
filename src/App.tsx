@@ -40,6 +40,7 @@ const SessionsRoll = lazy(() => import("./views/SessionsRoll"));
 const Analytics = lazy(() => import("./views/Analytics"));
 const Settings = lazy(() => import("./views/Settings"));
 const LegalLibrary = lazy(() => import("./views/LegalLibrary"));
+const LawLibrary = lazy(() => import("./views/LawLibrary"));
 const Contracts = lazy(() => import("./views/Contracts"));
 const Documents = lazy(() => import("./views/Documents"));
 const IPManagement = lazy(() => import("./views/IPManagement"));
@@ -132,6 +133,7 @@ export default function App() {
                 <Route path="tasks" element={<PermissionGate permission="view_tasks"><Tasks /></PermissionGate>} />
                 <Route path="analytics" element={<PermissionGate permission="view_reports"><Analytics /></PermissionGate>} />
                 <Route path="library" element={<PermissionGate permission="view_cases"><LegalLibrary /></PermissionGate>} />
+                <Route path="law-library" element={<PermissionGate permission="view_cases"><LawLibrary /></PermissionGate>} />
                 <Route path="contracts" element={<PermissionGate permission="documents"><Contracts /></PermissionGate>} />
                 <Route path="documents" element={<PermissionGate permission="documents"><Documents /></PermissionGate>} />
                 <Route path="ip-management" element={<PermissionGate permission="view_cases"><IPManagement /></PermissionGate>} />

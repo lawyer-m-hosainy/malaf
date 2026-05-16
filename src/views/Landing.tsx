@@ -1,11 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { 
   Scale, ShieldCheck, Clock, Users, ArrowLeft, MessageCircle, 
-  CheckCircle2, Star, Phone, Mail, MapPin, Briefcase, Building2, Gavel, FileText, TrendingUp
+  CheckCircle2, Star, Phone, Mail, MapPin, Briefcase, Building2, Gavel, FileText, TrendingUp,
+  Brain, Receipt, CalendarDays, Hammer, FileSignature, BarChart3, Bot, Globe, ListChecks, Banknote, Shield, Sparkles, Workflow, BookOpen
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -141,37 +142,114 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Services Section */}
+      {/* === COMPREHENSIVE FEATURES SECTION === */}
       <section id="services" className="py-24 bg-slate-50 dark:bg-navy-900">
         <div className="container mx-auto px-6">
-          <div className="text-center mb-16 max-w-2xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">ماذا تدير بملف؟</h2>
-            <p className="text-slate-600 dark:text-slate-400 text-lg">منصة واحدة تغنيك عن عشرات التطبيقات وملفات الإكسل المشتتة.</p>
+          <div className="text-center mb-16 max-w-3xl mx-auto">
+            <Badge className="bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400 border-none px-4 py-1.5 text-sm mb-4">+20 وحدة متكاملة</Badge>
+            <h2 className="text-3xl md:text-5xl font-black mb-4">كل ما يحتاجه مكتبك في منصة واحدة</h2>
+            <p className="text-slate-600 dark:text-slate-400 text-lg">استبدل عشرات التطبيقات وملفات الإكسل بنظام ذكي مصمم خصيصاً للمحامي المصري.</p>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+          {/* Category 1: Core Legal */}
+          <div className="mb-16">
+            <div className="flex items-center gap-3 mb-8"><div className="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center"><Gavel className="w-5 h-5 text-primary-600" /></div><h3 className="text-xl font-bold">الإدارة القانونية الأساسية</h3></div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                { icon: Gavel, title: "إدارة القضايا", desc: "ملف شامل لكل قضية بأطرافها ومحكمتها ودائرتها وحالتها مع ربط تلقائي بالموكلين والجلسات." },
+                { icon: CalendarDays, title: "أجندة الجلسات", desc: "سجل مواعيد المحاكم مطابقاً للأجندة الورقية مع تنبيهات تلقائية وطباعة PDF احترافية." },
+                { icon: Users, title: "إدارة الموكلين", desc: "بطاقة شاملة لكل موكل: بياناته، قضاياه، عقوده، فواتيره، ومستنداته في مكان واحد." },
+                { icon: Hammer, title: "التنفيذ القضائي", desc: "متابعة 5 مراحل التنفيذ: استلام الصيغة → إعلان السند → توكيل المحضر → الإشكال → التحصيل." },
+              ].map((f, i) => (
+                <motion.div key={i} initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
+                  className="p-5 rounded-2xl bg-white dark:bg-navy-800 border border-slate-100 dark:border-white/5 hover:shadow-lg hover:shadow-primary-500/5 hover:border-primary-200 dark:hover:border-primary-800/30 transition-all group">
+                  <div className="w-11 h-11 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary-600 group-hover:text-white transition-colors"><f.icon className="w-5 h-5" /></div>
+                  <h4 className="font-bold mb-2 text-navy-900 dark:text-white">{f.title}</h4>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{f.desc}</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          {/* Category 2: Finance */}
+          <div className="mb-16">
+            <div className="flex items-center gap-3 mb-8"><div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center"><Banknote className="w-5 h-5 text-emerald-600" /></div><h3 className="text-xl font-bold">المالية والتحصيل</h3></div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                { icon: Receipt, title: "الفاتورة الإلكترونية", desc: "إصدار فواتير متوافقة مع منظومة ETA المصرية مع حساب ضريبة القيمة المضافة تلقائياً.", color: "emerald" },
+                { icon: Banknote, title: "نظام التحصيل", desc: "تتبع المستحقات والمدفوعات لكل موكل مع تنبيهات للمبالغ المتأخرة وإشعارات الدفع.", color: "emerald" },
+                { icon: Clock, title: "تتبع الوقت", desc: "تسجيل ساعات العمل لكل قضية تلقائياً مع تحويلها لفواتير بسعر الساعة المحدد.", color: "emerald" },
+                { icon: BarChart3, title: "التقارير المالية", desc: "لوحة تحكم شاملة: إيرادات، مصروفات، أرباح صافية، وتحليل أداء مالي شهري.", color: "emerald" },
+              ].map((f, i) => (
+                <motion.div key={i} initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
+                  className="p-5 rounded-2xl bg-white dark:bg-navy-800 border border-slate-100 dark:border-white/5 hover:shadow-lg hover:border-emerald-200 dark:hover:border-emerald-800/30 transition-all group">
+                  <div className="w-11 h-11 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center mb-4 group-hover:bg-emerald-600 group-hover:text-white transition-colors"><f.icon className="w-5 h-5" /></div>
+                  <h4 className="font-bold mb-2 text-navy-900 dark:text-white">{f.title}</h4>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{f.desc}</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          {/* Category 3: Documents & Contracts */}
+          <div className="mb-16">
+            <div className="flex items-center gap-3 mb-8"><div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center"><FileSignature className="w-5 h-5 text-violet-600" /></div><h3 className="text-xl font-bold">المستندات والعقود</h3></div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                { icon: FileSignature, title: "إدارة العقود CLM", desc: "إنشاء العقود من قوالب جاهزة، تتبع دورة حياة العقد، وتنبيهات قبل انتهاء الصلاحية." },
+                { icon: FileText, title: "المستندات والأرشفة", desc: "أرشفة إلكترونية آمنة لكل المرفقات والمستندات مع بحث سريع وتصنيف تلقائي." },
+                { icon: BookOpen, title: "+150 نموذج قانوني", desc: "مكتبة قوالب قانونية جاهزة: عقود، توكيلات، إنذارات، مذكرات — بتنسيق احترافي." },
+                { icon: Shield, title: "الملكية الفكرية", desc: "تتبع العلامات التجارية وبراءات الاختراع مع تنبيهات التجديد والمواعيد الحرجة." },
+              ].map((f, i) => (
+                <motion.div key={i} initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
+                  className="p-5 rounded-2xl bg-white dark:bg-navy-800 border border-slate-100 dark:border-white/5 hover:shadow-lg hover:border-violet-200 dark:hover:border-violet-800/30 transition-all group">
+                  <div className="w-11 h-11 bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 rounded-xl flex items-center justify-center mb-4 group-hover:bg-violet-600 group-hover:text-white transition-colors"><f.icon className="w-5 h-5" /></div>
+                  <h4 className="font-bold mb-2 text-navy-900 dark:text-white">{f.title}</h4>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{f.desc}</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          {/* Category 4: Smart & Team */}
+          <div>
+            <div className="flex items-center gap-3 mb-8"><div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center"><Sparkles className="w-5 h-5 text-amber-600" /></div><h3 className="text-xl font-bold">الخدمات الذكية وإدارة الفريق</h3></div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                { icon: Brain, title: "الذكاء الاصطناعي", desc: "صياغة مذكرات، تلخيص مستندات، واستشارات قانونية فورية بتقنية Gemini وGroq." },
+                { icon: Bot, title: "بوت واتساب الذكي", desc: "رد تلقائي على استفسارات الموكلين عبر واتساب بذكاء اصطناعي مدرب على بياناتك." },
+                { icon: ListChecks, title: "إدارة المهام", desc: "توزيع المهام على المحامين مع 5 حالات عمل وتتبع إنجاز وسجل نشاط لكل مهمة." },
+                { icon: Globe, title: "بوابة الموكلين", desc: "بوابة خاصة يتابع منها الموكل قضاياه وجلساته ومستنداته — بدون إزعاجك بالاتصالات." },
+              ].map((f, i) => (
+                <motion.div key={i} initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
+                  className="p-5 rounded-2xl bg-white dark:bg-navy-800 border border-slate-100 dark:border-white/5 hover:shadow-lg hover:border-amber-200 dark:hover:border-amber-800/30 transition-all group">
+                  <div className="w-11 h-11 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-xl flex items-center justify-center mb-4 group-hover:bg-amber-600 group-hover:text-white transition-colors"><f.icon className="w-5 h-5" /></div>
+                  <h4 className="font-bold mb-2 text-navy-900 dark:text-white">{f.title}</h4>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{f.desc}</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* === HOW IT WORKS === */}
+      <section className="py-20 bg-white dark:bg-navy-800 border-y border-slate-100 dark:border-white/5">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-14 max-w-2xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">ابدأ في 3 خطوات بسيطة</h2>
+            <p className="text-slate-500 dark:text-slate-400">من التسجيل للإنتاجية الكاملة في أقل من 10 دقائق.</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             {[
-              { icon: Gavel, title: "القضايا والجلسات", desc: "إدارة متكاملة للمواعيد، المحاكم، والمستجدات مع تنبيهات تلقائية قبل كل جلسة." },
-              { icon: Users, title: "الموكلين", desc: "ملفات كاملة لكل موكل، عقود، وتواصل مباشر ومسجل لحفظ حقوق المكتب." },
-              { icon: FileText, title: "الفواتير والتحصيل", desc: "إصدار فواتير إلكترونية متوافقة مع منظومة ETA المصرية، وتتبع للمدفوعات المتأخرة." },
-              { icon: Briefcase, title: "إدارة الفريق", desc: "صلاحيات دقيقة لكل محامٍ، توزيع المهام، وقياس ومتابعة إنتاجية أعضاء المكتب." },
-              { icon: Scale, title: "الذكاء الاصطناعي", desc: "صياغة مستندات قانونية وتلخيص مذكرات ومرفقات ضخمة في ثوانٍ معدودة." },
-              { icon: ShieldCheck, title: "بوابة الموكلين", desc: "شفافية تامة ورضا أكبر لعملائك من خلال بوابة خاصة تتيح لهم متابعة قضاياهم دون إزعاجك." }
-            ].map((service, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="p-8 rounded-3xl bg-white dark:bg-navy-800 border border-slate-100 dark:border-white/5 hover:shadow-xl hover:shadow-primary-500/5 transition-all group"
-              >
-                <div className="w-14 h-14 bg-slate-50 dark:bg-navy-900 text-primary-600 dark:text-primary-400 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-primary-600 group-hover:text-white transition-colors">
-                  <service.icon className="w-7 h-7" />
-                </div>
-                <h3 className="text-xl font-bold mb-3">{service.title}</h3>
-                <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                  {service.desc}
-                </p>
+              { num: "1", title: "سجّل مكتبك", desc: "أنشئ حسابك بالبريد أو Google في ثوانٍ — بدون بطاقة ائتمان.", gradient: "from-primary-500 to-emerald-500" },
+              { num: "2", title: "أضف بياناتك", desc: "أدخل موكليك وقضاياك يدوياً أو استوردهم بملف CSV دفعة واحدة.", gradient: "from-emerald-500 to-blue-500" },
+              { num: "3", title: "أدِر مكتبك بذكاء", desc: "تابع جلساتك، أصدر فواتيرك، ووزّع مهامك — كل شيء في مكان واحد.", gradient: "from-blue-500 to-violet-500" },
+            ].map((step, i) => (
+              <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.15 }} className="text-center">
+                <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${step.gradient} text-white text-2xl font-black flex items-center justify-center mx-auto mb-5 shadow-lg`}>{step.num}</div>
+                <h3 className="text-lg font-bold mb-2">{step.title}</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{step.desc}</p>
               </motion.div>
             ))}
           </div>

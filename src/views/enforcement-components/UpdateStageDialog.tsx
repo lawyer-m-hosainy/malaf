@@ -228,14 +228,14 @@ export default function UpdateStageDialog({ open, onOpenChange, enforcementCase 
                 الإشكال في التنفيذ
               </h4>
               <div className="flex items-center gap-2">
-                <input type="checkbox" id="hasObjection" checked={hasObjection} onChange={e => setHasObjection(e.target.checked)} className="rounded" />
+                <input type="checkbox" id="hasObjection" title="يوجد إشكال مقدم" checked={hasObjection} onChange={e => setHasObjection(e.target.checked)} className="rounded" />
                 <Label htmlFor="hasObjection" className="text-xs cursor-pointer">يوجد إشكال مقدم</Label>
               </div>
               {hasObjection && (
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <Label className="text-xs">نوع الإشكال</Label>
-                    <select className={selectClass} value={objectionType} onChange={e => setObjectionType(e.target.value)}>
+                    <select title="نوع الإشكال" className={selectClass} value={objectionType} onChange={e => setObjectionType(e.target.value)}>
                       <option value="">— اختر —</option>
                       <option value="إشكال وقتي">إشكال وقتي</option>
                       <option value="إشكال موضوعي">إشكال موضوعي</option>
@@ -244,7 +244,7 @@ export default function UpdateStageDialog({ open, onOpenChange, enforcementCase 
                   </div>
                   <div className="space-y-1">
                     <Label className="text-xs">الطرف المُشكِل</Label>
-                    <select className={selectClass} value={objectingParty} onChange={e => setObjectingParty(e.target.value)}>
+                    <select title="الطرف المُشكِل" className={selectClass} value={objectingParty} onChange={e => setObjectingParty(e.target.value)}>
                       <option value="">— اختر —</option>
                       <option value="المنفذ ضده">المنفذ ضده</option>
                       <option value="طرف ثالث">طرف ثالث</option>
@@ -266,7 +266,7 @@ export default function UpdateStageDialog({ open, onOpenChange, enforcementCase 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <Label className="text-xs">نتيجة التنفيذ</Label>
-                  <select className={selectClass} value={executionResult} onChange={e => setExecutionResult(e.target.value)}>
+                  <select title="نتيجة التنفيذ" className={selectClass} value={executionResult} onChange={e => setExecutionResult(e.target.value)}>
                     <option value="">— اختر —</option>
                     <option value="تم التنفيذ بالكامل">تم التنفيذ بالكامل</option>
                     <option value="تنفيذ جزئي">تنفيذ جزئي</option>

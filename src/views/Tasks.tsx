@@ -350,7 +350,7 @@ export default function Tasks() {
             
             <div className="space-y-2">
               <Label>نسبة الإنجاز: {newProgress}%</Label>
-              <input type="range" min={0} max={100} step={5} value={newProgress} onChange={e => setNewProgress(Number(e.target.value))} className="w-full accent-primary-500" />
+              <input type="range" title="نسبة الإنجاز" min={0} max={100} step={5} value={newProgress} onChange={e => setNewProgress(Number(e.target.value))} className="w-full accent-primary-500" />
               <div className="h-2 bg-slate-100 dark:bg-white/10 rounded-full overflow-hidden">
                 <div className="h-full bg-primary-500 rounded-full transition-all" style={{ width: `${newProgress}%` }} />
               </div>

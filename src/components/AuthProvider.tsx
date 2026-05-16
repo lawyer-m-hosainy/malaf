@@ -70,10 +70,10 @@ async function resolveUserProfile(
   user: any
 ): Promise<{ role: UserRole; orgId: string } | null> {
   try {
-    // 1. Try to fetch existing profile
+    // 1. Try to fetch existing profile (select * to handle both org_id and organization_id)
     let { data: profile, error } = await supabase
       .from("profiles")
-      .select("role, organization_id")
+      .select("*")
       .eq("id", user.id)
       .maybeSingle();
 
@@ -82,7 +82,7 @@ async function resolveUserProfile(
       await new Promise(resolve => setTimeout(resolve, 1500));
       const retry = await supabase
         .from("profiles")
-        .select("role, organization_id")
+        .select("*")
         .eq("id", user.id)
         .maybeSingle();
       profile = retry.data;
@@ -91,10 +91,13 @@ async function resolveUserProfile(
 
     // 3. If profile exists, sync org_id to JWT metadata for RLS
     if (profile && !error) {
-      if (user.user_metadata?.org_id !== profile.organization_id) {
+      // ✅ Handle both possible column names
+      const profileOrgId = profile.organization_id || profile.org_id || "";
+      
+      if (user.user_metadata?.org_id !== profileOrgId && profileOrgId) {
         try {
           await supabase.auth.updateUser({
-            data: { org_id: profile.organization_id, role: profile.role }
+            data: { org_id: profileOrgId, role: profile.role }
           });
         } catch (e) {
           console.error("Failed to sync org_id to JWT:", e);
@@ -103,7 +106,7 @@ async function resolveUserProfile(
       
       return {
         role: (profile.role as UserRole) || DEFAULT_ROLE,
-        orgId: profile.organization_id || "",
+        orgId: profileOrgId,
       };
     }
 
@@ -138,6 +141,7 @@ async function resolveUserProfile(
       await supabase.from("profiles").upsert({
         id: user.id,
         organization_id: orgId,
+        org_id: orgId,
         full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || "المستخدم",
         email: user.email || "",
         role: DEFAULT_ROLE,
@@ -158,6 +162,7 @@ async function resolveUserProfile(
     const { error: profileError } = await supabase.from("profiles").upsert({
       id: user.id,
       organization_id: org.id,
+      org_id: org.id,
       full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || "المستخدم",
       email: user.email || "",
       role: DEFAULT_ROLE,

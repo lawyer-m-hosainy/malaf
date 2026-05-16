@@ -68,9 +68,9 @@ const DEFAULT_ROLE: UserRole = "محامي";
  */
 async function resolveUserProfile(
   user: any
-): Promise<{ role: UserRole; orgId: string } | null> {
+): Promise<{ role: UserRole; orgId: string }> {
   try {
-    // 1. Try to fetch existing profile (select * to handle both org_id and organization_id)
+    // 1. Try to fetch existing profile
     let { data: profile, error } = await supabase
       .from("profiles")
       .select("*")
@@ -79,7 +79,8 @@ async function resolveUserProfile(
 
     // 2. If no profile yet, the DB trigger might still be running — wait & retry
     if (!profile) {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      console.log("[AuthProvider] No profile found, waiting for trigger...");
+      await new Promise(resolve => setTimeout(resolve, 2000));
       const retry = await supabase
         .from("profiles")
         .select("*")
@@ -91,9 +92,8 @@ async function resolveUserProfile(
 
     // 3. If profile exists, sync org_id to JWT metadata for RLS
     if (profile && !error) {
-      // ✅ Handle both possible column names
       const profileOrgId = profile.organization_id || profile.org_id || "";
-      console.log("[AuthProvider] Profile columns:", Object.keys(profile), "orgId resolved:", profileOrgId);
+      console.log("[AuthProvider] ✅ Profile found. orgId:", profileOrgId);
       
       if (user.user_metadata?.org_id !== profileOrgId && profileOrgId) {
         try {
@@ -101,7 +101,7 @@ async function resolveUserProfile(
             data: { org_id: profileOrgId, role: profile.role }
           });
         } catch (e) {
-          console.error("Failed to sync org_id to JWT:", e);
+          console.warn("[AuthProvider] Failed to sync org_id to JWT (non-fatal):", e);
         }
       }
       
@@ -112,81 +112,74 @@ async function resolveUserProfile(
     }
 
     // 4. Fallback: manually create org + profile if trigger didn't fire
-    console.warn("Profile not found after retry, creating manually...");
+    console.warn("[AuthProvider] Profile not found after retry, creating manually...");
 
-    const { data: org, error: orgError } = await supabase
-      .from("organizations")
-      .insert({
-        name: user.user_metadata?.full_name || "مكتب المحاماة",
-        slug: `office-${user.id.slice(0, 8)}`,
-      })
-      .select("id")
-      .single();
+    let orgId = "";
 
-    if (orgError || !org) {
-      // Maybe org already exists (slug conflict) — try to find it
+    try {
+      // Try to find existing org first
       const { data: existingOrg } = await supabase
         .from("organizations")
         .select("id")
         .eq("slug", `office-${user.id.slice(0, 8)}`)
         .maybeSingle();
-      
-      if (!existingOrg) {
-        console.error("Failed to create/find organization:", orgError);
-        return null;
+
+      if (existingOrg) {
+        orgId = existingOrg.id;
+      } else {
+        // Create new org
+        const { data: newOrg } = await supabase
+          .from("organizations")
+          .insert({
+            name: user.user_metadata?.full_name || "مكتب المحاماة",
+            slug: `office-${user.id.slice(0, 8)}`,
+          })
+          .select("id")
+          .single();
+        if (newOrg) orgId = newOrg.id;
       }
-      
-      // Use the existing org
-      const orgId = existingOrg.id;
-      
-      await supabase.from("profiles").upsert({
-        id: user.id,
-        organization_id: orgId,
-        org_id: orgId,
-        full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || "المستخدم",
-        email: user.email || "",
-        role: DEFAULT_ROLE,
-      });
-      
+    } catch (orgErr) {
+      console.error("[AuthProvider] Org creation failed (non-fatal):", orgErr);
+    }
+
+    // 5. Create profile (best effort)
+    if (orgId) {
+      try {
+        await supabase.from("profiles").upsert({
+          id: user.id,
+          org_id: orgId,
+          full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || "المستخدم",
+          email: user.email || "",
+          role: DEFAULT_ROLE,
+        });
+        console.log("[AuthProvider] ✅ Profile created manually");
+      } catch (profileErr) {
+        console.error("[AuthProvider] Profile creation failed (non-fatal):", profileErr);
+      }
+
+      // Sync to JWT
       try {
         await supabase.auth.updateUser({
           data: { org_id: orgId, role: DEFAULT_ROLE }
         });
       } catch (e) {
-        console.error("Failed to sync org_id to JWT:", e);
+        console.warn("[AuthProvider] JWT sync failed (non-fatal):", e);
       }
-      
-      return { role: DEFAULT_ROLE, orgId };
     }
 
-    // 5. Create profile linked to new org
-    const { error: profileError } = await supabase.from("profiles").upsert({
-      id: user.id,
-      organization_id: org.id,
-      org_id: org.id,
-      full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || "المستخدم",
-      email: user.email || "",
-      role: DEFAULT_ROLE,
-    });
-
-    if (profileError) {
-      console.error("Failed to create profile:", profileError);
-      return null;
-    }
-    
-    // 6. Set org_id in JWT metadata so RLS works immediately
-    try {
-      await supabase.auth.updateUser({
-        data: { org_id: org.id, role: DEFAULT_ROLE }
-      });
-    } catch (e) {
-      console.error("Failed to sync org_id to JWT:", e);
-    }
-
-    return { role: DEFAULT_ROLE, orgId: org.id };
+    // ✅ ALWAYS return a valid profile — never return null
+    // This prevents the user from being signed out after successful authentication
+    return {
+      role: (user.user_metadata?.role as UserRole) || DEFAULT_ROLE,
+      orgId: orgId || user.user_metadata?.org_id || "",
+    };
   } catch (error) {
-    console.error("Error loading user profile:", error);
-    return null;
+    console.error("[AuthProvider] Error in resolveUserProfile (non-fatal):", error);
+    // ✅ Even on total failure, let the user in with defaults
+    return {
+      role: DEFAULT_ROLE,
+      orgId: user.user_metadata?.org_id || "",
+    };
   }
 }
 
@@ -221,16 +214,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     try {
       if (supabaseUser) {
+        console.log("[AuthProvider] Processing auth for:", supabaseUser.email);
         const profile = await resolveUserProfile(supabaseUser);
-        if (!profile) {
-          toast.error("تعذر تحميل ملف المستخدم. يرجى إعادة تسجيل الدخول.");
-          await supabase.auth.signOut();
-          setTenantIdCache(null);
-          useAuthStore.getState().setCurrentUser(null);
-          setUser(null);
-          setLoading(false);
-          return;
-        }
 
         const { role, orgId } = profile;
         setTenantIdCache(orgId);

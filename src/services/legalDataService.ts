@@ -14,6 +14,8 @@ function requireOrgId(): string {
 }
 
 // ─── سجلات التدقيق (Audit Logs) ─────────────────────────────────
+// NOTE: audit_logs table may not exist yet in production.
+// This function silently no-ops if the table is missing.
 export async function logAuditAction(
   action: string,
   entityType: string,
@@ -22,16 +24,20 @@ export async function logAuditAction(
 ): Promise<void> {
   try {
     const orgId = getCurrentTenantId();
-    if (!orgId) return; // لا نسجّل في حالة وضع العرض التجريبي
-    await supabase.from("audit_logs").insert({
+    if (!orgId) return;
+    const { error } = await supabase.from("audit_logs").insert({
       organization_id: orgId,
       action,
       entity_type: entityType,
       entity_id: entityId,
       details: { info: details || `${action} on ${entityId}` },
     });
-  } catch (error) {
-    console.error("Audit log failed:", error);
+    // Silently ignore if table doesn't exist (404/PGRST205)
+    if (error && error.code !== "PGRST205" && error.code !== "42P01") {
+      console.warn("Audit log skipped:", error.message);
+    }
+  } catch {
+    // Completely silent — audit logs should never break the app
   }
 }
 
@@ -257,7 +263,6 @@ export async function fetchInvoices(): Promise<Invoice[]> {
       .from("invoices")
       .select("id, client_id, amount, total, status, date, created_at")
       .eq("organization_id", orgId)
-      .is("deleted_at", null)
       .order("created_at", { ascending: false })
       .limit(20);
 
@@ -310,11 +315,11 @@ export async function deleteInvoice(invoiceId: string): Promise<void> {
   const orgId = requireOrgId();
   const { error } = await supabase
     .from("invoices")
-    .update({ deleted_at: new Date().toISOString() }) // ✅ حذف ناعم
+    .delete()
     .eq("id", invoiceId)
     .eq("organization_id", orgId);
   if (error) throw error;
-  await logAuditAction("DELETE_SOFT", "invoices", invoiceId, "حذف فاتورة (ناعم)");
+  await logAuditAction("DELETE", "invoices", invoiceId, "حذف فاتورة");
 }
 
 // ─── المهام (Tasks) ──────────────────────────────────────────────
@@ -339,7 +344,6 @@ export async function fetchTasks(): Promise<any[]> {
       .from("tasks")
       .select("id, case_id, assigned_to, title, description, due_date, status, priority, created_at")
       .eq("organization_id", orgId)
-      .is("deleted_at", null)
       .order("due_date")
       .limit(50);
     if (error) throw error;
@@ -371,11 +375,11 @@ export async function deleteTask(taskId: string): Promise<void> {
   const orgId = requireOrgId();
   const { error } = await supabase
     .from("tasks")
-    .update({ deleted_at: new Date().toISOString() }) // ✅ حذف ناعم
+    .delete()
     .eq("id", taskId)
     .eq("organization_id", orgId);
   if (error) throw error;
-  await logAuditAction("DELETE_SOFT", "tasks", taskId, "حذف مهمة (ناعم)");
+  await logAuditAction("DELETE", "tasks", taskId, "حذف مهمة");
 }
 
 // ─── فريق العمل (Profiles) ──────────────────────────────────────
@@ -400,10 +404,9 @@ export async function fetchEnforcement(): Promise<any[]> {
   const orgId = requireOrgId();
   try {
     const { data, error } = await supabase
-      .from("enforcement")
+      .from("enforcement_cases")
       .select("id, case_id, amount_claimed, amount_collected, status, created_at")
       .eq("organization_id", orgId)
-      .is("deleted_at", null) // ✅ احترام الحذف الناعم
       .limit(100);
     if (error) throw error;
     return data || [];
@@ -416,12 +419,12 @@ export async function fetchEnforcement(): Promise<any[]> {
 export async function deleteEnforcement(id: string): Promise<void> {
   const orgId = requireOrgId();
   const { error } = await supabase
-    .from("enforcement")
-    .update({ deleted_at: new Date().toISOString() }) // ✅ حذف ناعم
+    .from("enforcement_cases")
+    .delete()
     .eq("id", id)
     .eq("organization_id", orgId);
   if (error) throw error;
-  await logAuditAction("DELETE_SOFT", "enforcement", id, "حذف ملف تنفيذ (ناعم)");
+  await logAuditAction("DELETE", "enforcement_cases", id, "حذف ملف تنفيذ");
 }
 
 // ─── حسابات الأمانات (Trust Accounts) ──────────────────────────
@@ -432,7 +435,6 @@ export async function fetchTrustAccounts(): Promise<any[]> {
       .from("trust_accounts")
       .select("id, client_id, amount, type, status, created_at")
       .eq("organization_id", orgId)
-      .is("deleted_at", null) // ✅ احترام الحذف الناعم
       .limit(100);
     if (error) throw error;
     return data || [];
@@ -446,11 +448,11 @@ export async function deleteTrustAccount(id: string): Promise<void> {
   const orgId = requireOrgId();
   const { error } = await supabase
     .from("trust_accounts")
-    .update({ deleted_at: new Date().toISOString() }) // ✅ حذف ناعم
+    .delete()
     .eq("id", id)
     .eq("organization_id", orgId);
   if (error) throw error;
-  await logAuditAction("DELETE_SOFT", "trust_accounts", id, "حذف حساب أمانة (ناعم)");
+  await logAuditAction("DELETE", "trust_accounts", id, "حذف حساب أمانة");
 }
 
 // ─── الجلسات (Sessions) ──────────────────────────────────────────
@@ -576,7 +578,6 @@ export async function fetchExpenses(): Promise<any[]> {
       .from("expenses")
       .select("id, case_id, client_id, category, amount, date, status, description, requires_partner_approval, created_at")
       .eq("organization_id", orgId)
-      .is("deleted_at", null) 
       .order("date", { ascending: false })
       .limit(100);
     if (error) throw error;
@@ -607,11 +608,11 @@ export async function deleteExpense(id: string): Promise<void> {
   const orgId = requireOrgId();
   const { error } = await supabase
     .from("expenses")
-    .update({ deleted_at: new Date().toISOString() }) // ✅ حذف ناعم
+    .delete()
     .eq("id", id)
     .eq("organization_id", orgId);
   if (error) throw error;
-  await logAuditAction("DELETE_SOFT", "expenses", id, "حذف مصروف (ناعم)");
+  await logAuditAction("DELETE", "expenses", id, "حذف مصروف");
 }
 
 // ─── العداد التسلسلي (Counters) ─────────────────────────────────
@@ -775,7 +776,6 @@ export async function fetchDocuments(): Promise<any[]> {
       .from("documents")
       .select("id, case_id, client_id, file_name, file_url, category, shared_with_client, size, created_at")
       .eq("organization_id", orgId)
-      .is("deleted_at", null)
       .order("created_at", { ascending: false });
     if (error) throw error;
     return data || [];
@@ -803,11 +803,11 @@ export async function deleteDocumentRecord(id: string): Promise<void> {
   const orgId = requireOrgId();
   const { error } = await supabase
     .from("documents")
-    .update({ deleted_at: new Date().toISOString() })
+    .delete()
     .eq("id", id)
     .eq("organization_id", orgId);
   if (error) throw error;
-  await logAuditAction("DELETE_SOFT", "documents", id, "حذف مستند (ناعم)");
+  await logAuditAction("DELETE", "documents", id, "حذف مستند");
 }
 
 export async function uploadDocumentFile(file: File, caseId: string): Promise<{path: string, url: string}> {
@@ -853,7 +853,6 @@ export async function fetchTimeEntries(): Promise<any[]> {
       .from("time_entries")
       .select("*")
       .eq("organization_id", orgId)
-      .is("deleted_at", null)
       .order("created_at", { ascending: false });
     if (error) throw error;
     return data || [];
@@ -880,7 +879,7 @@ export async function deleteTimeEntryRecord(id: string): Promise<void> {
   const orgId = requireOrgId();
   const { error } = await supabase
     .from("time_entries")
-    .update({ deleted_at: new Date().toISOString() })
+    .delete()
     .eq("id", id)
     .eq("organization_id", orgId);
   if (error) throw error;
@@ -894,7 +893,6 @@ export async function fetchReceivables(): Promise<any[]> {
       .from("receivables")
       .select("*")
       .eq("organization_id", orgId)
-      .is("deleted_at", null)
       .order("created_at", { ascending: false });
     if (error) throw error;
     return data || [];
@@ -921,7 +919,7 @@ export async function deleteReceivableRecord(id: string): Promise<void> {
   const orgId = requireOrgId();
   const { error } = await supabase
     .from("receivables")
-    .update({ deleted_at: new Date().toISOString() })
+    .delete()
     .eq("id", id)
     .eq("organization_id", orgId);
   if (error) throw error;
@@ -965,7 +963,6 @@ export async function fetchExpertMissions(): Promise<any[]> {
       .from("expert_missions")
       .select("*")
       .eq("organization_id", orgId)
-      .is("deleted_at", null)
       .order("created_at", { ascending: false });
     if (error) throw error;
     return data || [];
@@ -992,7 +989,7 @@ export async function deleteExpertMissionRecord(id: string): Promise<void> {
   const orgId = requireOrgId();
   const { error } = await supabase
     .from("expert_missions")
-    .update({ deleted_at: new Date().toISOString() })
+    .delete()
     .eq("id", id)
     .eq("organization_id", orgId);
   if (error) throw error;
@@ -1085,7 +1082,6 @@ export async function fetchContractTemplates(): Promise<any[]> {
     .from("contract_templates")
     .select("*")
     .eq("organization_id", orgId)
-    .is("deleted_at", null)
     .order("created_at", { ascending: false });
   if (error) throw error;
   return data || [];
@@ -1108,7 +1104,7 @@ export async function deleteContractTemplate(id: string): Promise<void> {
   const orgId = requireOrgId();
   const { error } = await supabase
     .from("contract_templates")
-    .update({ deleted_at: new Date().toISOString() })
+    .delete()
     .eq("id", id)
     .eq("organization_id", orgId);
   if (error) throw error;
@@ -1152,7 +1148,6 @@ export async function fetchContracts(): Promise<any[]> {
       .from("contracts")
       .select("*")
       .eq("organization_id", orgId)
-      .is("deleted_at", null)
       .order("created_at", { ascending: false });
     if (error) throw error;
     return data || [];
@@ -1179,7 +1174,7 @@ export async function deleteContractRecord(id: string): Promise<void> {
   const orgId = requireOrgId();
   const { error } = await supabase
     .from("contracts")
-    .update({ deleted_at: new Date().toISOString() })
+    .delete()
     .eq("id", id)
     .eq("organization_id", orgId);
   if (error) throw error;

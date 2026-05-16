@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Subscription Management Service
  * Defines 3 subscription tiers with quota limits.
  * Provides a Facade for future Paymob/Fawry integration.
@@ -10,8 +10,8 @@ export interface SubscriptionPlan {
   tier: PlanTier;
   nameAr: string;
   nameEn: string;
-  priceMonthly: number; // EGP (ج.م)
-  priceYearly: number; // EGP (ج.م)
+  priceMonthly: number; // EGP (Ø¬.Ù…)
+  priceYearly: number; // EGP (Ø¬.Ù…)
   maxUsers: number;
   maxCases: number;
   maxStorage: string; // e.g. "5GB"
@@ -28,11 +28,11 @@ export interface TenantSubscription {
   currentCases: number;
 }
 
-// ── Plan Definitions ────────────────────────────────────────────────
+// â”€â”€ Plan Definitions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const PLANS: Record<PlanTier, SubscriptionPlan> = {
   basic: {
     tier: 'basic',
-    nameAr: 'الأساسية',
+    nameAr: 'Ø§Ù„Ø£Ø³Ø§Ø³ÙŠØ©',
     nameEn: 'Basic',
     priceMonthly: 599,
     priceYearly: 5990,
@@ -40,15 +40,15 @@ export const PLANS: Record<PlanTier, SubscriptionPlan> = {
     maxCases: 50,
     maxStorage: '5GB',
     features: [
-      'إدارة العملاء والقضايا',
-      'الفاتورة الإلكترونية المصرية (ETA)',
-      'التقويم والمواعيد',
-      'مساعد الذكاء الاصطناعي (محدود)',
+      'Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ø¹Ù…Ù„Ø§Ø¡ ÙˆØ§Ù„Ù‚Ø¶Ø§ÙŠØ§',
+      'Ø§Ù„ÙØ§ØªÙˆØ±Ø© Ø§Ù„Ø¥Ù„ÙƒØªØ±ÙˆÙ†ÙŠØ© Ø§Ù„Ù…ØµØ±ÙŠØ© (ETA)',
+      'Ø§Ù„ØªÙ‚ÙˆÙŠÙ… ÙˆØ§Ù„Ù…ÙˆØ§Ø¹ÙŠØ¯',
+      'Ù…Ø³Ø§Ø¹Ø¯ Ø§Ù„Ø°ÙƒØ§Ø¡ Ø§Ù„Ø§ØµØ·Ù†Ø§Ø¹ÙŠ (Ù…Ø­Ø¯ÙˆØ¯)',
     ]
   },
   advanced: {
     tier: 'advanced',
-    nameAr: 'المتقدمة',
+    nameAr: 'Ø§Ù„Ù…ØªÙ‚Ø¯Ù…Ø©',
     nameEn: 'Advanced',
     priceMonthly: 999,
     priceYearly: 9990,
@@ -56,18 +56,18 @@ export const PLANS: Record<PlanTier, SubscriptionPlan> = {
     maxCases: 500,
     maxStorage: '50GB',
     features: [
-      'كل ميزات الأساسية',
-      'إدارة العقود (CLM)',
-      'نظام التحصيل',
-      'فحص تعارض المصالح',
-      'تتبع الوقت والفوترة',
-      'تقارير متقدمة',
-      'الإشعارات البريدية',
+      'ÙƒÙ„ Ù…ÙŠØ²Ø§Øª Ø§Ù„Ø£Ø³Ø§Ø³ÙŠØ©',
+      'Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ø¹Ù‚ÙˆØ¯ (CLM)',
+      'Ù†Ø¸Ø§Ù… Ø§Ù„ØªØ­ØµÙŠÙ„',
+      'ÙØ­Øµ ØªØ¹Ø§Ø±Ø¶ Ø§Ù„Ù…ØµØ§Ù„Ø­',
+      'ØªØªØ¨Ø¹ Ø§Ù„ÙˆÙ‚Øª ÙˆØ§Ù„ÙÙˆØªØ±Ø©',
+      'ØªÙ‚Ø§Ø±ÙŠØ± Ù…ØªÙ‚Ø¯Ù…Ø©',
+      'Ø§Ù„Ø¥Ø´Ø¹Ø§Ø±Ø§Øª Ø§Ù„Ø¨Ø±ÙŠØ¯ÙŠØ©',
     ]
   },
   enterprise: {
     tier: 'enterprise',
-    nameAr: 'المؤسسات',
+    nameAr: 'Ø§Ù„Ù…Ø¤Ø³Ø³Ø§Øª',
     nameEn: 'Enterprise',
     priceMonthly: 1599,
     priceYearly: 15990,
@@ -75,19 +75,19 @@ export const PLANS: Record<PlanTier, SubscriptionPlan> = {
     maxCases: -1, // Unlimited
     maxStorage: '500GB',
     features: [
-      'كل ميزات المتقدمة',
-      'إدارة الامتثال (GRC)',
-      'لوحة الشريك والتقارير التنفيذية',
-      'بوابة العميل',
-      'الملكية الفكرية',
-      'المسارات المتخصصة',
-      'الدعم الفني ذو الأولوية',
-      'عدد غير محدود من المستخدمين والقضايا',
+      'ÙƒÙ„ Ù…ÙŠØ²Ø§Øª Ø§Ù„Ù…ØªÙ‚Ø¯Ù…Ø©',
+      'Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ø§Ù…ØªØ«Ø§Ù„ (GRC)',
+      'Ù„ÙˆØ­Ø© Ø§Ù„Ø´Ø±ÙŠÙƒ ÙˆØ§Ù„ØªÙ‚Ø§Ø±ÙŠØ± Ø§Ù„ØªÙ†ÙÙŠØ°ÙŠØ©',
+      'Ø¨ÙˆØ§Ø¨Ø© Ø§Ù„Ø¹Ù…ÙŠÙ„',
+      'Ø§Ù„Ù…Ù„ÙƒÙŠØ© Ø§Ù„ÙÙƒØ±ÙŠØ©',
+      'Ø§Ù„Ù…Ø³Ø§Ø±Ø§Øª Ø§Ù„Ù…ØªØ®ØµØµØ©',
+      'Ø§Ù„Ø¯Ø¹Ù… Ø§Ù„ÙÙ†ÙŠ Ø°Ùˆ Ø§Ù„Ø£ÙˆÙ„ÙˆÙŠØ©',
+      'Ø¹Ø¯Ø¯ ØºÙŠØ± Ù…Ø­Ø¯ÙˆØ¯ Ù…Ù† Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…ÙŠÙ† ÙˆØ§Ù„Ù‚Ø¶Ø§ÙŠØ§',
     ]
   }
 };
 
-// ── Quota Enforcement ───────────────────────────────────────────────
+// â”€â”€ Quota Enforcement â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export function checkQuota(
   subscription: TenantSubscription,
   resource: 'users' | 'cases'
@@ -106,23 +106,23 @@ export function checkQuota(
   };
 }
 
-// ── Arabic Quota Error Messages ─────────────────────────────────────
+// â”€â”€ Arabic Quota Error Messages â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const QUOTA_MESSAGES = {
   cases: {
-    title: 'تم الوصول للحد الأقصى من القضايا',
-    description: (max: number) => `باقتك الحالية تسمح بـ ${max} قضية فقط. يرجى ترقية باقتك لإضافة المزيد.`,
+    title: 'ØªÙ… Ø§Ù„ÙˆØµÙˆÙ„ Ù„Ù„Ø­Ø¯ Ø§Ù„Ø£Ù‚ØµÙ‰ Ù…Ù† Ø§Ù„Ù‚Ø¶Ø§ÙŠØ§',
+    description: (max: number) => `Ø¨Ø§Ù‚ØªÙƒ Ø§Ù„Ø­Ø§Ù„ÙŠØ© ØªØ³Ù…Ø­ Ø¨Ù€ ${max} Ù‚Ø¶ÙŠØ© ÙÙ‚Ø·. ÙŠØ±Ø¬Ù‰ ØªØ±Ù‚ÙŠØ© Ø¨Ø§Ù‚ØªÙƒ Ù„Ø¥Ø¶Ø§ÙØ© Ø§Ù„Ù…Ø²ÙŠØ¯.`,
   },
   users: {
-    title: 'تم الوصول للحد الأقصى من المستخدمين',
-    description: (max: number) => `باقتك الحالية تسمح بـ ${max} مستخدم فقط. يرجى ترقية باقتك لإضافة أعضاء جدد.`,
+    title: 'ØªÙ… Ø§Ù„ÙˆØµÙˆÙ„ Ù„Ù„Ø­Ø¯ Ø§Ù„Ø£Ù‚ØµÙ‰ Ù…Ù† Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…ÙŠÙ†',
+    description: (max: number) => `Ø¨Ø§Ù‚ØªÙƒ Ø§Ù„Ø­Ø§Ù„ÙŠØ© ØªØ³Ù…Ø­ Ø¨Ù€ ${max} Ù…Ø³ØªØ®Ø¯Ù… ÙÙ‚Ø·. ÙŠØ±Ø¬Ù‰ ØªØ±Ù‚ÙŠØ© Ø¨Ø§Ù‚ØªÙƒ Ù„Ø¥Ø¶Ø§ÙØ© Ø£Ø¹Ø¶Ø§Ø¡ Ø¬Ø¯Ø¯.`,
   },
   upgrade: {
-    cta: 'ترقية الباقة',
-    dismiss: 'ليس الآن',
+    cta: 'ØªØ±Ù‚ÙŠØ© Ø§Ù„Ø¨Ø§Ù‚Ø©',
+    dismiss: 'Ù„ÙŠØ³ Ø§Ù„Ø¢Ù†',
   }
 };
 
-// ── Quota Check with Real DB ────────────────────────────────────────
+// â”€â”€ Quota Check with Real DB â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export async function checkQuotaFromDB(
   supabase: any,
   orgId: string,
@@ -156,14 +156,14 @@ export async function checkQuotaFromDB(
       const { count } = await supabase
         .from('cases')
         .select('id', { count: 'exact', head: true })
-        .eq('org_id', orgId)
+        .eq('organization_id', orgId)
         .is('deleted_at', null);
       current = count ?? 0;
     } else {
       const { count } = await supabase
         .from('profiles')
         .select('id', { count: 'exact', head: true })
-        .eq('org_id', orgId)
+        .eq('organization_id', orgId)
         .eq('is_active', true);
       current = count ?? 0;
     }
@@ -178,8 +178,8 @@ export async function checkQuotaFromDB(
       planName: limits?.display_name_ar || planKey,
     };
   } catch {
-    // Fail open in case of DB error — trigger will enforce at DB level anyway
-    return { allowed: true, current: 0, max: -1, planName: 'غير محدد' };
+    // Fail open in case of DB error â€” trigger will enforce at DB level anyway
+    return { allowed: true, current: 0, max: -1, planName: 'ØºÙŠØ± Ù…Ø­Ø¯Ø¯' };
   }
 }
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -68,7 +68,7 @@ export default function Billing() {
       const { data: sub } = await supabase
         .from('subscriptions')
         .select('*')
-        .eq('org_id', orgId)
+        .eq('organization_id', orgId)
         .single();
       
       // 2. Get org plan if no subscription
@@ -85,13 +85,13 @@ export default function Billing() {
       const { count: casesCount } = await supabase
         .from('cases')
         .select('id', { count: 'exact', head: true })
-        .eq('org_id', orgId)
+        .eq('organization_id', orgId)
         .is('deleted_at', null);
 
       const { count: usersCount } = await supabase
         .from('profiles')
         .select('id', { count: 'exact', head: true })
-        .eq('org_id', orgId);
+        .eq('organization_id', orgId);
 
       // 4. Get plan limits
       const { data: limits } = await supabase
@@ -112,7 +112,7 @@ export default function Billing() {
       const { data: txns } = await supabase
         .from('payment_transactions')
         .select('id, amount, status, created_at, payment_method')
-        .eq('org_id', orgId)
+        .eq('organization_id', orgId)
         .order('created_at', { ascending: false })
         .limit(10);
 
@@ -141,26 +141,26 @@ export default function Billing() {
       if (data.success && data.paymentUrl) {
         window.location.href = data.paymentUrl;
       } else {
-        toast.error(data.error || 'فشل في إنشاء رابط الدفع');
+        toast.error(data.error || 'ÙØ´Ù„ ÙÙŠ Ø¥Ù†Ø´Ø§Ø¡ Ø±Ø§Ø¨Ø· Ø§Ù„Ø¯ÙØ¹');
       }
     } catch {
-      toast.error('حدث خطأ أثناء الاتصال ببوابة الدفع');
+      toast.error('Ø­Ø¯Ø« Ø®Ø·Ø£ Ø£Ø«Ù†Ø§Ø¡ Ø§Ù„Ø§ØªØµØ§Ù„ Ø¨Ø¨ÙˆØ§Ø¨Ø© Ø§Ù„Ø¯ÙØ¹');
     } finally {
       setUpgrading(false);
     }
   }
 
   async function handleCancelSubscription() {
-    if (!confirm('هل أنت متأكد من إلغاء الاشتراك؟ ستفقد الوصول إلى الميزات المتقدمة عند انتهاء الفترة الحالية.')) return;
+    if (!confirm('Ù‡Ù„ Ø£Ù†Øª Ù…ØªØ£ÙƒØ¯ Ù…Ù† Ø¥Ù„ØºØ§Ø¡ Ø§Ù„Ø§Ø´ØªØ±Ø§ÙƒØŸ Ø³ØªÙÙ‚Ø¯ Ø§Ù„ÙˆØµÙˆÙ„ Ø¥Ù„Ù‰ Ø§Ù„Ù…ÙŠØ²Ø§Øª Ø§Ù„Ù…ØªÙ‚Ø¯Ù…Ø© Ø¹Ù†Ø¯ Ø§Ù†ØªÙ‡Ø§Ø¡ Ø§Ù„ÙØªØ±Ø© Ø§Ù„Ø­Ø§Ù„ÙŠØ©.')) return;
     try {
       await supabase
         .from('subscriptions')
         .update({ auto_renew: false, cancelled_at: new Date().toISOString() })
-        .eq('org_id', orgId);
-      toast.success('تم إلغاء التجديد التلقائي. اشتراكك سيبقى فعالاً حتى نهاية الفترة الحالية.');
+        .eq('organization_id', orgId);
+      toast.success('ØªÙ… Ø¥Ù„ØºØ§Ø¡ Ø§Ù„ØªØ¬Ø¯ÙŠØ¯ Ø§Ù„ØªÙ„Ù‚Ø§Ø¦ÙŠ. Ø§Ø´ØªØ±Ø§ÙƒÙƒ Ø³ÙŠØ¨Ù‚Ù‰ ÙØ¹Ø§Ù„Ø§Ù‹ Ø­ØªÙ‰ Ù†Ù‡Ø§ÙŠØ© Ø§Ù„ÙØªØ±Ø© Ø§Ù„Ø­Ø§Ù„ÙŠØ©.');
       loadBillingData();
     } catch {
-      toast.error('تعذر إلغاء الاشتراك');
+      toast.error('ØªØ¹Ø°Ø± Ø¥Ù„ØºØ§Ø¡ Ø§Ù„Ø§Ø´ØªØ±Ø§Ùƒ');
     }
   }
 
@@ -188,8 +188,8 @@ export default function Billing() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-navy-900 dark:text-white">الفوترة والاشتراك</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">إدارة باقتك ومتابعة استهلاكك</p>
+          <h1 className="text-2xl font-bold text-navy-900 dark:text-white">Ø§Ù„ÙÙˆØªØ±Ø© ÙˆØ§Ù„Ø§Ø´ØªØ±Ø§Ùƒ</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Ø¥Ø¯Ø§Ø±Ø© Ø¨Ø§Ù‚ØªÙƒ ÙˆÙ…ØªØ§Ø¨Ø¹Ø© Ø§Ø³ØªÙ‡Ù„Ø§ÙƒÙƒ</p>
         </div>
       </div>
 
@@ -210,19 +210,19 @@ export default function Billing() {
           <Clock className={cn("w-6 h-6 shrink-0", trialDaysLeft <= 3 ? "text-red-500" : trialDaysLeft <= 7 ? "text-amber-500" : "text-blue-500")} />
           <div className="flex-1">
             <p className="font-bold text-navy-900 dark:text-white">
-              {trialDaysLeft <= 0 ? 'انتهت الفترة التجريبية!' : `متبقي ${trialDaysLeft} يوم من الفترة التجريبية`}
+              {trialDaysLeft <= 0 ? 'Ø§Ù†ØªÙ‡Øª Ø§Ù„ÙØªØ±Ø© Ø§Ù„ØªØ¬Ø±ÙŠØ¨ÙŠØ©!' : `Ù…ØªØ¨Ù‚ÙŠ ${trialDaysLeft} ÙŠÙˆÙ… Ù…Ù† Ø§Ù„ÙØªØ±Ø© Ø§Ù„ØªØ¬Ø±ÙŠØ¨ÙŠØ©`}
             </p>
             <p className="text-sm text-slate-500 dark:text-slate-400">
               {trialDaysLeft <= 0
-                ? 'يرجى ترقية باقتك لاستمرار الوصول الكامل للمنصة.'
-                : 'اشترك الآن لضمان استمرار عملك بدون انقطاع.'}
+                ? 'ÙŠØ±Ø¬Ù‰ ØªØ±Ù‚ÙŠØ© Ø¨Ø§Ù‚ØªÙƒ Ù„Ø§Ø³ØªÙ…Ø±Ø§Ø± Ø§Ù„ÙˆØµÙˆÙ„ Ø§Ù„ÙƒØ§Ù…Ù„ Ù„Ù„Ù…Ù†ØµØ©.'
+                : 'Ø§Ø´ØªØ±Ùƒ Ø§Ù„Ø¢Ù† Ù„Ø¶Ù…Ø§Ù† Ø§Ø³ØªÙ…Ø±Ø§Ø± Ø¹Ù…Ù„Ùƒ Ø¨Ø¯ÙˆÙ† Ø§Ù†Ù‚Ø·Ø§Ø¹.'}
             </p>
           </div>
           <Button onClick={() => {
             setSelectedPlan({ plan: "basic", amount: PLANS.basic.priceMonthly, billingCycle: "monthly" });
             setCheckoutOpen(true);
           }} className="bg-primary-600 hover:bg-primary-700 text-white shrink-0">
-            اشترك الآن
+            Ø§Ø´ØªØ±Ùƒ Ø§Ù„Ø¢Ù†
           </Button>
         </motion.div>
       )}
@@ -231,8 +231,8 @@ export default function Billing() {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 rounded-xl bg-red-50 dark:bg-red-900/10 border-2 border-red-200 dark:border-red-800/30 flex items-center gap-4">
           <XCircle className="w-6 h-6 text-red-500 shrink-0" />
           <div className="flex-1">
-            <p className="font-bold text-red-700 dark:text-red-400">اشتراكك منتهي — الوضع الحالي: قراءة فقط</p>
-            <p className="text-sm text-slate-500">لن تستطيع إضافة أو تعديل بيانات حتى تجدد اشتراكك.</p>
+            <p className="font-bold text-red-700 dark:text-red-400">Ø§Ø´ØªØ±Ø§ÙƒÙƒ Ù…Ù†ØªÙ‡ÙŠ â€” Ø§Ù„ÙˆØ¶Ø¹ Ø§Ù„Ø­Ø§Ù„ÙŠ: Ù‚Ø±Ø§Ø¡Ø© ÙÙ‚Ø·</p>
+            <p className="text-sm text-slate-500">Ù„Ù† ØªØ³ØªØ·ÙŠØ¹ Ø¥Ø¶Ø§ÙØ© Ø£Ùˆ ØªØ¹Ø¯ÙŠÙ„ Ø¨ÙŠØ§Ù†Ø§Øª Ø­ØªÙ‰ ØªØ¬Ø¯Ø¯ Ø§Ø´ØªØ±Ø§ÙƒÙƒ.</p>
           </div>
           <Button onClick={() => {
             const planToRenew = currentPlan === 'free' ? 'basic' : currentPlan;
@@ -240,7 +240,7 @@ export default function Billing() {
             setSelectedPlan({ plan: planToRenew as "basic"|"advanced"|"enterprise", amount: planConfig.priceMonthly, billingCycle: "monthly" });
             setCheckoutOpen(true);
           }} className="bg-red-600 hover:bg-red-700 text-white shrink-0">
-            جدّد الآن
+            Ø¬Ø¯Ù‘Ø¯ Ø§Ù„Ø¢Ù†
           </Button>
         </motion.div>
       )}
@@ -252,7 +252,7 @@ export default function Billing() {
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Crown className="w-5 h-5 text-amber-500" />
-                الباقة الحالية
+                Ø§Ù„Ø¨Ø§Ù‚Ø© Ø§Ù„Ø­Ø§Ù„ÙŠØ©
               </CardTitle>
               <Badge className={cn(
                 "text-xs font-bold",
@@ -260,7 +260,7 @@ export default function Billing() {
                 subscription?.status === 'trial' ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" :
                 "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
               )}>
-                {subscription?.status === 'active' ? 'فعّال' : subscription?.status === 'trial' ? 'تجريبي' : 'منتهي'}
+                {subscription?.status === 'active' ? 'ÙØ¹Ù‘Ø§Ù„' : subscription?.status === 'trial' ? 'ØªØ¬Ø±ÙŠØ¨ÙŠ' : 'Ù…Ù†ØªÙ‡ÙŠ'}
               </Badge>
             </div>
           </CardHeader>
@@ -272,16 +272,16 @@ export default function Billing() {
               <div>
                 <h3 className="text-2xl font-black text-navy-900 dark:text-white">{planConfig.nameAr}</h3>
                 <p className="text-slate-500 dark:text-slate-400">
-                  {isFreePlan ? 'مجاني' : `${planConfig.priceMonthly} ج.م / ${subscription?.billing_cycle === 'yearly' ? 'سنوي' : 'شهري'}`}
+                  {isFreePlan ? 'Ù…Ø¬Ø§Ù†ÙŠ' : `${planConfig.priceMonthly} Ø¬.Ù… / ${subscription?.billing_cycle === 'yearly' ? 'Ø³Ù†ÙˆÙŠ' : 'Ø´Ù‡Ø±ÙŠ'}`}
                 </p>
               </div>
               {renewalDate && daysUntilRenewal !== null && (
                 <div className="ms-auto text-end">
-                  <p className="text-sm text-slate-400">تاريخ التجديد</p>
+                  <p className="text-sm text-slate-400">ØªØ§Ø±ÙŠØ® Ø§Ù„ØªØ¬Ø¯ÙŠØ¯</p>
                   <p className="font-bold text-navy-900 dark:text-white">
                     {renewalDate.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}
                   </p>
-                  <p className="text-xs text-slate-400">({daysUntilRenewal} يوم متبقي)</p>
+                  <p className="text-xs text-slate-400">({daysUntilRenewal} ÙŠÙˆÙ… Ù…ØªØ¨Ù‚ÙŠ)</p>
                 </div>
               )}
             </div>
@@ -290,14 +290,14 @@ export default function Billing() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <UsageMeter
                 icon={Briefcase}
-                label="القضايا"
+                label="Ø§Ù„Ù‚Ø¶Ø§ÙŠØ§"
                 used={usage.casesUsed}
                 limit={usage.casesLimit}
                 color="primary"
               />
               <UsageMeter
                 icon={Users}
-                label="المستخدمون"
+                label="Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…ÙˆÙ†"
                 used={usage.usersUsed}
                 limit={usage.usersLimit}
                 color="emerald"
@@ -308,12 +308,12 @@ export default function Billing() {
             <div className="flex gap-3 pt-2">
               {!isFreePlan && subscription?.auto_renew !== false && (
                 <Button variant="outline" onClick={handleCancelSubscription} className="text-red-500 border-red-200 hover:bg-red-50 dark:border-red-800/30 dark:hover:bg-red-900/10">
-                  إلغاء التجديد التلقائي
+                  Ø¥Ù„ØºØ§Ø¡ Ø§Ù„ØªØ¬Ø¯ÙŠØ¯ Ø§Ù„ØªÙ„Ù‚Ø§Ø¦ÙŠ
                 </Button>
               )}
               {subscription?.auto_renew === false && (
                 <Badge className="bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 px-3 py-1.5">
-                  لن يتم التجديد — ينتهي {renewalDate ? formatDateEG(renewalDate) : ''}
+                  Ù„Ù† ÙŠØªÙ… Ø§Ù„ØªØ¬Ø¯ÙŠØ¯ â€” ÙŠÙ†ØªÙ‡ÙŠ {renewalDate ? formatDateEG(renewalDate) : ''}
                 </Badge>
               )}
             </div>
@@ -325,7 +325,7 @@ export default function Billing() {
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-primary-500" />
-              ترقية الباقة
+              ØªØ±Ù‚ÙŠØ© Ø§Ù„Ø¨Ø§Ù‚Ø©
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -344,10 +344,10 @@ export default function Billing() {
               >
                 <div className="flex items-center justify-between mb-1">
                   <span className="font-bold text-navy-900 dark:text-white group-hover:text-primary-600 transition-colors">{plan.nameAr}</span>
-                  <span className="text-primary-600 font-bold">{plan.priceMonthly} ج.م</span>
+                  <span className="text-primary-600 font-bold">{plan.priceMonthly} Ø¬.Ù…</span>
                 </div>
                 <p className="text-xs text-slate-400">
-                  {plan.maxUsers === -1 ? 'مستخدمين غير محدود' : `حتى ${plan.maxUsers} مستخدم`} · {plan.maxCases === -1 ? 'قضايا غير محدودة' : `${plan.maxCases} قضية`}
+                  {plan.maxUsers === -1 ? 'Ù…Ø³ØªØ®Ø¯Ù…ÙŠÙ† ØºÙŠØ± Ù…Ø­Ø¯ÙˆØ¯' : `Ø­ØªÙ‰ ${plan.maxUsers} Ù…Ø³ØªØ®Ø¯Ù…`} Â· {plan.maxCases === -1 ? 'Ù‚Ø¶Ø§ÙŠØ§ ØºÙŠØ± Ù…Ø­Ø¯ÙˆØ¯Ø©' : `${plan.maxCases} Ù‚Ø¶ÙŠØ©`}
                 </p>
               </button>
             ))}
@@ -358,7 +358,7 @@ export default function Billing() {
             }).length === 0 && (
               <div className="text-center py-6 text-slate-400">
                 <Crown className="w-8 h-8 mx-auto mb-2 text-amber-400" />
-                <p className="text-sm font-bold">أنت على أعلى باقة! 🎉</p>
+                <p className="text-sm font-bold">Ø£Ù†Øª Ø¹Ù„Ù‰ Ø£Ø¹Ù„Ù‰ Ø¨Ø§Ù‚Ø©! ðŸŽ‰</p>
               </div>
             )}
           </CardContent>
@@ -370,7 +370,7 @@ export default function Billing() {
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <CreditCard className="w-5 h-5 text-slate-400" />
-            سجل المدفوعات
+            Ø³Ø¬Ù„ Ø§Ù„Ù…Ø¯ÙÙˆØ¹Ø§Øª
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -379,10 +379,10 @@ export default function Billing() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-100 dark:border-white/5">
-                    <th className="text-start py-3 px-4 text-slate-400 font-medium">التاريخ</th>
-                    <th className="text-start py-3 px-4 text-slate-400 font-medium">المبلغ</th>
-                    <th className="text-start py-3 px-4 text-slate-400 font-medium">طريقة الدفع</th>
-                    <th className="text-start py-3 px-4 text-slate-400 font-medium">الحالة</th>
+                    <th className="text-start py-3 px-4 text-slate-400 font-medium">Ø§Ù„ØªØ§Ø±ÙŠØ®</th>
+                    <th className="text-start py-3 px-4 text-slate-400 font-medium">Ø§Ù„Ù…Ø¨Ù„Øº</th>
+                    <th className="text-start py-3 px-4 text-slate-400 font-medium">Ø·Ø±ÙŠÙ‚Ø© Ø§Ù„Ø¯ÙØ¹</th>
+                    <th className="text-start py-3 px-4 text-slate-400 font-medium">Ø§Ù„Ø­Ø§Ù„Ø©</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -391,8 +391,8 @@ export default function Billing() {
                       <td className="py-3 px-4 text-navy-900 dark:text-white">
                         {new Date(tx.created_at).toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric' })}
                       </td>
-                      <td className="py-3 px-4 font-bold text-navy-900 dark:text-white">{tx.amount} ج.م</td>
-                      <td className="py-3 px-4 text-slate-500">{tx.payment_method || 'بطاقة'}</td>
+                      <td className="py-3 px-4 font-bold text-navy-900 dark:text-white">{tx.amount} Ø¬.Ù…</td>
+                      <td className="py-3 px-4 text-slate-500">{tx.payment_method || 'Ø¨Ø·Ø§Ù‚Ø©'}</td>
                       <td className="py-3 px-4">
                         <Badge className={cn(
                           "text-[10px]",
@@ -400,7 +400,7 @@ export default function Billing() {
                           tx.status === 'pending' ? "bg-amber-100 text-amber-700" :
                           "bg-red-100 text-red-700"
                         )}>
-                          {tx.status === 'success' ? 'مدفوع' : tx.status === 'pending' ? 'قيد المعالجة' : 'فشل'}
+                          {tx.status === 'success' ? 'Ù…Ø¯ÙÙˆØ¹' : tx.status === 'pending' ? 'Ù‚ÙŠØ¯ Ø§Ù„Ù…Ø¹Ø§Ù„Ø¬Ø©' : 'ÙØ´Ù„'}
                         </Badge>
                       </td>
                     </tr>
@@ -411,8 +411,8 @@ export default function Billing() {
           ) : (
             <div className="text-center py-12 text-slate-400">
               <CreditCard className="w-10 h-10 mx-auto mb-3 opacity-30" />
-              <p className="font-bold mb-1">لا توجد مدفوعات بعد</p>
-              <p className="text-xs">ستظهر هنا سجل مدفوعاتك بعد أول عملية دفع.</p>
+              <p className="font-bold mb-1">Ù„Ø§ ØªÙˆØ¬Ø¯ Ù…Ø¯ÙÙˆØ¹Ø§Øª Ø¨Ø¹Ø¯</p>
+              <p className="text-xs">Ø³ØªØ¸Ù‡Ø± Ù‡Ù†Ø§ Ø³Ø¬Ù„ Ù…Ø¯ÙÙˆØ¹Ø§ØªÙƒ Ø¨Ø¹Ø¯ Ø£ÙˆÙ„ Ø¹Ù…Ù„ÙŠØ© Ø¯ÙØ¹.</p>
             </div>
           )}
         </CardContent>
@@ -421,7 +421,7 @@ export default function Billing() {
       <Dialog open={checkoutOpen} onOpenChange={setCheckoutOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>إتمام الاشتراك</DialogTitle>
+            <DialogTitle>Ø¥ØªÙ…Ø§Ù… Ø§Ù„Ø§Ø´ØªØ±Ø§Ùƒ</DialogTitle>
           </DialogHeader>
           {selectedPlan && (
             <InstapayCheckout
@@ -436,7 +436,7 @@ export default function Billing() {
   );
 }
 
-// ── Usage Meter Component ──────────────────────────────────────────
+// â”€â”€ Usage Meter Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function UsageMeter({ icon: Icon, label, used, limit, color }: {
   icon: any; label: string; used: number; limit: number; color: string;
 }) {
@@ -458,7 +458,7 @@ function UsageMeter({ icon: Icon, label, used, limit, color }: {
           <span className="text-sm font-bold text-navy-900 dark:text-white">{label}</span>
         </div>
         <span className={cn("text-sm font-bold", isAtLimit ? "text-red-600" : isNearLimit ? "text-amber-600" : "text-slate-600 dark:text-slate-400")}>
-          {used} / {isUnlimited ? '∞' : limit}
+          {used} / {isUnlimited ? 'âˆž' : limit}
         </span>
       </div>
       <Progress value={percentage} className={cn(
@@ -468,7 +468,7 @@ function UsageMeter({ icon: Icon, label, used, limit, color }: {
       {isAtLimit && (
         <p className="text-[10px] text-red-500 mt-2 flex items-center gap-1">
           <AlertTriangle className="w-3 h-3" />
-          تم الوصول للحد الأقصى — يرجى ترقية الباقة
+          ØªÙ… Ø§Ù„ÙˆØµÙˆÙ„ Ù„Ù„Ø­Ø¯ Ø§Ù„Ø£Ù‚ØµÙ‰ â€” ÙŠØ±Ø¬Ù‰ ØªØ±Ù‚ÙŠØ© Ø§Ù„Ø¨Ø§Ù‚Ø©
         </p>
       )}
     </div>

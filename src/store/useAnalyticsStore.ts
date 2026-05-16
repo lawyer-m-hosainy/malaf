@@ -34,9 +34,9 @@ export const useAnalyticsStore = create<AnalyticsState>((set) => ({
     
     try {
       const [invoicesRes, expensesRes, casesRes] = await Promise.all([
-        supabase.from('invoices').select('amount, status').eq('org_id', orgId).is('deleted_at', null),
-        supabase.from('expenses').select('amount').eq('org_id', orgId).is('deleted_at', null),
-        supabase.from('cases').select('type').eq('org_id', orgId).is('deleted_at', null)
+        supabase.from('invoices').select('amount, status').eq('organization_id', orgId),
+        supabase.from('expenses').select('amount').eq('organization_id', orgId),
+        supabase.from('cases').select('type').eq('organization_id', orgId).is('deleted_at', null)
       ]);
       
       const invoices = invoicesRes.data || [];

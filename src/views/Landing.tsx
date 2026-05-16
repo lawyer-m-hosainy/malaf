@@ -312,7 +312,7 @@ export default function Landing() {
                   </li>
                 ))}
               </ul>
-              <Button size="lg" className="bg-primary-600 hover:bg-primary-700 text-white rounded-full px-8 shadow-lg shadow-primary-500/20" onClick={() => navigate('/login')}>
+              <Button size="lg" className="bg-primary-600 hover:bg-primary-700 text-white rounded-full px-8 shadow-lg shadow-primary-500/20" onClick={() => navigate('/client-portal')}>
                 تعرف على بوابة الموكلين
               </Button>
             </div>

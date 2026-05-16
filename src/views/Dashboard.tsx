@@ -487,16 +487,16 @@ export default function Dashboard() {
                 <div key={task.id} className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
                   <div className="flex items-center gap-4">
                     <button 
-                      onClick={() => updateTaskStatus(task.id, task.status === 'completed' ? 'pending' : 'completed')}
+                      onClick={() => updateTaskStatus(task.id, task.status === 'مكتملة' ? 'جديدة' : 'مكتملة')}
                       className={cn(
                         "w-5 h-5 rounded border-2 transition-all flex items-center justify-center",
-                        task.status === 'completed' ? "bg-primary-500 border-primary-500 text-white" : "border-slate-200 dark:border-white/20"
+                        task.status === 'مكتملة' ? "bg-primary-500 border-primary-500 text-white" : "border-slate-200 dark:border-white/20"
                       )}
                     >
-                      {task.status === 'completed' && <CheckCircle2 size={12} />}
+                      {task.status === 'مكتملة' && <CheckCircle2 size={12} />}
                     </button>
                     <div>
-                      <p className={cn("text-sm font-bold", task.status === 'completed' ? "text-slate-400 line-through" : "text-navy-900 dark:text-white")}>
+                      <p className={cn("text-sm font-bold", task.status === 'مكتملة' ? "text-slate-400 line-through" : "text-navy-900 dark:text-white")}>
                         {task.title}
                       </p>
                       <div className="flex items-center gap-3 mt-1">

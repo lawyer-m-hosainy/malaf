@@ -225,7 +225,7 @@ function CaseProgressBar({ currentStage }: { currentStage: number }) {
       <div className="absolute top-1/2 left-0 right-0 h-1 bg-[#e5e7eb] -translate-y-1/2 rounded-full z-0"></div>
       <div 
         className="absolute top-1/2 right-0 h-1 bg-[#1a5c38] -translate-y-1/2 rounded-full z-0 transition-all duration-500"
-        style={{ width: \`\${(currentStage / (stages.length - 1)) * 100}%\` }}
+        style={{ width: `${(currentStage / (stages.length - 1)) * 100}%` }}
       ></div>
       
       <div className="relative z-10 flex justify-between">
@@ -569,7 +569,7 @@ function ClientDashboard({ data, onLogout }: { data: ClientData; onLogout: () =>
                                           <p className="text-[11px] text-[#6b7280]">{member.role}</p>
                                         </div>
                                       </div>
-                                      <a href={\`https://wa.me/\${member.phone.replace('+', '')}\`} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full bg-[#25D366]/10 flex items-center justify-center text-[#25D366] hover:bg-[#25D366] hover:text-white transition-colors">
+                                      <a href={`https://wa.me/${member.phone.replace('+', '')}`} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full bg-[#25D366]/10 flex items-center justify-center text-[#25D366] hover:bg-[#25D366] hover:text-white transition-colors">
                                         <MessageSquare size={14} />
                                       </a>
                                     </div>

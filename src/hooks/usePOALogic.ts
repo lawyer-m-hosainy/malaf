@@ -59,11 +59,11 @@ export function usePOALogic() {
       poaNumber: poa.poaNumber,
       poaLetter: poa.poaLetter,
       poaYear: poa.poaYear,
-      office: poa.office,
-      type: poa.type,
+      office: poa.office as POAOffice,
+      type: poa.type as POAType,
       issueDate: poa.issueDate,
       expiryDate: poa.expiryDate || "",
-      status: poa.status,
+      status: poa.status as POAStatus,
     });
     setIsOpen(true);
   }, []);

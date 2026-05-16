@@ -227,7 +227,7 @@ export default function StateCouncil() {
                 
                 <div className="space-y-2">
                   <Label className="font-bold text-slate-700 dark:text-slate-200">نوع الإجراء المُراد اتخاذه</Label>
-                  <Select value={calcType} onValueChange={setCalcType}>
+                  <Select value={calcType} onValueChange={(v) => setCalcType(v || "decision")}>
                     <SelectTrigger className="dark:bg-navy-900"><SelectValue/></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="decision">دعوى إلغاء قرار إداري (60 يوم)</SelectItem>

@@ -33,6 +33,7 @@ export const useAuthStore = create<AuthState>()(
 
     // خريطة صلاحيات الأدوار (مصرية)
     const permissions: Record<string, string[]> = {
+      'مؤسس': ['*'],       // SuperAdmin
       'محامي شريك': ['*'], // صلاحية كاملة
       'مدير مكتب':  ['*'], // صلاحية كاملة
       'محامي': ['view_cases', 'edit_cases', 'view_clients', 'edit_clients', 'legal_qa', 'conflict_check', 'org_admin', 'view_reports', 'documents', 'view_calendar', 'view_tasks', 'finance_basic', 'view_wiki'],

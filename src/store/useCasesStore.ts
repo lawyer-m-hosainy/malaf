@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { Case, Session, Deadline } from '../types';
 import { useNotificationsStore } from './useNotificationsStore';
 import { fetchCases as fetchCasesFromDB, fetchSessions as fetchSessionsFromDB } from '@/services/legalDataService';
@@ -68,7 +69,9 @@ const checkSessions = (sessions: Session[]) => {
   });
 };
 
-export const useCasesStore = create<CasesState>((set, get) => ({
+export const useCasesStore = create<CasesState>()(
+  persist(
+    (set, get) => ({
   cases: [],
   sessions: [],
   deadlines: [],
@@ -187,4 +190,11 @@ export const useCasesStore = create<CasesState>((set, get) => ({
       set({ isLoading: false });
     }
   },
-}));
+  }),
+    {
+      name: 'malaf-cases-storage', // name of the item in the storage (must be unique)
+      storage: createJSONStorage(() => localStorage), // (optional) by default, 'localStorage' is used
+      partialize: (state) => ({ cases: state.cases, sessions: state.sessions }), // Only persist cases and sessions for offline access
+    }
+  )
+);

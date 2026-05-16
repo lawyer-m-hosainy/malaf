@@ -43,6 +43,7 @@ const LegalLibrary = lazy(() => import("./views/LegalLibrary"));
 const LawLibrary = lazy(() => import("./views/LawLibrary"));
 const Contracts = lazy(() => import("./views/Contracts"));
 const Documents = lazy(() => import("./views/Documents"));
+const SystemAdmin = lazy(() => import("./views/SystemAdmin"));
 const IPManagement = lazy(() => import("./views/IPManagement"));
 const TimeTracking = lazy(() => import("./views/TimeTracking"));
 const ClientPortal = lazy(() => import("./views/ClientPortal"));
@@ -119,6 +120,9 @@ export default function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/onboarding" element={<OnboardingFlow />} />
                 <Route path="/client-portal" element={<ClientPortal />} />
+                
+                {/* Super Admin Dashboard (مخفية) */}
+                <Route path="/system-admin" element={<ProtectedRoute><SystemAdmin /></ProtectedRoute>} />
                 
                 <Route path="/dashboard" element={<ProtectedRoute><RouteLayoutWrapper /></ProtectedRoute>}>
                   <Route index element={<Dashboard />} />

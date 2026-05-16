@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { useUIStore } from '@/store/useUIStore';
+import { PushNotificationSettings } from '@/components/PushNotificationSettings';
 
 export default function Settings() {
   const officeSettings = useUIStore((state) => state.officeSettings);
@@ -197,6 +198,7 @@ export default function Settings() {
               </div>
               <input 
                 type="file" 
+                title="تغيير الشعار"
                 ref={fileInputRef} 
                 onChange={handleLogoChange} 
                 accept="image/png, image/jpeg, image/svg+xml" 
@@ -209,6 +211,9 @@ export default function Settings() {
               <p className="text-[10px] text-slate-400 text-center">يفضل استخدام صورة بصيغة PNG أو SVG بخلفية شفافة.</p>
             </CardContent>
           </Card>
+
+          {/* إعدادات الإشعارات */}
+          <PushNotificationSettings />
 
           {/* سجل العمليات */}
           <Card className="border-none shadow-sm dark:bg-navy-800 hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate('/dashboard/audit-logs')}>

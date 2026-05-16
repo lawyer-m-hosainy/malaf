@@ -207,12 +207,10 @@ export default function SpecializedTracks() {
         </div>
         <div className="flex items-center shrink-0">
           <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-primary-500 hover:bg-primary-600 text-white gap-2 shadow-lg shadow-primary-500/20">
-                <Plus size={18} />
-                بدء مسار جديد
-              </Button>
-            </DialogTrigger>
+            <Button onClick={() => setIsAddOpen(true)} className="bg-primary-500 hover:bg-primary-600 text-white gap-2 shadow-lg shadow-primary-500/20">
+              <Plus size={18} />
+              بدء مسار جديد
+            </Button>
             <DialogContent className="sm:max-w-[500px] dark:bg-navy-900 dark:border-white/10">
               <DialogHeader>
                 <DialogTitle>بدء مسار عمل جديد</DialogTitle>

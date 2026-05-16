@@ -1,4 +1,4 @@
-export type UserRole = 'مدير مكتب' | 'محامي' | 'سكرتير' | 'محامي شريك' | 'محامي مستشار' | 'محامي متدرب';
+export type UserRole = 'مؤسس' | 'مدير مكتب' | 'محامي' | 'سكرتير' | 'محامي شريك' | 'محامي مستشار' | 'محامي متدرب';
 
 export interface UserProfile {
   id: string;

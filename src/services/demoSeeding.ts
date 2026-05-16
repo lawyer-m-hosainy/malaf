@@ -117,7 +117,7 @@ export const seedDemoData = () => {
   ];
 
   const tasks: Task[] = [
-    { id: "TK-001", title: "إعداد مذكرة الرد", status: "pending", priority: "high", dueDate: new Date(Date.now() + 86400000 * 3).toISOString(), assignedTo: "TM-002", caseId: "C-2026-001" },
+    { id: "TK-001", title: "إعداد مذكرة الرد", status: "جديدة", priority: "high", dueDate: new Date(Date.now() + 86400000 * 3).toISOString(), assignedTo: "TM-002", caseId: "C-2026-001" },
   ];
 
   // Populate stores

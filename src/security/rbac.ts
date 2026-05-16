@@ -3,6 +3,7 @@ import { UserRole } from "@/types";
 export type SystemRole = "admin" | "lawyer" | "staff" | "client";
 
 const roleMap: Record<UserRole, SystemRole> = {
+  "مؤسس": "admin",
   "مدير مكتب": "admin",
   "محامي": "lawyer",
   "محامي شريك": "lawyer",

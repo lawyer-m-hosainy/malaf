@@ -164,7 +164,7 @@ export default function ExpertMissions() {
                   onChange={e => setQuery(e.target.value)}
                 />
               </div>
-              <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v)}>
+              <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v || "all")}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="حالة المأمورية">
                     {statusFilter && statusFilter !== 'all' ? STATUS_LABELS[statusFilter as MissionStatus] : "جميع الحالات"}

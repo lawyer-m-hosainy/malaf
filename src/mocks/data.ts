@@ -29,9 +29,9 @@ export const mockNotifications: Notification[] = [
 ];
 
 export const mockTasks: Task[] = [
-  { id: 'T-1', caseId: 'C-1001', title: 'تجهيز اللائحة الاعتراضية', assignedTo: 'U-001', dueDate: '2024-04-10', status: 'pending', priority: 'high' },
-  { id: 'T-2', caseId: 'C-1003', title: 'مراجعة عقد التأسيس', assignedTo: 'U-001', dueDate: '2024-04-12', status: 'pending', priority: 'medium' },
-  { id: 'T-3', caseId: 'C-1005', title: 'سداد الرسوم القضائية', assignedTo: 'U-001', dueDate: '2024-04-08', status: 'completed', priority: 'low' },
+  { id: 'T-1', caseId: 'C-1001', title: 'تجهيز اللائحة الاعتراضية', assignedTo: 'U-001', dueDate: '2024-04-10', status: 'جديدة', priority: 'high' },
+  { id: 'T-2', caseId: 'C-1003', title: 'مراجعة عقد التأسيس', assignedTo: 'U-001', dueDate: '2024-04-12', status: 'جديدة', priority: 'medium' },
+  { id: 'T-3', caseId: 'C-1005', title: 'سداد الرسوم القضائية', assignedTo: 'U-001', dueDate: '2024-04-08', status: 'مكتملة', priority: 'low' },
 ];
 
 export const mockClients: Client[] = [

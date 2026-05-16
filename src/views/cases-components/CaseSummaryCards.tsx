@@ -71,7 +71,7 @@ export default function CaseSummaryCards({ caseId, totalExpenses, caseSessions, 
         </div>
         <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/20">
           <p className="text-[10px] font-bold text-amber-600 mb-1">المهام المعلقة</p>
-          <p className="text-lg font-bold text-amber-700 dark:text-amber-400">{caseTasks.filter((t) => t.status === 'pending').length} <span className="text-[10px]">مهام</span></p>
+          <p className="text-lg font-bold text-amber-700 dark:text-amber-400">{caseTasks.filter((t) => t.status === 'جديدة').length} <span className="text-[10px]">مهام</span></p>
         </div>
         <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/20">
           <p className="text-[10px] font-bold text-blue-600 mb-1">المذكرات</p>

@@ -24,7 +24,7 @@ export default function AddTaskDialog({ caseId }: AddTaskDialogProps) {
       title: String(fd.get('title')),
       assignedTo: 'U-001',
       dueDate: String(fd.get('dueDate')),
-      status: 'pending',
+      status: 'جديدة',
       priority: String(fd.get('priority')) as "high" | "medium" | "low",
     });
     toast.success("تم إضافة المهمة بنجاح");

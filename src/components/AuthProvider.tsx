@@ -93,6 +93,7 @@ async function resolveUserProfile(
     if (profile && !error) {
       // ✅ Handle both possible column names
       const profileOrgId = profile.organization_id || profile.org_id || "";
+      console.log("[AuthProvider] Profile columns:", Object.keys(profile), "orgId resolved:", profileOrgId);
       
       if (user.user_metadata?.org_id !== profileOrgId && profileOrgId) {
         try {

@@ -494,7 +494,7 @@ function ClientDashboard({ data, onLogout }: { data: ClientData; onLogout: () =>
                                     <p className="text-[12px] text-[#6b7280] mb-1">رقم القضية</p>
                                     <div className="flex items-center justify-between bg-[#f9fafb] p-3 rounded-[8px] border border-[#e5e7eb]">
                                       <span className="font-bold text-[14px]">{c.officialNumber || "لم يُسجل بعد"}</span>
-                                      <button className="text-[#6b7280] hover:text-[#1a5c38]" onClick={() => toast.success("تم نسخ الرقم")}><Copy size={14} /></button>
+                                      <button title="نسخ الرقم" className="text-[#6b7280] hover:text-[#1a5c38]" onClick={() => toast.success("تم نسخ الرقم")}><Copy size={14} /></button>
                                     </div>
                                   </div>
                                   <div>
@@ -569,7 +569,7 @@ function ClientDashboard({ data, onLogout }: { data: ClientData; onLogout: () =>
                                           <p className="text-[11px] text-[#6b7280]">{member.role}</p>
                                         </div>
                                       </div>
-                                      <a href={`https://wa.me/${member.phone.replace('+', '')}`} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full bg-[#25D366]/10 flex items-center justify-center text-[#25D366] hover:bg-[#25D366] hover:text-white transition-colors">
+                                      <a title={`تواصل مع ${member.name} عبر واتساب`} href={`https://wa.me/${member.phone.replace('+', '')}`} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full bg-[#25D366]/10 flex items-center justify-center text-[#25D366] hover:bg-[#25D366] hover:text-white transition-colors">
                                         <MessageSquare size={14} />
                                       </a>
                                     </div>

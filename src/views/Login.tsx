@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Scale, Loader2, Mail, Lock, Eye, EyeOff, UserPlus, Sparkles } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useAuth } from "@/components/AuthProvider";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 function getSupabaseAuthErrorMessage(error: any, context: "login" | "register" = "login") {
@@ -34,6 +35,8 @@ function getSupabaseAuthErrorMessage(error: any, context: "login" | "register" =
 
 export default function Login() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isDemoMode = useAuthStore(state => state.isDemoMode);
   const [isLoading, setIsLoading] = useState(false);
   const [isEmailLoading, setIsEmailLoading] = useState(false);
   const [isRegisterLoading, setIsRegisterLoading] = useState(false);
@@ -50,10 +53,16 @@ export default function Login() {
   const [registerPassword, setRegisterPassword] = useState("");
   const [registerConfirm, setRegisterConfirm] = useState("");
 
+  // ✅ إذا كان المستخدم مسجل دخوله بالفعل (مثلاً بعد إعادة التوجيه من Google)
+  // يتم تحويله مباشرة للداشبورد بدلاً من عرض صفحة تسجيل الدخول مرة أخرى
+  if (user || isDemoMode) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
-      const redirectUrl = window.location.origin + '/dashboard';
+      const redirectUrl = window.location.origin + '/login';
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {

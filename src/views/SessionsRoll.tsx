@@ -35,9 +35,97 @@ export default function SessionsRoll() {
   const [lawyerFilter, setLawyerFilter] = useState("");
 
   const handlePrint = () => {
-    toast.success("تم إرسال أجندة اليوم للطباعة بصيغة PDF", {
-      description: "سيتم طباعة الأجندة بالتنسيق الورقي المعتمد"
-    });
+    if (rollData.length === 0) {
+      toast.error("لا توجد جلسات لطباعتها في الفترة المحددة");
+      return;
+    }
+
+    const today = new Date().toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+    const rows = rollData.map(item => `
+      <tr>
+        <td>${new Date(item.date).toLocaleDateString('ar-EG', { weekday: 'short', month: 'short', day: 'numeric' })}</td>
+        <td style="font-weight:bold">${item.caseId}</td>
+        <td>${item.court}</td>
+        <td>${item.circuit}</td>
+        <td>${item.opponent || '-'}</td>
+        <td>${item.previousDecision}</td>
+        <td>${item.postponementReason}</td>
+        <td>${item.nextSessionDate}</td>
+        <td>${item.responsibleLawyer}</td>
+        <td>${item.notes}</td>
+      </tr>
+    `).join('');
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      toast.error("يرجى السماح بفتح النوافذ المنبثقة للطباعة");
+      return;
+    }
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html lang="ar" dir="rtl">
+      <head>
+        <meta charset="UTF-8">
+        <title>أجندة المكتب — ${today}</title>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          @page { size: A4 landscape; margin: 15mm; }
+          body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; direction: rtl; color: #1a1a1a; font-size: 11px; }
+          .header { text-align: center; margin-bottom: 20px; border-bottom: 3px double #0d5c2e; padding-bottom: 15px; }
+          .header h1 { font-size: 22px; color: #0d5c2e; margin-bottom: 4px; }
+          .header p { font-size: 12px; color: #666; }
+          .header .date { font-size: 13px; font-weight: bold; color: #333; margin-top: 8px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+          th { background: #0d5c2e; color: white; padding: 8px 6px; font-size: 10px; font-weight: bold; text-align: center; white-space: nowrap; }
+          td { padding: 7px 6px; border-bottom: 1px solid #ddd; text-align: center; font-size: 10px; }
+          tr:nth-child(even) { background: #f8f8f8; }
+          .footer { margin-top: 25px; text-align: center; font-size: 9px; color: #999; border-top: 1px solid #ddd; padding-top: 10px; }
+          .footer .stamp { display: inline-block; border: 2px solid #0d5c2e; border-radius: 50%; width: 60px; height: 60px; line-height: 60px; text-align: center; font-size: 8px; color: #0d5c2e; font-weight: bold; margin-top: 15px; }
+          @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>🏛️ أجندة المكتب — جلسات اليوم</h1>
+          <p>سجل الجلسات والمواعيد — منصة مَلَف لإدارة مكاتب المحاماة</p>
+          <div class="date">📅 ${today} | من ${startDate} إلى ${endDate} | عدد الجلسات: ${rollData.length}</div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>التاريخ</th>
+              <th>رقم الدعوى</th>
+              <th>المحكمة</th>
+              <th>الدائرة</th>
+              <th>اسم الخصم</th>
+              <th>القرار السابق</th>
+              <th>سبب التأجيل</th>
+              <th>الجلسة القادمة</th>
+              <th>المحامي المسؤول</th>
+              <th>ملاحظات</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+        <div class="footer">
+          <p>تم الإنشاء تلقائياً من منصة مَلَف — ${new Date().toLocaleString('ar-EG')}</p>
+          <div class="stamp">مَلَف</div>
+        </div>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
+    
+    // انتظر تحميل الصفحة ثم اطبع
+    printWindow.onload = () => {
+      printWindow.print();
+    };
+    // fallback لو onload ما اشتغلش
+    setTimeout(() => { try { printWindow.print(); } catch {} }, 500);
+
+    toast.success("تم فتح نافذة الطباعة", { description: "اختر 'حفظ كـ PDF' أو اطبع مباشرة" });
   };
 
   const isSummerRecess = (dateStr: string) => {

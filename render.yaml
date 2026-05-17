@@ -38,6 +38,8 @@ services:
         sync: false
       - key: DAILY_API_KEY
         sync: false
+      - key: VITE_DAILY_API_KEY
+        sync: false
       - key: WA_VERIFY_TOKEN
         sync: false
       - key: PAYMOB_API_KEY

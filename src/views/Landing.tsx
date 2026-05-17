@@ -79,7 +79,7 @@ export default function Landing() {
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8">
               <Button size="lg" className="w-full sm:w-auto bg-primary-600 hover:bg-primary-700 text-white h-14 px-8 text-lg rounded-full shadow-xl shadow-primary-500/20 transition-transform hover:scale-105" onClick={() => navigate('/login')}>
-                ابدأ تجربتك المجانية
+                ابدأ تجربتك المجانية لمدة أسبوع
                 <ArrowLeft className="ms-2 w-5 h-5" />
               </Button>
               <Button size="lg" variant="outline" className="w-full sm:w-auto h-14 px-8 text-lg rounded-full border-slate-200 dark:border-white/10 bg-white/50 dark:bg-navy-800/50 backdrop-blur-sm hover:bg-slate-100 dark:hover:bg-white/5" onClick={() => window.location.href='#services'}>
@@ -358,74 +358,72 @@ export default function Landing() {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
             {[
               {
-                name: "المجانية",
+                name: "تجربة مجانية",
                 price: 0,
                 priceLabel: "مجاناً",
-                desc: "جرّب المنصة بدون التزام",
+                desc: "جرب المنصة بكامل ميزاتها لمدة أسبوع",
                 popular: false,
                 isCustom: false,
                 isFree: true,
                 features: [
-                  "3 موكلين",
-                  "5 قضايا",
-                  "أجندة الجلسات",
-                  "1 مستخدم",
-                  "بدون ذكاء اصطناعي",
+                  "تجربة كاملة للباقة المتقدمة",
+                  "موكلون وقضايا غير محدودة",
+                  "الذكاء الاصطناعي وبوت واتساب",
+                  "إدارة العقود والفواتير",
+                  "بدون بطاقة ائتمان",
                 ]
               },
               {
                 name: "الأساسية",
-                price: 149,
-                priceLabel: "149",
+                price: 599,
+                priceLabel: "599",
                 desc: "للمحامي الفردي والمكاتب الناشئة",
                 popular: false,
                 isCustom: false,
                 isFree: false,
                 features: [
-                  "30 موكل",
                   "50 قضية",
                   "الفاتورة الإلكترونية (ETA)",
                   "التقويم والمواعيد",
                   "مساعد AI محدود",
-                  "1 مستخدم",
+                  "حتى 5 مستخدمين",
                   "دعم بالبريد",
                 ]
               },
               {
-                name: "المحترفة",
-                price: 349,
-                priceLabel: "349",
+                name: "المتقدمة",
+                price: 999,
+                priceLabel: "999",
                 desc: "الأنسب للمكاتب المتنامية",
                 popular: true,
                 isCustom: false,
                 isFree: false,
                 features: [
-                  "200 موكل",
-                  "300 قضية",
+                  "500 قضية",
                   "إدارة العقود (CLM)",
                   "التنفيذ القضائي",
                   "نظام التحصيل الكامل",
                   "AI غير محدود",
                   "بوت واتساب الذكي",
-                  "حتى 5 مستخدمين",
+                  "حتى 20 مستخدم",
                   "تقارير متقدمة",
                 ]
               },
               {
                 name: "المؤسسات",
-                price: 699,
-                priceLabel: "699",
+                price: 1599,
+                priceLabel: "1599",
                 desc: "لشركات المحاماة والمكاتب الكبرى",
                 popular: false,
                 isCustom: false,
                 isFree: false,
                 features: [
-                  "موكلون وقضايا غير محدودة",
-                  "كل ميزات المحترفة",
+                  "قضايا غير محدودة",
+                  "كل ميزات المتقدمة",
                   "بوابة الموكلين الخاصة",
                   "الملكية الفكرية",
                   "إدارة الامتثال",
-                  "حتى 20 مستخدم",
+                  "مستخدمين غير محدود",
                   "دعم فني ذو أولوية",
                   "تقارير تنفيذية",
                 ]
@@ -491,7 +489,7 @@ export default function Landing() {
         <div className="container mx-auto px-6 relative z-10 text-center">
           <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">مكتبك يستحق أكثر من Excel وواتساب</h2>
           <p className="text-primary-100 text-lg mb-10 max-w-2xl mx-auto">
-            جرّب ملف مجاناً لمدة 14 يوم واستمتع بإدارة ذكية ومتكاملة لمكتبك — بدون الحاجة لبطاقة ائتمان.
+            جرّب مَلَف مجاناً لمدة أسبوع (7 أيام) واستمتع بإدارة ذكية ومتكاملة لمكتبك — بدون الحاجة لبطاقة ائتمان.
           </p>
           <Button size="lg" className="bg-white dark:bg-navy-900 text-primary-600 hover:bg-slate-50 h-14 px-10 text-lg rounded-full shadow-xl" onClick={() => navigate('/login')}>
             ابدأ الآن

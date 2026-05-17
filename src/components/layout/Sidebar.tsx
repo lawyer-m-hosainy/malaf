@@ -13,15 +13,15 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { useUIStore } from "@/store/useUIStore";
 
 type SidebarItem = 
-  | { type: 'link'; name: string; href: string; icon: any }
-  | { type: 'group'; title: string; icon: any; items: { name: string; href: string; icon: any }[] };
+  | { type: 'link'; name: string; href: string; icon: any; testId?: string }
+  | { type: 'group'; title: string; icon: any; items: { name: string; href: string; icon: any; testId?: string }[] };
 
 const sidebarStructure: SidebarItem[] = [
   // ── أقسام ثابتة ──
   { type: 'link', name: "الرئيسية", href: "/dashboard", icon: LayoutDashboard },
   { type: 'link', name: "المحادثات", href: "/dashboard/chat", icon: MessageSquare },
-  { type: 'link', name: "الموكلين", href: "/dashboard/clients", icon: Users },
-  { type: 'link', name: "القضايا", href: "/dashboard/cases", icon: Scale },
+  { type: 'link', name: "الموكلين", href: "/dashboard/clients", icon: Users, testId: "nav-clients" },
+  { type: 'link', name: "القضايا", href: "/dashboard/cases", icon: Scale, testId: "nav-cases" },
 
   // ── الجلسات والأجندة القضائية (دمج أجندة الجلسات + التقويم) ──
   { type: 'group', title: "الجلسات والأجندة القضائية", icon: Calendar, items: [
@@ -43,7 +43,7 @@ const sidebarStructure: SidebarItem[] = [
 
   // ── المالية ──
   { type: 'group', title: "المالية", icon: Coins, items: [
-    { name: "المالية والفواتير", href: "/dashboard/finance", icon: Calculator },
+    { name: "المالية والفواتير", href: "/dashboard/finance", icon: Calculator, testId: "nav-payments" },
     { name: "المصروفات", href: "/dashboard/expenses", icon: Wallet },
     { name: "الفاتورة الإلكترونية", href: "/dashboard/eta-invoicing", icon: Receipt },
     { name: "تتبع الوقت", href: "/dashboard/time-tracking", icon: Clock },
@@ -53,7 +53,7 @@ const sidebarStructure: SidebarItem[] = [
   // ── الخدمات الذكية ──
   { type: 'group', title: "الخدمات الذكية", icon: Sparkles, items: [
     { name: "أين فريقي؟", href: "/dashboard/field-checkins", icon: MapPin },
-    { name: "المحلل الذكي", href: "/dashboard/ai-analyzer", icon: Sparkles },
+    { name: "المحلل الذكي", href: "/dashboard/ai-analyzer", icon: Sparkles, testId: "nav-ai-assistant" },
     { name: "إحصائيات الأداء", href: "/dashboard/analytics", icon: BarChart3 },
     { name: "المعرفة القانونية", href: "/dashboard/wiki", icon: BookOpen },
     { name: "مكتبة الأحكام", href: "/dashboard/law-library", icon: Gavel },
@@ -123,6 +123,7 @@ export function Sidebar() {
                 to={item.href}
                 end={item.href === "/dashboard"}
                 onClick={() => { if (window.innerWidth < 1024) closeSidebar(); }}
+                data-testid={item.testId}
                 className={({ isActive }) =>
                   cn(
                     "flex items-center gap-3 px-3 py-2 rounded-md transition-colors text-sm font-medium",
@@ -169,6 +170,7 @@ export function Sidebar() {
                       key={sub.href}
                       to={sub.href}
                       onClick={() => { if (window.innerWidth < 1024) closeSidebar(); }}
+                      data-testid={sub.testId}
                       className={({ isActive }) =>
                         cn(
                           "flex items-center gap-3 px-3 py-1.5 rounded-md transition-colors text-sm font-medium mr-1",

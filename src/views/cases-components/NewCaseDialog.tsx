@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useCasesStore } from '@/store/useCasesStore';
 import { useClientsStore } from '@/store/useClientsStore';
+import { useTeamStore } from '@/store/useTeamStore';
 import { caseSchema } from '@/lib/schemas';
 import { getNextCounter, saveCases } from '@/services/legalDataService';
 import { ZodError } from 'zod';
@@ -21,6 +22,7 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
   const addCase = useCasesStore((state) => state.addCase);
   const updateCase = useCasesStore((state) => state.updateCase);
   const clients = useClientsStore((state) => state.clients);
+  const teamMembers = useTeamStore((state) => state.teamMembers);
   const [newCaseData, setNewCaseData] = useState({
     id: "",
     clientId: "",
@@ -46,8 +48,10 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
     prosecutionRef: "",
     familyCaseType: "نفقة زوجية" as any,
     stateCouncilYearQ: "",
+    stateCouncilYearQ: "",
     commercialRegRef: "",
     taxIdRef: "",
+    assigneeId: "",
   });
 
   useEffect(() => {
@@ -78,8 +82,10 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
           prosecutionRef: caseToEdit.prosecutionRef || "",
           familyCaseType: caseToEdit.familyCaseType || "نفقة زوجية",
           stateCouncilYearQ: caseToEdit.stateCouncilYearQ || "",
+          stateCouncilYearQ: caseToEdit.stateCouncilYearQ || "",
           commercialRegRef: caseToEdit.commercialRegRef || "",
           taxIdRef: caseToEdit.taxIdRef || "",
+          assigneeId: caseToEdit.assigneeId || "",
         });
       } else {
         setNewCaseData({
@@ -107,8 +113,10 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
           prosecutionRef: "",
           familyCaseType: "نفقة زوجية",
           stateCouncilYearQ: "",
+          stateCouncilYearQ: "",
           commercialRegRef: "",
           taxIdRef: "",
+          assigneeId: "",
         });
       }
     }
@@ -242,8 +250,10 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
         prosecutionRef: "",
         familyCaseType: "نفقة زوجية",
         stateCouncilYearQ: "",
+        stateCouncilYearQ: "",
         commercialRegRef: "",
         taxIdRef: "",
+        assigneeId: "",
       });
     } catch (error) {
       if (error instanceof ZodError) {
@@ -268,6 +278,7 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
               <Label>الموكل الأساسي (إجباري)</Label>
               <select 
                 title="الموكل"
+                data-testid="client-select"
                 className="w-full h-10 rounded-md border border-slate-200 dark:border-white/10 bg-transparent px-3 py-2 text-sm text-navy-900 dark:text-white"
                 value={newCaseData.clientId}
                 onChange={e => setNewCaseData(p => ({ ...p, clientId: e.target.value }))}
@@ -392,6 +403,7 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
               <Label>موضوع القضية</Label>
               <Input 
                 placeholder="مثل: مطالبة مالية" 
+                data-testid="case-title-input"
                 value={newCaseData.title}
                 onChange={e => setNewCaseData(p => ({ ...p, title: e.target.value }))}
               />
@@ -419,7 +431,25 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
                 <option value="ابتدائي" className="dark:bg-navy-900">ابتدائية (كلي)</option>
                 <option value="استئناف" className="dark:bg-navy-900">استئناف</option>
                 <option value="نقض" className="dark:bg-navy-900">نقض / إدارية عليا</option>
+                <option value="نقض" className="dark:bg-navy-900">نقض / إدارية عليا</option>
                 <option value="دستورية عليا" className="dark:bg-navy-900">دستورية عليا</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label>تعيين لمحامي (اختياري)</Label>
+              <select 
+                title="المحامي"
+                data-testid="assign-lawyer-select"
+                className="w-full h-10 rounded-md border border-slate-200 dark:border-white/10 bg-transparent px-3 py-2 text-sm text-navy-900 dark:text-white"
+                value={newCaseData.assigneeId}
+                onChange={e => setNewCaseData(p => ({ ...p, assigneeId: e.target.value }))}
+              >
+                <option value="" className="dark:bg-navy-900">— بدون تعيين —</option>
+                {teamMembers?.map(member => (
+                  <option key={member.id} value={member.id} className="dark:bg-navy-900">
+                    {member.name}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -627,7 +657,7 @@ export default function NewCaseDialog({ open, onOpenChange, caseToEdit }: NewCas
           </div>
 
           <div className="pt-4">
-            <Button type="submit" className="w-full bg-primary-600 hover:bg-primary-700 text-white">
+            <Button type="submit" className="w-full bg-primary-600 hover:bg-primary-700 text-white" data-testid="save-case-btn">
               {caseToEdit ? "حفظ التعديلات" : "حفظ القضية"}
             </Button>
           </div>

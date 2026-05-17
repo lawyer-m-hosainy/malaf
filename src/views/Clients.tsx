@@ -190,7 +190,7 @@ export default function Clients() {
           <Dialog open={isOpen} onOpenChange={(open) => {
             setIsOpen(open);
           }}>
-            <Button type="button" className="bg-primary-500 hover:bg-primary-600 text-white gap-2" onClick={openNewClientDialog}>
+            <Button type="button" className="bg-primary-500 hover:bg-primary-600 text-white gap-2" onClick={openNewClientDialog} data-testid="add-client-btn">
               <UserPlus size={18} />
               إضافة عميل جديد
             </Button>
@@ -221,6 +221,7 @@ export default function Clients() {
                   <Label htmlFor="name">اسم العميل</Label>
                   <Input 
                     id="name"
+                    data-testid="client-name-input"
                     value={formData.name}
                     onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
                     placeholder="الاسم الكامل" 
@@ -235,6 +236,7 @@ export default function Clients() {
                     <Label htmlFor="nationalId">الرقم القومي (14 رقم)</Label>
                     <Input 
                       id="nationalId"
+                      data-testid="client-national-id-input"
                       value={formData.nationalId}
                       onChange={e => setFormData(prev => ({ ...prev, nationalId: e.target.value }))}
                       placeholder="2XXXXXXXXXXXXX" 
@@ -281,7 +283,7 @@ export default function Clients() {
               )}
 
               <DialogFooter className="mt-6">
-                <Button type="submit" className="w-full bg-primary-600 hover:bg-primary-700 text-white">
+                <Button type="submit" className="w-full bg-primary-600 hover:bg-primary-700 text-white" data-testid="save-client-btn">
                   {editingClientId ? "حفظ التعديلات" : "حفظ العميل"}
                 </Button>
               </DialogFooter>

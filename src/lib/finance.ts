@@ -6,6 +6,7 @@
  */
 export const calculateVAT = (amount: number, rate: number = 0.14): number => {
   if (amount < 0) throw new Error("Amount cannot be negative");
+  if (rate !== 0.14) throw new Error("VAT rate must be exactly 14% (0.14) for Egyptian tax compliance");
   return Number((amount * rate).toFixed(2));
 };
 

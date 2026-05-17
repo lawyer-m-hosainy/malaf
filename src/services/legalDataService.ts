@@ -225,7 +225,7 @@ export async function fetchCases(): Promise<Case[]> {
   try {
     const { data, error } = await supabase
       .from(CASES_TABLE)
-      .select("id, client_id, type, court, status, plaintiff, defendant, first_instance_number, appeal_number, cassation_number, created_at")
+      .select("*, lawyer:profiles(name), documents(title, created_at)")
       .eq("organization_id", orgId)
       .is("deleted_at", null)
       .order("created_at", { ascending: false })

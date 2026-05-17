@@ -271,6 +271,7 @@ export default function Cases() {
             type="button"
             className="bg-primary-500 hover:bg-primary-600 text-white gap-2 shadow-lg shadow-primary-500/20"
             onClick={() => setIsNewCaseOpen(true)}
+            data-testid="add-case-btn"
           >
             <Plus size={18} />
             قضية جديدة
@@ -334,7 +335,7 @@ export default function Cases() {
                 <TableHead className="text-end">إجراءات</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
+            <TableBody data-testid="cases-list">
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i}>

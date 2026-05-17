@@ -158,6 +158,7 @@ export function ChatAssistant() {
                 >
                   <input
                     value={input}
+                    data-testid="ai-chat-input"
                     onChange={(e) => setInput(e.target.value)}
                     placeholder="اسأل عن نظام الشركات، العمل، أو المعاملات..."
                     className="flex-1 bg-slate-50 border-none focus:ring-0 text-sm p-2 rounded-md outline-none"

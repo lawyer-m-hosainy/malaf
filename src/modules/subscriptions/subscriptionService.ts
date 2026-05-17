@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Subscription Management Service
  * Defines 3 subscription tiers with quota limits.
  * Provides a Facade for future Paymob/Fawry integration.
@@ -91,7 +91,14 @@ export const PLANS: Record<PlanTier, SubscriptionPlan> = {
 export function checkQuota(
   subscription: TenantSubscription,
   resource: 'users' | 'cases'
-): { allowed: boolean; current: number; max: number } {
+): { allowed: boolean; current: number; max: number; reason?: string } {
+  if (subscription.status === 'expired') {
+    return { allowed: false, current: 0, max: 0, reason: 'expired' };
+  }
+  if (subscription.status === 'cancelled') {
+    return { allowed: false, current: 0, max: 0, reason: 'cancelled' };
+  }
+
   const plan = PLANS[subscription.plan];
   const max = resource === 'users' ? plan.maxUsers : plan.maxCases;
   const current = resource === 'users' ? subscription.currentUsers : subscription.currentCases;

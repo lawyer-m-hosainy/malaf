@@ -82,6 +82,7 @@ export function CourtSelector({ value, onChange, error }: CourtSelectorProps) {
         <div className="relative">
           <input
             list="court-locations"
+            data-testid="case-court-input"
             value={value.location}
             onChange={(e) => handleLocationChange(e.target.value)}
             disabled={!value.subType}

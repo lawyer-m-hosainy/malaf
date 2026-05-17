@@ -9,15 +9,33 @@ import { Textarea } from "@/components/ui/textarea";
 import { Library, Search, FileText, Download, Tag, Calendar, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { useComplianceStore } from '@/store/useComplianceStore';
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { fetchLegalLibrary, saveLegalLibraryItem } from "@/services/legalDataService";
 
 export default function LegalLibrary() {
   const precedents = useComplianceStore((state) => state.precedents);
   const addPrecedent = useComplianceStore((state) => state.addPrecedent);
+  const setPrecedents = useComplianceStore((state) => state.setPrecedents);
   const [addOpen, setAddOpen] = useState(false);
   const [viewOpen, setViewOpen] = useState(false);
   const [selectedPrecedentId, setSelectedPrecedentId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+
+  // جلب البيانات من Supabase عند التحميل
+  useEffect(() => {
+    fetchLegalLibrary().then((data) => {
+      if (data && data.length > 0) {
+        setPrecedents(data.map((d: any) => ({
+          id: d.id,
+          title: d.title,
+          category: d.category || 'عام',
+          summary: d.summary || '—',
+          tags: Array.isArray(d.tags) ? d.tags : [],
+          date: d.date || d.created_at?.slice(0, 10) || '',
+        })));
+      }
+    });
+  }, []);
 
   const selectedPrecedent = precedents.find(p => p.id === selectedPrecedentId);
   
@@ -64,13 +82,18 @@ export default function LegalLibrary() {
                 return;
               }
               const tags = tagsRaw ? tagsRaw.split(/[,،]/).map((t) => t.trim()).filter(Boolean) : ["مكتبة"];
-              addPrecedent({
+              const newItem = {
                 id: `LP-${Date.now()}`,
                 title,
                 category,
                 summary: summary || "—",
                 tags,
                 date: new Date().toISOString().slice(0, 10),
+              };
+              addPrecedent(newItem);
+              // حفظ في Supabase
+              saveLegalLibraryItem(newItem).catch(() => {
+                toast.error("تم الحفظ محلياً فقط — تعذر الحفظ في قاعدة البيانات");
               });
               toast.success("تمت إضافة المستند");
               setAddOpen(false);

@@ -65,11 +65,16 @@ export function InstapayCheckout({ plan, amount, billingCycle, onSuccess, onCanc
   const onSubmit = async (data: FormData) => {
     setIsLoading(true);
     try {
+      // الحصول على التوكن أولاً
+      const { supabase } = await import("@/lib/supabase");
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+
       const res = await fetch("/api/payment/manual", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${(await import("@/lib/supabase")).supabase.auth.getSession().then(s => s.data.session?.access_token)}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           plan,

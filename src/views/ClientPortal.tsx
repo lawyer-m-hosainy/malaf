@@ -67,7 +67,7 @@ function ClientLoginForm({ onLogin }: { onLogin: (data: ClientData) => void }) {
       // Read profile from Supabase
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
-        .select("*")
+        .select("id, role, full_name, linked_client_id, org_id, organization_id")
         .eq("id", authData.user.id)
         .single();
 
@@ -92,7 +92,7 @@ function ClientLoginForm({ onLogin }: { onLogin: (data: ClientData) => void }) {
       if (linkedClientId && orgId) {
         const { data: client, error: clientError } = await supabase
           .from("clients")
-          .select("*")
+          .select("id, name, phone, type")
           .eq("id", linkedClientId)
           .single();
 

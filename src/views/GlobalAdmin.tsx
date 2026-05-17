@@ -3,11 +3,23 @@ import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { formatDateEG } from '@/lib/formatEG';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export default function GlobalAdmin() {
   // ── طلبات الدفع اليدوي ──
   const [manualRequests, setManualRequests] = useState<any[]>([]);
   const [confirmLoading, setConfirmLoading] = useState<string | null>(null);
+  const hasPermission = useAuthStore(state => state.hasPermission);
+
+  // HIGH-005-FIX: حماية Frontend — فقط super_admin يمكنه الوصول
+  if (!hasPermission('*')) {
+    return (
+      <div className="flex items-center justify-center h-64 text-slate-500">
+        <p className="text-lg font-bold">⛔ غير مصرح لك بالوصول لهذه الصفحة</p>
+      </div>
+    );
+  }
 
   // جلب الطلبات
   const fetchManualRequests = async () => {
@@ -78,7 +90,7 @@ export default function GlobalAdmin() {
                 <div className="text-left">
                   <p className="font-bold text-lg">{req.amount.toLocaleString('en-EG')} ج.م</p>
                   <p className="text-xs text-muted-foreground">
-                    {new Date(req.created_at).toLocaleDateString('ar-EG')}
+                    {formatDateEG(req.created_at)}
                   </p>
                 </div>
               </div>

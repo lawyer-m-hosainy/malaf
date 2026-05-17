@@ -11,9 +11,8 @@ import { formatDateEG, formatEGP } from "@/lib/formatEG";
 import { QRCodeSVG } from "qrcode.react";
 import { fetchETAInvoices, saveETAInvoice } from "@/services/legalDataService";
 
-// R7-FIX: بيانات المكتب الضريبية (يمكن تغييرها من الإعدادات)
-const OFFICE_TAX_REG = '100-234-567'; // رقم التسجيل الضريبي للمكتب
-const ETA_ACTIVITY_CODE = '8211';     // كود النشاط — 8211 = خدمات قانونية
+// R7-FIX: كود النشاط — 8211 = خدمات قانونية (ثابت لجميع مكاتب المحاماة)
+const ETA_ACTIVITY_CODE = '8211';
 
 interface ETAInvoice {
   id: string;
@@ -41,6 +40,8 @@ export default function ETAInvoicing() {
   const [selectedInvoice, setSelectedInvoice] = useState<ETAInvoice | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const clients = useClientsStore(s => s.clients);
+  // رقم التسجيل الضريبي اختياري — يكتبه المحامي إذا شاء
+  const [officeTaxReg, setOfficeTaxReg] = useState('');
 
   useEffect(() => {
     const loadData = async () => {
@@ -123,7 +124,7 @@ export default function ETAInvoicing() {
     const dbInvoice = {
       client_name: form.get('client') as string,
       client_tax_id: form.get('taxId') as string,
-      issuer_tax_reg: OFFICE_TAX_REG,
+      issuer_tax_reg: officeTaxReg || '',  // اختياري
       eta_code: ETA_ACTIVITY_CODE,
       amount,
       vat_amount: vatAmount,
@@ -270,8 +271,11 @@ export default function ETAInvoicing() {
             <form onSubmit={handleAddInvoice} className="space-y-4">
               <div><Label>اسم العميل</Label><Input name="client" required placeholder="مثال: شركة النيل للتجارة" /></div>
               <div><Label>الرقم الضريبي للعميل</Label><Input name="taxId" required placeholder="مثال: 123-456-789" /></div>
-              <div className="p-3 bg-slate-50 dark:bg-slate-900/20 rounded-md space-y-1">
-                <p className="text-xs text-slate-500">رقم التسجيل الضريبي للمكتب: <span className="font-mono font-bold">{OFFICE_TAX_REG}</span></p>
+              <div className="space-y-2">
+                <Label>رقم التسجيل الضريبي للمكتب <span className="text-xs text-slate-400">(اختياري)</span></Label>
+                <Input value={officeTaxReg} onChange={(e) => setOfficeTaxReg(e.target.value)} placeholder="مثال: 123-456-789 (اتركه فارغاً إذا لم تشأ)" />
+              </div>
+              <div className="p-3 bg-slate-50 dark:bg-slate-900/20 rounded-md">
                 <p className="text-xs text-slate-500">كود النشاط (ETA): <span className="font-mono font-bold">{ETA_ACTIVITY_CODE}</span> — خدمات قانونية</p>
               </div>
               <div><Label>المبلغ الأساسي (ج.م)</Label><Input name="amount" type="number" required min="1" placeholder="25000" /></div>
@@ -301,7 +305,7 @@ export default function ETAInvoicing() {
             <div className="space-y-3 text-sm">
               <div className="flex justify-between"><span className="text-slate-500">العميل:</span><span className="font-bold">{selectedInvoice.client}</span></div>
               <div className="flex justify-between"><span className="text-slate-500">الرقم الضريبي للعميل:</span><span className="font-mono">{selectedInvoice.clientTaxId}</span></div>
-              <div className="flex justify-between"><span className="text-slate-500">رقم تسجيل المكتب:</span><span className="font-mono">{selectedInvoice.issuerTaxReg}</span></div>
+              <div className="flex justify-between"><span className="text-slate-500">رقم تسجيل المكتب:</span><span className="font-mono">{selectedInvoice.issuerTaxReg || 'لم يُحدد'}</span></div>
               <div className="flex justify-between"><span className="text-slate-500">كود النشاط (ETA):</span><span className="font-mono">{selectedInvoice.etaCode}</span></div>
               <div className="flex justify-between"><span className="text-slate-500">المبلغ الأساسي:</span><span>{selectedInvoice.amount.toLocaleString('ar-EG')} ج.م</span></div>
               <div className="flex justify-between"><span className="text-slate-500">ضريبة 14%:</span><span className="text-amber-600">{selectedInvoice.vatAmount.toLocaleString('ar-EG')} ج.م</span></div>

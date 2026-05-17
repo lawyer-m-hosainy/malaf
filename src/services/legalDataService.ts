@@ -41,6 +41,32 @@ export async function logAuditAction(
   }
 }
 
+// HIGH-002-FIX: جلب سجلات التدقيق من Supabase
+export async function fetchAuditLogs(): Promise<any[]> {
+  const orgId = requireOrgId();
+  try {
+    const { data, error } = await supabase
+      .from("audit_logs")
+      .select("id, action, entity_type, entity_id, details, created_at, user_id")
+      .eq("organization_id", orgId)
+      .order("created_at", { ascending: false })
+      .limit(100);
+    if (error) throw error;
+    // تحويل البيانات لتتوافق مع الواجهة الحالية
+    return (data || []).map((log: any) => ({
+      id: log.id,
+      userName: log.user_id || 'النظام',
+      action: log.action,
+      module: log.entity_type,
+      details: typeof log.details === 'object' ? log.details?.info || JSON.stringify(log.details) : log.details,
+      timestamp: log.created_at,
+      ipAddress: null,
+    }));
+  } catch {
+    return [];
+  }
+}
+
 // ─── الموكلون (Clients) ──────────────────────────────────────────
 export async function fetchClients(): Promise<Client[]> {
   const orgId = requireOrgId();
@@ -851,7 +877,7 @@ export async function fetchTimeEntries(): Promise<any[]> {
   try {
     const { data, error } = await supabase
       .from("time_entries")
-      .select("*")
+      .select("id, case_id, user_id, description, hours, billable, rate, date, created_at")
       .eq("organization_id", orgId)
       .order("created_at", { ascending: false });
     if (error) throw error;
@@ -891,7 +917,7 @@ export async function fetchReceivables(): Promise<any[]> {
   try {
     const { data, error } = await supabase
       .from("receivables")
-      .select("*")
+      .select("id, client_id, client_name, amount, status, due_date, description, created_at")
       .eq("organization_id", orgId)
       .order("created_at", { ascending: false });
     if (error) throw error;
@@ -930,7 +956,7 @@ export async function fetchCollectionActions(receivableId: string): Promise<any[
   try {
     const { data, error } = await supabase
       .from("collection_actions")
-      .select("*")
+      .select("id, receivable_id, action_type, notes, date, created_at")
       .eq("organization_id", orgId)
       .eq("receivable_id", receivableId)
       .order("created_at", { ascending: false });
@@ -961,7 +987,7 @@ export async function fetchExpertMissions(): Promise<any[]> {
   try {
     const { data, error } = await supabase
       .from("expert_missions")
-      .select("*")
+      .select("id, title, expert_name, case_id, status, mission_type, date, notes, created_at")
       .eq("organization_id", orgId)
       .order("created_at", { ascending: false });
     if (error) throw error;
@@ -1000,7 +1026,7 @@ export async function fetchExpertSessions(missionId: string): Promise<any[]> {
   try {
     const { data, error } = await supabase
       .from("expert_sessions")
-      .select("*")
+      .select("id, mission_id, date, notes, decision, next_date, created_at")
       .eq("organization_id", orgId)
       .eq("mission_id", missionId)
       .order("date", { ascending: false });
@@ -1031,7 +1057,7 @@ export async function fetchELitigationCases(): Promise<any[]> {
   try {
     const { data, error } = await supabase
       .from("e_litigation_cases")
-      .select("*")
+      .select("id, case_id, platform, status, reference_number, filing_date, notes, created_at")
       .eq("organization_id", orgId)
       .order("created_at", { ascending: false });
     if (error) throw error;
@@ -1080,7 +1106,7 @@ export async function fetchContractTemplates(): Promise<any[]> {
   const orgId = requireOrgId();
   const { data, error } = await supabase
     .from("contract_templates")
-    .select("*")
+    .select("id, title, category, content, is_system, created_at")
     .eq("organization_id", orgId)
     .order("created_at", { ascending: false });
   if (error) throw error;
@@ -1116,7 +1142,7 @@ export async function fetchFieldCheckins(): Promise<any[]> {
   try {
     const { data, error } = await supabase
       .from("field_checkins")
-      .select("*")
+      .select("id, case_id, location, lat, lng, notes, photo_url, created_at")
       .eq("organization_id", orgId)
       .order("created_at", { ascending: false });
     if (error) throw error;
@@ -1146,7 +1172,7 @@ export async function fetchContracts(): Promise<any[]> {
   try {
     const { data, error } = await supabase
       .from("contracts")
-      .select("*")
+      .select("id, title, parties, contract_type, status, start_date, end_date, value, notes, created_at")
       .eq("organization_id", orgId)
       .order("created_at", { ascending: false });
     if (error) throw error;
@@ -1180,5 +1206,37 @@ export async function deleteContractRecord(id: string): Promise<void> {
   if (error) throw error;
 }
 
+// ─── المكتبة القانونية (Legal Library / Precedents) ──────────────
+export async function fetchLegalLibrary(): Promise<any[]> {
+  const orgId = requireOrgId();
+  try {
+    const { data, error } = await supabase
+      .from("legal_library")
+      .select("id, title, category, summary, tags, date, created_at")
+      .eq("organization_id", orgId)
+      .order("created_at", { ascending: false });
+    if (error) {
+      // fallback: الجدول قد لا يكون موجوداً بعد
+      if (error.code === "PGRST205" || error.code === "42P01") return [];
+      throw error;
+    }
+    return data || [];
+  } catch {
+    return [];
+  }
+}
+
+export async function saveLegalLibraryItem(item: any): Promise<void> {
+  const orgId = requireOrgId();
+  try {
+    const { error } = await supabase
+      .from("legal_library")
+      .upsert({ ...item, organization_id: orgId });
+    if (error) throw error;
+  } catch (error) {
+    console.error("خطأ في حفظ مستند المكتبة القانونية:", error);
+    throw error;
+  }
+}
 
 

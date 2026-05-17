@@ -6,6 +6,7 @@
 
 import express from 'express';
 import pino from 'pino';
+import { createClient } from '@supabase/supabase-js';
 import { authMiddleware } from '../middleware/auth.js';
 import {
   createPaymentLink,
@@ -14,6 +15,13 @@ import {
   getAllPlans,
   isPaymobConfigured,
 } from '../services/payment/paymobService.js';
+
+// CRIT-001-FIX: supabase client للعمليات اليدوية
+// نستخدم service_role_key لأن هذا كود سيرفر يحتاج وصول كامل لتحديث الاشتراكات
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 const logger = pino();
 const router = express.Router();
@@ -34,7 +42,7 @@ router.get('/plans', async (req, res) => {
 /**
  * POST /api/payment/create — إنشاء رابط دفع (محمي بـ auth)
  */
-router.post('/create', async (req, res) => {
+router.post('/create', authMiddleware, async (req, res) => { // CRIT-002-FIX: إضافة authMiddleware لملء req.tenantId من JWT
   try {
     const orgId = req.tenantId; // R2-FIX: لا نقبل org_id من body — فقط من JWT
     const { plan, billing_cycle, name, email, phone } = req.body;
@@ -43,7 +51,7 @@ router.post('/create', async (req, res) => {
       return res.status(400).json({ success: false, error: 'معرف المكتب والباقة مطلوبان' });
     }
 
-    if (!['standard', 'premium'].includes(plan)) {
+    if (!['basic', 'advanced', 'enterprise'].includes(plan)) { // CRIT-003-FIX: توحيد أسماء الباقات مع Frontend
       return res.status(400).json({ success: false, error: 'باقة غير صالحة' });
     }
 

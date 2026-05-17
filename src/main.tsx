@@ -29,21 +29,21 @@ window.addEventListener("unhandledrejection", (event) => {
 });
 
 try {
-  console.log('>>> Attempting to mount React');
+  if (import.meta.env.DEV) console.log('>>> Attempting to mount React');
   const rootElement = document.getElementById('root');
   if (!rootElement) {
     console.error('>>> Root element not found!');
     document.body.innerHTML = '<div style="color:red;padding:20px;">ERROR: Root element not found</div>';
   } else {
-    console.log('>>> Root element found, creating root');
+    if (import.meta.env.DEV) console.log('>>> Root element found, creating root');
     const root = createRoot(rootElement);
-    console.log('>>> Root created, rendering App');
+    if (import.meta.env.DEV) console.log('>>> Root created, rendering App');
     root.render(
       <StrictMode>
         <App />
       </StrictMode>,
     );
-    console.log('>>> App rendered successfully');
+    if (import.meta.env.DEV) console.log('>>> App rendered successfully');
   }
 } catch (error) {
   console.error('>>> Error mounting React:', error);

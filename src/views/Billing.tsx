@@ -279,7 +279,7 @@ export default function Billing() {
                 <div className="ms-auto text-end">
                   <p className="text-sm text-slate-400">تاريخ التجديد</p>
                   <p className="font-bold text-navy-900 dark:text-white">
-                    {renewalDate.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}
+                    {formatDateEG(renewalDate)}
                   </p>
                   <p className="text-xs text-slate-400">({daysUntilRenewal} يوم متبقي)</p>
                 </div>
@@ -389,7 +389,7 @@ export default function Billing() {
                   {payments.map(tx => (
                     <tr key={tx.id} className="border-b border-slate-50 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
                       <td className="py-3 px-4 text-navy-900 dark:text-white">
-                        {new Date(tx.created_at).toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric' })}
+                        {formatDateEG(tx.created_at)}
                       </td>
                       <td className="py-3 px-4 font-bold text-navy-900 dark:text-white">{tx.amount} ج.م</td>
                       <td className="py-3 px-4 text-slate-500">{tx.payment_method || 'بطاقة'}</td>
@@ -426,7 +426,7 @@ export default function Billing() {
           {selectedPlan && (
             <InstapayCheckout
               {...selectedPlan}
-              onSuccess={() => { setCheckoutOpen(false); window.location.reload(); }}
+              onSuccess={() => { setCheckoutOpen(false); loadBillingData(); }}
               onCancel={() => setCheckoutOpen(false)}
             />
           )}

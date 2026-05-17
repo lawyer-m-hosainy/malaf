@@ -7,6 +7,7 @@ import { Calendar, AlertCircle, Printer, Filter, MessageSquare, Send } from "luc
 import { toast } from "sonner";
 import { useClientsStore } from "@/store/useClientsStore";
 import { supabase } from "@/lib/supabase";
+import { formatDateShortAR, formatDateEG } from "@/lib/formatEG";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,7 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 const SessionRollRow = memo(({ item, onSendSMS }: { item: any; onSendSMS: (item: any) => void }) => (
   <TableRow className={item.isRecess ? 'bg-amber-50/50 dark:bg-amber-900/10' : ''}>
     <TableCell className="font-bold whitespace-nowrap text-sm">
-      {new Date(item.date).toLocaleDateString('ar-EG', { weekday: 'short', month: 'short', day: 'numeric' })}
+      {formatDateShortAR(item.date)}
       {item.isRecess && <span title="إجازة قضائية"><AlertCircle size={12} className="inline ms-1 text-amber-500" /></span>}
     </TableCell>
     <TableCell className="font-bold text-navy-900 dark:text-white whitespace-nowrap text-sm">{item.caseId}</TableCell>
@@ -107,11 +108,11 @@ export default function SessionsRoll() {
       return;
     }
 
-    const today = new Date().toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    const today = formatDateShortAR(new Date());
 
     const rows = rollData.map(item => `
       <tr>
-        <td>${new Date(item.date).toLocaleDateString('ar-EG', { weekday: 'short', month: 'short', day: 'numeric' })}</td>
+        <td>${formatDateShortAR(item.date)}</td>
         <td style="font-weight:bold">${item.caseId}</td>
         <td>${item.court}</td>
         <td>${item.circuit}</td>
@@ -288,7 +289,7 @@ export default function SessionsRoll() {
                 <SessionRollRow key={item.id} item={item} onSendSMS={handleOpenSmsDialog} />
               )) : (
                 <TableRow>
-                  <TableCell colSpan={10} className="text-center py-8 text-slate-500">
+                  <TableCell colSpan={11} className="text-center py-8 text-slate-500">
                     لا توجد جلسات مجدولة في هذه الفترة أو تطابق شروط البحث.
                   </TableCell>
                 </TableRow>

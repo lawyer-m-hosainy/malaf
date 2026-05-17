@@ -73,17 +73,17 @@ async function resolveUserProfile(
     // 1. Try to fetch existing profile
     let { data: profile, error } = await supabase
       .from("profiles")
-      .select("*")
+      .select("id, role, full_name, org_id, organization_id")
       .eq("id", user.id)
       .maybeSingle();
 
     // 2. If no profile yet, the DB trigger might still be running — wait & retry
     if (!profile) {
-      console.log("[AuthProvider] No profile found, waiting for trigger...");
+      if (import.meta.env.DEV) console.log("[AuthProvider] No profile found, waiting for trigger...");
       await new Promise(resolve => setTimeout(resolve, 2000));
       const retry = await supabase
         .from("profiles")
-        .select("*")
+        .select("id, role, full_name, org_id, organization_id")
         .eq("id", user.id)
         .maybeSingle();
       profile = retry.data;
@@ -93,7 +93,7 @@ async function resolveUserProfile(
     // 3. If profile exists, sync org_id to JWT metadata for RLS
     if (profile && !error) {
       const profileOrgId = profile.organization_id || profile.org_id || "";
-      console.log("[AuthProvider] ✅ Profile found. orgId:", profileOrgId);
+      if (import.meta.env.DEV) console.log("[AuthProvider] ✅ Profile found. orgId:", profileOrgId);
       
       if (user.user_metadata?.org_id !== profileOrgId && profileOrgId) {
         try {
@@ -101,7 +101,7 @@ async function resolveUserProfile(
             data: { org_id: profileOrgId, role: profile.role }
           });
         } catch (e) {
-          console.warn("[AuthProvider] Failed to sync org_id to JWT (non-fatal):", e);
+          if (import.meta.env.DEV) console.warn("[AuthProvider] Failed to sync org_id to JWT (non-fatal):", e);
         }
       }
       
@@ -112,7 +112,7 @@ async function resolveUserProfile(
     }
 
     // 4. Fallback: manually create org + profile if trigger didn't fire
-    console.warn("[AuthProvider] Profile not found after retry, creating manually...");
+    if (import.meta.env.DEV) console.warn("[AuthProvider] Profile not found after retry, creating manually...");
 
     let orgId = "";
 
@@ -139,7 +139,7 @@ async function resolveUserProfile(
         if (newOrg) orgId = newOrg.id;
       }
     } catch (orgErr) {
-      console.error("[AuthProvider] Org creation failed (non-fatal):", orgErr);
+      if (import.meta.env.DEV) console.error("[AuthProvider] Org creation failed (non-fatal):", orgErr);
     }
 
     // 5. Create profile (best effort)
@@ -152,9 +152,9 @@ async function resolveUserProfile(
           email: user.email || "",
           role: DEFAULT_ROLE,
         });
-        console.log("[AuthProvider] ✅ Profile created manually");
+        if (import.meta.env.DEV) console.log("[AuthProvider] ✅ Profile created manually");
       } catch (profileErr) {
-        console.error("[AuthProvider] Profile creation failed (non-fatal):", profileErr);
+        if (import.meta.env.DEV) console.error("[AuthProvider] Profile creation failed (non-fatal):", profileErr);
       }
 
       // Sync to JWT
@@ -163,7 +163,7 @@ async function resolveUserProfile(
           data: { org_id: orgId, role: DEFAULT_ROLE }
         });
       } catch (e) {
-        console.warn("[AuthProvider] JWT sync failed (non-fatal):", e);
+        if (import.meta.env.DEV) console.warn("[AuthProvider] JWT sync failed (non-fatal):", e);
       }
     }
 
@@ -174,7 +174,7 @@ async function resolveUserProfile(
       orgId: orgId || user.user_metadata?.org_id || "",
     };
   } catch (error) {
-    console.error("[AuthProvider] Error in resolveUserProfile (non-fatal):", error);
+    if (import.meta.env.DEV) console.error("[AuthProvider] Error in resolveUserProfile (non-fatal):", error);
     // ✅ Even on total failure, let the user in with defaults
     return {
       role: DEFAULT_ROLE,
@@ -214,7 +214,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     try {
       if (supabaseUser) {
-        console.log("[AuthProvider] Processing auth for:", supabaseUser.email);
+        if (import.meta.env.DEV) console.log("[AuthProvider] Processing auth for:", supabaseUser.email);
         const profile = await resolveUserProfile(supabaseUser);
 
         const { role, orgId } = profile;

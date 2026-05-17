@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -6,9 +7,23 @@ import { Button } from "@/components/ui/button";
 import { History, ShieldCheck, User, Activity, Search, Filter, Download } from "lucide-react";
 import { toast } from "sonner";
 import { useUIStore } from '@/store/useUIStore';
+import { fetchAuditLogs } from '@/services/legalDataService';
+import { formatDateEG } from '@/lib/formatEG';
 
 export default function AuditLogs() {
-  const auditLogs = useUIStore((state) => state.auditLogs);
+  const zustandLogs = useUIStore((state) => state.auditLogs);
+  const [auditLogs, setAuditLogs] = useState<any[]>(zustandLogs);
+
+  // HIGH-002-FIX: جلب السجلات من Supabase بدلاً من الاعتماد على Zustand فقط
+  useEffect(() => {
+    fetchAuditLogs()
+      .then((data) => {
+        if (data && data.length > 0) setAuditLogs(data);
+      })
+      .catch(() => {
+        // fallback: استخدم بيانات Zustand
+      });
+  }, []);
 
   return (
     <motion.div 
@@ -24,7 +39,7 @@ export default function AuditLogs() {
         <Button variant="outline" className="gap-2" onClick={() => {
           const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + 
             "المستخدم,العملية,الوحدة,التفاصيل,التوقيت,IP\n" + 
-            auditLogs.map(l => `${l.userName},${l.action},${l.module},${l.details},${l.timestamp},${l.ipAddress || '192.168.1.1'}`).join('\n');
+            auditLogs.map(l => `${l.userName},${l.action},${l.module},${l.details},${l.timestamp},${l.ipAddress || 'غ/م'}`).join('\n');
           const encodedUri = encodeURI(csvContent);
           const link = document.createElement("a");
           link.setAttribute("href", encodedUri);
@@ -96,7 +111,7 @@ export default function AuditLogs() {
                     <TableCell className="text-xs font-bold">{log.module}</TableCell>
                     <TableCell className="text-xs text-slate-500 max-w-xs truncate">{log.details}</TableCell>
                     <TableCell className="text-xs font-mono">{log.timestamp}</TableCell>
-                    <TableCell className="text-[10px] font-mono text-slate-400">{log.ipAddress || '192.168.1.1'}</TableCell>
+                    <TableCell className="text-[10px] font-mono text-slate-400">{log.ipAddress || 'غ/م'}</TableCell>
                   </TableRow>
                 ))
               )}

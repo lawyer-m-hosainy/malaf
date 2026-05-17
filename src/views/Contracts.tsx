@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { draftLegalDocument } from "@/services/ai";
 import { useCLMStore } from "@/store/useCLMStore";
 import { saveContractTemplate } from "@/services/legalDataService";
+import { formatDateEG } from "@/lib/formatEG";
 
 export default function Contracts() {
   const addContractTemplate = useCLMStore((s) => s.addContractTemplate);
@@ -44,7 +45,7 @@ export default function Contracts() {
     }
     const cat = category as "تجاري" | "عمالي" | "عقاري" | "أحوال شخصية";
     const templateId = `TMPL-${Date.now()}`;
-    const title = `نموذج ${cat} — ${new Date().toLocaleDateString("ar-EG")}`;
+    const title = `نموذج ${cat} — ${formatDateEG(new Date())}`;
     const desc = prompt.slice(0, 200) || "نموذج محفوظ من صانع العقود";
 
     addContractTemplate({

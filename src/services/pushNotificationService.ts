@@ -50,12 +50,12 @@ export function getNotificationPermission(): NotificationPermission {
  */
 export async function subscribeToPush(): Promise<boolean> {
   if (!isPushSupported()) {
-    console.warn('Push notifications غير مدعومة في هذا المتصفح');
+    if (import.meta.env.DEV) console.warn('Push notifications غير مدعومة في هذا المتصفح');
     return false;
   }
 
   if (!VAPID_PUBLIC_KEY) {
-    console.warn('VAPID Public Key غير مُعدّ. راجع ملف .env');
+    if (import.meta.env.DEV) console.warn('VAPID Public Key غير مُعدّ. راجع ملف .env');
     return false;
   }
 
@@ -63,7 +63,7 @@ export async function subscribeToPush(): Promise<boolean> {
     // 1. طلب إذن الإشعارات
     const permission = await Notification.requestPermission();
     if (permission !== 'granted') {
-      console.log('المستخدم رفض إذن الإشعارات');
+      if (import.meta.env.DEV) console.log('المستخدم رفض إذن الإشعارات');
       return false;
     }
 
@@ -84,7 +84,7 @@ export async function subscribeToPush(): Promise<boolean> {
     // 4. حفظ الاشتراك في Supabase
     await savePushSubscription(subscription);
 
-    console.log('✅ تم تسجيل الإشعارات بنجاح');
+    if (import.meta.env.DEV) console.log('✅ تم تسجيل الإشعارات بنجاح');
     return true;
   } catch (error) {
     console.error('فشل تسجيل الإشعارات:', error);
@@ -109,7 +109,7 @@ export async function unsubscribeFromPush(): Promise<boolean> {
     // إلغاء الاشتراك
     await subscription.unsubscribe();
 
-    console.log('✅ تم إلغاء الاشتراك في الإشعارات');
+    if (import.meta.env.DEV) console.log('✅ تم إلغاء الاشتراك في الإشعارات');
     return true;
   } catch (error) {
     console.error('فشل إلغاء الاشتراك:', error);

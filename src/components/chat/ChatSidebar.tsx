@@ -53,7 +53,7 @@ export function ChatSidebar() {
     const fetchRooms = async () => {
       const { data, error } = await supabase
         .from("chat_rooms")
-        .select("*")
+        .select("id, name, type, created_by, created_at, tenant_id")
         .order("created_at", { ascending: false });
 
       if (error) {

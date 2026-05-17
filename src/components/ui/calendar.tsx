@@ -90,7 +90,7 @@ function Calendar({
         table: "w-full border-collapse",
         weekdays: cn("flex", defaultClassNames.weekdays),
         weekday: cn(
-          "flex-1 rounded-(--cell-radius) text-[0.8rem] font-normal text-muted-foreground select-none",
+          "flex-1 rounded-(--cell-radius) text-[10px] md:text-[0.8rem] font-normal text-muted-foreground select-none truncate",
           defaultClassNames.weekday
         ),
         week: cn("mt-2 flex w-full", defaultClassNames.week),
@@ -216,8 +216,8 @@ function CalendarDayButton({
       {...props}
     >
       <div className="flex flex-col items-center justify-center gap-0.5">
-        <span className="text-sm">{day.date.getDate()}</span>
-        <span className="text-[0.6rem] opacity-60 font-medium text-primary-600 dark:text-primary-400">{formatHijriDayNumber(day.date)}</span>
+        <span className="text-sm md:text-base">{day.date.getDate()}</span>
+        <span className="hidden md:block text-[0.6rem] opacity-60 font-medium text-primary-600 dark:text-primary-400">{formatHijriDayNumber(day.date)}</span>
       </div>
     </Button>
   )

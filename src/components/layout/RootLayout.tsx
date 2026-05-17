@@ -20,7 +20,7 @@ export function RootLayout() {
             <span>النظام يعمل في وضع التراجع (Fallback Mode). النتائج قد تكون أقل دقة.</span>
           </div>
         )}
-        <main className="flex-1 p-6 pb-24 overflow-auto">
+        <main className="flex-1 p-3 md:p-6 pb-24 overflow-auto">
           <Outlet />
         </main>
       </div>

@@ -100,12 +100,14 @@ export default function SessionsCalendar() {
         }
       `}</style>
 
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-navy-900 dark:text-white">تقويم الجلسات</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">متابعة مواعيد الجلسات القضائية والتحضير لها.</p>
+      <div className="flex items-start justify-between mb-4 md:mb-6">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-xl md:text-2xl font-bold text-navy-900 dark:text-white truncate">تقويم الجلسات</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">متابعة مواعيد الجلسات القضائية والتحضير لها.</p>
         </div>
-        <AddSessionDialog triggerContext="calendar" onSessionAdded={setDate} />
+        <div className="ms-3 shrink-0">
+          <AddSessionDialog triggerContext="calendar" onSessionAdded={setDate} />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

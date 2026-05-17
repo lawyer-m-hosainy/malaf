@@ -1,0 +1,10 @@
+{
+  "css.lint.unknownAtRules": "ignore",
+  "css.lint.validProperties": [
+    "text-size-adjust",
+    "-webkit-text-size-adjust"
+  ],
+  "github-actions.workflows.pinned.workflows": [
+    ".github/workflows/main.yml"
+  ]
+}

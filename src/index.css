@@ -78,8 +78,16 @@
 }
 
 @layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
   * {
+    -webkit-tap-highlight-color: transparent;
     border-color: var(--border);
+  }
+  a, button, input, select, textarea {
+    touch-action: manipulation;
   }
   body {
     background-color: var(--background);

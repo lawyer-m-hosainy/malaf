@@ -39,6 +39,7 @@ jobs:
 
       - name: Send Discord Notification on Success
         if: success() && github.ref == 'refs/heads/main'
+        continue-on-error: true
         uses: Ilshidur/action-discord@master
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
@@ -47,6 +48,7 @@ jobs:
 
       - name: Send Discord Notification on Failure
         if: failure() && github.ref == 'refs/heads/main'
+        continue-on-error: true
         uses: Ilshidur/action-discord@master
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}

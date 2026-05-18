@@ -98,7 +98,7 @@ export async function createPaymentLink(orgId, planKey, billingCycle, buyerInfo 
       logger.warn('Paymob not configured — returning stub payment link');
       return {
         success: true,
-        paymentUrl: `https://malaf-platform.onrender.com/payment/stub?tx=${tx.id}&amount=${amount}&plan=${planKey}`,
+        paymentUrl: `https://malaf.pro/payment/stub?tx=${tx.id}&amount=${amount}&plan=${planKey}`,
         transactionId: tx.id,
         stub: true,
         message: 'Paymob غير مُعد بعد. أضف PAYMOB_API_KEY في Environment Variables.',

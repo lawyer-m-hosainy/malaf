@@ -119,7 +119,7 @@ app.use((req, res, next) => {
 
 // CORS Configuration
 const allowedOrigins = process.env.NODE_ENV === 'production' 
-    ? [process.env.PRODUCTION_URL || 'https://malaf-platform.onrender.com', 'https://malaf-platform.onrender.com', 'https://malaf.app'] 
+    ? [process.env.PRODUCTION_URL || 'https://malaf.pro', 'https://malaf.pro', 'https://www.malaf.pro', 'https://malaf-platform.onrender.com'] 
     : ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:3005'];
 
 app.use(cors({

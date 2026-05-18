@@ -54,5 +54,5 @@ services:
       - key: FB_APP_SECRET
         sync: false
       - key: PRODUCTION_URL
-        value: https://malaf-platform.onrender.com
+        value: https://malaf.pro
       # ✅ R2-FIX: VITE_ENABLE_DEMO removed from production — كانت تفتح كل الـ API بدون مصادقة

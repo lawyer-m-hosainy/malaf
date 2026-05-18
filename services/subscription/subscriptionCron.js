@@ -85,7 +85,7 @@ async function sendRenewalReminders() {
           year: 'numeric', month: 'long', day: 'numeric',
         });
 
-        const message = `⚠️ *تذكير — اشتراكك في منصة ملف*\n\nاشتراكك في باقة *${sub.plan}* ينتهي يوم *${expiryDate}*\n\nجدد الآن للحفاظ على كل بياناتك وقضاياك:\n🔗 https://malaf-platform.onrender.com/billing\n\nلو عندك أي استفسار، رد على هذه الرسالة وسنساعدك فوراً 💬`;
+        const message = `⚠️ *تذكير — اشتراكك في منصة ملف*\n\nاشتراكك في باقة *${sub.plan}* ينتهي يوم *${expiryDate}*\n\nجدد الآن للحفاظ على كل بياناتك وقضاياك:\n🔗 https://malaf.pro/billing\n\nلو عندك أي استفسار، رد على هذه الرسالة وسنساعدك فوراً 💬`;
 
         await sendMessageFn(ownerPhone, message, sub.org_id);
         logger.info({ orgId: sub.org_id }, 'Renewal reminder sent');
@@ -138,7 +138,7 @@ async function deactivateExpiredSubscriptions() {
       // إرسال إشعار
       const ownerPhone = await getOrgOwnerPhone(sub.org_id);
       if (ownerPhone && sendMessageFn) {
-        const message = `📢 *انتهى اشتراكك في منصة ملف*\n\nتم تحويل حسابك للباقة المجانية.\n\n⚠️ لن تفقد بياناتك، لكن بعض المميزات (مثل الذكاء الاصطناعي والواتساب التلقائي) لن تعمل.\n\nجدد الآن لاستعادة كل المميزات:\n🔗 https://malaf-platform.onrender.com/billing`;
+        const message = `📢 *انتهى اشتراكك في منصة ملف*\n\nتم تحويل حسابك للباقة المجانية.\n\n⚠️ لن تفقد بياناتك، لكن بعض المميزات (مثل الذكاء الاصطناعي والواتساب التلقائي) لن تعمل.\n\nجدد الآن لاستعادة كل المميزات:\n🔗 https://malaf.pro/billing`;
 
         await sendMessageFn(ownerPhone, message, sub.org_id);
       }
@@ -177,7 +177,7 @@ async function sendWinBackOffers() {
         const ownerPhone = await getOrgOwnerPhone(sub.org_id);
         if (!ownerPhone) continue;
 
-        const message = `🎁 *عرض خاص من منصة ملف!*\n\nوحشتنا! 😊\n\nلاحظنا إن اشتراكك انتهى. عندنا عرض حصري ليك:\n\n🔥 *خصم 20% على الاشتراك السنوي* لو جددت خلال 48 ساعة!\n\nقضاياك وبياناتك لسه محفوظة بأمان وجاهزة لما ترجع.\n\n🔗 https://malaf-platform.onrender.com/billing?promo=COMEBACK20\n\nرد بـ "أنا مهتم" وهنساعدك فوراً 💬`;
+        const message = `🎁 *عرض خاص من منصة ملف!*\n\nوحشتنا! 😊\n\nلاحظنا إن اشتراكك انتهى. عندنا عرض حصري ليك:\n\n🔥 *خصم 20% على الاشتراك السنوي* لو جددت خلال 48 ساعة!\n\nقضاياك وبياناتك لسه محفوظة بأمان وجاهزة لما ترجع.\n\n🔗 https://malaf.pro/billing?promo=COMEBACK20\n\nرد بـ "أنا مهتم" وهنساعدك فوراً 💬`;
 
         await sendMessageFn(ownerPhone, message, sub.org_id);
         logger.info({ orgId: sub.org_id }, 'Win-back offer sent');
@@ -211,7 +211,7 @@ async function followUpHesitant() {
 
     for (const conv of hesitant) {
       try {
-        const message = `مرحباً! 👋\n\nأنا من منصة ملف. تحدثنا من قبل عن المنصة.\n\nهل عندك أي أسئلة قدر أساعدك فيها؟ 😊\n\n💡 تذكر: الباقة المجانية متاحة دائماً — يمكنك تجربة المنصة بـ 5 قضايا من غير أي التزام!\n\n🔗 https://malaf-platform.onrender.com`;
+        const message = `مرحباً! 👋\n\nأنا من منصة ملف. تحدثنا من قبل عن المنصة.\n\nهل عندك أي أسئلة قدر أساعدك فيها؟ 😊\n\n💡 تذكر: الباقة المجانية متاحة دائماً — يمكنك تجربة المنصة بـ 5 قضايا من غير أي التزام!\n\n🔗 https://malaf.pro`;
 
         // نرسل بدون orgId لأنه عميل محتمل (ليس مشتركاً بعد)
         await sendMessageFn(conv.phone, message, conv.org_id);

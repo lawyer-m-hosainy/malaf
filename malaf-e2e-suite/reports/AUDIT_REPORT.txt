@@ -1,0 +1,429 @@
+
+╔══════════════════════════════════════════════════════════════════╗
+║         تقرير تدقيق منصة ملف - Malaf.pro E2E Audit Report        ║
+╚══════════════════════════════════════════════════════════════════╝
+
+📅 تاريخ التقرير:  ٢١‏/٥‏/٢٠٢٦، ١:٢٣:١٦ ص
+⏱  مدة التشغيل:   219.1 ثانية
+🌐 البيئة:         https://malaf.pro
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 ملخص النتائج
+
+   ✅ نجح:           33
+   ❌ فشل:           68
+   ⚠️  تحذيرات:      0
+   📝 الإجمالي:      101
+   📈 نسبة النجاح:   32.7%
+   🏁 الحالة:        🔴 به مشاكل
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+## الصفحة الرئيسية والصفحات العامة
+    ✅ الصفحة الرئيسية تُحمَّل بنجاح (6623ms)
+    ✅ قائمة التنقل الرئيسية موجودة وقابلة للنقر (3027ms)
+    ✅ صفحة تسجيل الدخول موجودة (1533ms)
+    ✅ صفحة تسجيل مكتب جديد موجودة (1504ms)
+    ✅ الصفحة متوافقة مع الجوال (responsive) (3387ms)
+    ✅ لا توجد روابط مكسورة في الصفحة الرئيسية (4547ms)
+    ❌ الصفحة الرئيسية تُحمَّل بنجاح (3ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ الصفحة الرئيسية تُحمَّل بنجاح (4ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ قائمة التنقل الرئيسية موجودة وقابلة للنقر (2ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ قائمة التنقل الرئيسية موجودة وقابلة للنقر (4ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ صفحة تسجيل الدخول موجودة (3ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ صفحة تسجيل الدخول موجودة (2ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ صفحة تسجيل مكتب جديد موجودة (3ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ صفحة تسجيل مكتب جديد موجودة (4ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ الصفحة متوافقة مع الجوال (responsive) (2ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ الصفحة متوافقة مع الجوال (responsive) (3ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ لا توجد روابط مكسورة في الصفحة الرئيسية (3ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ لا توجد روابط مكسورة في الصفحة الرئيسية (4ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+
+## تسجيل مكتب جديد وتسجيل الدخول
+    ✅ نموذج تسجيل مكتب يحتوي على الحقول المطلوبة (9095ms)
+    ⚠️ التحقق من النموذج - رسائل الخطأ عند البيانات الفارغة (4094ms)
+    ✅ تسجيل مكتب جديد ببيانات وهمية صحيحة (6400ms)
+    ✅ صفحة تسجيل الدخول تعمل (2462ms)
+    ✅ تسجيل الدخول ببيانات خاطئة يُظهر رسالة خطأ (5224ms)
+    ❌ نموذج تسجيل مكتب يحتوي على الحقول المطلوبة (3ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ نموذج تسجيل مكتب يحتوي على الحقول المطلوبة (3ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ التحقق من النموذج - رسائل الخطأ عند البيانات الفارغة (3ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ التحقق من النموذج - رسائل الخطأ عند البيانات الفارغة (3ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ تسجيل مكتب جديد ببيانات وهمية صحيحة (2ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ تسجيل مكتب جديد ببيانات وهمية صحيحة (4ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ صفحة تسجيل الدخول تعمل (2ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ صفحة تسجيل الدخول تعمل (4ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ تسجيل الدخول ببيانات خاطئة يُظهر رسالة خطأ (3ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ تسجيل الدخول ببيانات خاطئة يُظهر رسالة خطأ (2ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+
+## لوحة التحكم والصفحات الداخلية
+    ✅ روابط لوحة التحكم المحتملة تستجيب (2347ms)
+    ✅ صفحة إعدادات المكتب موجودة (963ms)
+    ✅ صفحة إدارة الملفات / القضايا موجودة (2694ms)
+    ✅ استكشاف جميع روابط القائمة الجانبية في لوحة التحكم (2480ms)
+    ✅ فحص الصفحات بعد تسجيل الدخول (إذا أمكن) (5804ms)
+    ❌ روابط لوحة التحكم المحتملة تستجيب (3ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ روابط لوحة التحكم المحتملة تستجيب (2ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ صفحة إعدادات المكتب موجودة (3ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ صفحة إعدادات المكتب موجودة (3ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ صفحة إدارة الملفات / القضايا موجودة (5ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ صفحة إدارة الملفات / القضايا موجودة (2ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ استكشاف جميع روابط القائمة الجانبية في لوحة التحكم (2ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ استكشاف جميع روابط القائمة الجانبية في لوحة التحكم (3ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ فحص الصفحات بعد تسجيل الدخول (إذا أمكن) (4ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ فحص الصفحات بعد تسجيل الدخول (إذا أمكن) (3ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+
+## اختبار وكلاء الذكاء الاصطناعي
+    ✅ إيجاد صفحة وكيل الذكاء الاصطناعي (19829ms)
+    ✅ اختبار API وكيل الذكاء الاصطناعي مباشرةً (1915ms)
+    ✅ اختبار أسئلة قانونية على وكيل الذكاء الاصطناعي (7394ms)
+    ✅ التحقق من سرعة استجابة وكيل الذكاء الاصطناعي (211ms)
+    ❌ إيجاد صفحة وكيل الذكاء الاصطناعي (3ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ إيجاد صفحة وكيل الذكاء الاصطناعي (3ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ اختبار API وكيل الذكاء الاصطناعي مباشرةً (2ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ اختبار API وكيل الذكاء الاصطناعي مباشرةً (3ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ اختبار أسئلة قانونية على وكيل الذكاء الاصطناعي (4ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ اختبار أسئلة قانونية على وكيل الذكاء الاصطناعي (2ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ التحقق من سرعة استجابة وكيل الذكاء الاصطناعي (4ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ التحقق من سرعة استجابة وكيل الذكاء الاصطناعي (3ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+
+## دردشة النص ومكالمات الفيديو
+    ✅ إيجاد صفحة / مكون الدردشة النصية (14432ms)
+    ✅ اختبار وظائف الدردشة النصية (4623ms)
+    ✅ فحص WebSocket / Polling للدردشة الحية (6046ms)
+    ✅ إيجاد ميزة مكالمة الفيديو (4509ms)
+    ✅ فحص أذونات الكاميرا والمايكروفون (3185ms)
+    ✅ فحص دعم WebRTC لمكالمات الفيديو (1422ms)
+    ✅ فحص أداء التحميل لصفحات الفيديو والشات (1310ms)
+    ❌ إيجاد صفحة / مكون الدردشة النصية (3ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ إيجاد صفحة / مكون الدردشة النصية (3ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ اختبار وظائف الدردشة النصية (3ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ اختبار وظائف الدردشة النصية (3ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ فحص WebSocket / Polling للدردشة الحية (2ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ فحص WebSocket / Polling للدردشة الحية (3ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ إيجاد ميزة مكالمة الفيديو (2ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ إيجاد ميزة مكالمة الفيديو (2ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ فحص أذونات الكاميرا والمايكروفون (3ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ فحص أذونات الكاميرا والمايكروفون (3ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ فحص دعم WebRTC لمكالمات الفيديو (2ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ فحص دعم WebRTC لمكالمات الفيديو (3ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ فحص أداء التحميل لصفحات الفيديو والشات (2ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ فحص أداء التحميل لصفحات الفيديو والشات (4ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+
+## رحلة المستخدم الكاملة والفحص الشامل
+    ✅ رحلة المستخدم: من الصفحة الرئيسية للتسجيل (4738ms)
+    ✅ مسح شامل لجميع الروابط والأزرار في الصفحة الرئيسية (3629ms)
+    ✅ فحص نموذج التواصل أو طلب الاستشارة (4105ms)
+    ✅ فحص صفحة الأسعار والاشتراكات (3817ms)
+    ✅ فحص أمان المنصة (Security Headers) (1296ms)
+    ✅ فحص HTTPS والشهادة الأمنية (1381ms)
+    ✅ إنشاء تقرير JSON تفصيلي بنتائج الفحص الشامل (3426ms)
+    ❌ رحلة المستخدم: من الصفحة الرئيسية للتسجيل (6ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ رحلة المستخدم: من الصفحة الرئيسية للتسجيل (3ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ مسح شامل لجميع الروابط والأزرار في الصفحة الرئيسية (4ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ مسح شامل لجميع الروابط والأزرار في الصفحة الرئيسية (2ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ فحص نموذج التواصل أو طلب الاستشارة (3ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ فحص نموذج التواصل أو طلب الاستشارة (3ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ فحص صفحة الأسعار والاشتراكات (3ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ فحص صفحة الأسعار والاشتراكات (6ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ فحص أمان المنصة (Security Headers) (3ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ فحص أمان المنصة (Security Headers) (5ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ فحص HTTPS والشهادة الأمنية (4ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ فحص HTTPS والشهادة الأمنية (2ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ إنشاء تقرير JSON تفصيلي بنتائج الفحص الشامل (3ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+    ❌ إنشاء تقرير JSON تفصيلي بنتائج الفحص الشامل (3ms)
+      > Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚨 الأخطاء المكتشفة
+
+1. ❌ [الصفحة الرئيسية تُحمَّل بنجاح]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+2. ❌ [الصفحة الرئيسية تُحمَّل بنجاح]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+3. ❌ [قائمة التنقل الرئيسية موجودة وقابلة للنقر]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+4. ❌ [قائمة التنقل الرئيسية موجودة وقابلة للنقر]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+5. ❌ [صفحة تسجيل الدخول موجودة]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+6. ❌ [صفحة تسجيل الدخول موجودة]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+7. ❌ [صفحة تسجيل مكتب جديد موجودة]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+8. ❌ [صفحة تسجيل مكتب جديد موجودة]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+9. ❌ [الصفحة متوافقة مع الجوال (responsive)]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+10. ❌ [الصفحة متوافقة مع الجوال (responsive)]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+11. ❌ [لا توجد روابط مكسورة في الصفحة الرئيسية]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+12. ❌ [لا توجد روابط مكسورة في الصفحة الرئيسية]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+13. ❌ [نموذج تسجيل مكتب يحتوي على الحقول المطلوبة]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+14. ❌ [نموذج تسجيل مكتب يحتوي على الحقول المطلوبة]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+15. ❌ [التحقق من النموذج - رسائل الخطأ عند البيانات الفارغة]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+16. ❌ [التحقق من النموذج - رسائل الخطأ عند البيانات الفارغة]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+17. ❌ [تسجيل مكتب جديد ببيانات وهمية صحيحة]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+18. ❌ [تسجيل مكتب جديد ببيانات وهمية صحيحة]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+19. ❌ [صفحة تسجيل الدخول تعمل]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+20. ❌ [صفحة تسجيل الدخول تعمل]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+21. ❌ [تسجيل الدخول ببيانات خاطئة يُظهر رسالة خطأ]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+22. ❌ [تسجيل الدخول ببيانات خاطئة يُظهر رسالة خطأ]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+23. ❌ [روابط لوحة التحكم المحتملة تستجيب]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+24. ❌ [روابط لوحة التحكم المحتملة تستجيب]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+25. ❌ [صفحة إعدادات المكتب موجودة]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+26. ❌ [صفحة إعدادات المكتب موجودة]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+27. ❌ [صفحة إدارة الملفات / القضايا موجودة]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+28. ❌ [صفحة إدارة الملفات / القضايا موجودة]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+29. ❌ [استكشاف جميع روابط القائمة الجانبية في لوحة التحكم]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+30. ❌ [استكشاف جميع روابط القائمة الجانبية في لوحة التحكم]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+31. ❌ [فحص الصفحات بعد تسجيل الدخول (إذا أمكن)]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+32. ❌ [فحص الصفحات بعد تسجيل الدخول (إذا أمكن)]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+33. ❌ [إيجاد صفحة وكيل الذكاء الاصطناعي]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+34. ❌ [إيجاد صفحة وكيل الذكاء الاصطناعي]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+35. ❌ [اختبار API وكيل الذكاء الاصطناعي مباشرةً]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+36. ❌ [اختبار API وكيل الذكاء الاصطناعي مباشرةً]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+37. ❌ [اختبار أسئلة قانونية على وكيل الذكاء الاصطناعي]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+38. ❌ [اختبار أسئلة قانونية على وكيل الذكاء الاصطناعي]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+39. ❌ [التحقق من سرعة استجابة وكيل الذكاء الاصطناعي]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+40. ❌ [التحقق من سرعة استجابة وكيل الذكاء الاصطناعي]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+41. ❌ [إيجاد صفحة / مكون الدردشة النصية]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+42. ❌ [إيجاد صفحة / مكون الدردشة النصية]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+43. ❌ [اختبار وظائف الدردشة النصية]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+44. ❌ [اختبار وظائف الدردشة النصية]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+45. ❌ [فحص WebSocket / Polling للدردشة الحية]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+46. ❌ [فحص WebSocket / Polling للدردشة الحية]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+47. ❌ [إيجاد ميزة مكالمة الفيديو]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+48. ❌ [إيجاد ميزة مكالمة الفيديو]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+49. ❌ [فحص أذونات الكاميرا والمايكروفون]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+50. ❌ [فحص أذونات الكاميرا والمايكروفون]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+51. ❌ [فحص دعم WebRTC لمكالمات الفيديو]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+52. ❌ [فحص دعم WebRTC لمكالمات الفيديو]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+53. ❌ [فحص أداء التحميل لصفحات الفيديو والشات]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+54. ❌ [فحص أداء التحميل لصفحات الفيديو والشات]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+55. ❌ [رحلة المستخدم: من الصفحة الرئيسية للتسجيل]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+56. ❌ [رحلة المستخدم: من الصفحة الرئيسية للتسجيل]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+57. ❌ [مسح شامل لجميع الروابط والأزرار في الصفحة الرئيسية]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+58. ❌ [مسح شامل لجميع الروابط والأزرار في الصفحة الرئيسية]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+59. ❌ [فحص نموذج التواصل أو طلب الاستشارة]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+60. ❌ [فحص نموذج التواصل أو طلب الاستشارة]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+61. ❌ [فحص صفحة الأسعار والاشتراكات]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+62. ❌ [فحص صفحة الأسعار والاشتراكات]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+63. ❌ [فحص أمان المنصة (Security Headers)]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+64. ❌ [فحص أمان المنصة (Security Headers)]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+65. ❌ [فحص HTTPS والشهادة الأمنية]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+66. ❌ [فحص HTTPS والشهادة الأمنية]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+67. ❌ [إنشاء تقرير JSON تفصيلي بنتائج الفحص الشامل]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+68. ❌ [إنشاء تقرير JSON تفصيلي بنتائج الفحص الشامل]
+   الخطأ: Error: browserType.launch: Executable doesn't exist at C:\Users\mhosa\AppData\Local\ms-playwright\webkit-2287\Playwright.exe
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚠️  التحذيرات
+
+   لا توجد تحذيرات ✓
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📌 ملاحظات المدقق
+
+   • تم تشغيل هذه الاختبارات في وضع القراءة فقط (Read-Only Audit)
+   • لم يتم تعديل أي كود أو بيانات في المنصة
+   • تسجيل الحسابات الوهمية يُستخدم فقط للاختبار ثم يُحذف
+   • الاختبارات تغطي: تسجيل الحساب، لوحة التحكم، وكلاء الذكاء الاصطناعي،
+     الدردشة، مكالمات الفيديو، التصفح العام
+   • لمزيد من التفاصيل راجع: reports/html-report/index.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

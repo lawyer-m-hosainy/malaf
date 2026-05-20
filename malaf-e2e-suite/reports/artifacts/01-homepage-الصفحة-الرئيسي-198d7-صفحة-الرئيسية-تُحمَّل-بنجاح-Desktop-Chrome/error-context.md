@@ -1,0 +1,563 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: 01-homepage.spec.js >> الصفحة الرئيسية والصفحات العامة >> الصفحة الرئيسية تُحمَّل بنجاح
+- Location: tests\01-homepage.spec.js:23:3
+
+# Error details
+
+```
+Error: وقت التحميل 8775ms — يجب أن يكون أقل من 5000ms
+
+expect(received).toBeLessThan(expected)
+
+Expected: < 5000
+Received:   8775
+```
+
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - region "Notifications alt+T"
+  - generic [ref=e3]:
+    - navigation [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6] [cursor=pointer]:
+          - img [ref=e8]
+          - generic [ref=e12]: مَلَف
+        - generic [ref=e13]:
+          - link "الميزات" [ref=e14] [cursor=pointer]:
+            - /url: "#services"
+          - link "الباقات" [ref=e15] [cursor=pointer]:
+            - /url: "#pricing"
+          - link "من نحن" [ref=e16] [cursor=pointer]:
+            - /url: "#about"
+          - link "بوابة الموكلين" [ref=e17] [cursor=pointer]:
+            - /url: "#tech"
+          - link "تواصل معنا" [ref=e18] [cursor=pointer]:
+            - /url: "#contact"
+        - generic [ref=e19]:
+          - button "تسجيل الدخول" [ref=e20]
+          - button "ابدأ مجاناً" [ref=e21]
+    - generic [ref=e27]:
+      - img [ref=e30]
+      - generic [ref=e34]: أول نظام إدارة متكامل لمكاتب المحاماة في مصر
+      - heading "حوّل مكتبك إلى مكتب ذكي" [level=1] [ref=e35]:
+        - text: حوّل مكتبك إلى
+        - text: مكتب ذكي
+      - paragraph [ref=e36]: ملف يجمع إدارة القضايا، الموكلين، الجلسات، العقود، والفواتير في منصة واحدة مصممة خصيصاً للمحامي المصري.
+      - generic [ref=e37]:
+        - button "ابدأ تجربتك المجانية لمدة أسبوع" [ref=e38]:
+          - text: ابدأ تجربتك المجانية لمدة أسبوع
+          - img
+        - button "شاهد العرض التوضيحي" [ref=e39]
+      - generic [ref=e40]:
+        - generic [ref=e41]:
+          - img [ref=e42]
+          - text: خوادم سحابية آمنة
+        - generic [ref=e45]:
+          - img [ref=e46]
+          - text: تشفير بيانات بنكي
+        - generic [ref=e49]:
+          - img [ref=e50]
+          - text: نسخ احتياطي يومي
+      - link "مقدمة منصة مَلَف القانونية انقر لمشاهدة العرض التوضيحي القصير وتعرف على مميزات النظام" [ref=e54] [cursor=pointer]:
+        - /url: https://app.heygen.com/videos/f2fd5c4f361a4036b3ce158cdb6291d3
+        - generic [ref=e58]:
+          - heading "مقدمة منصة مَلَف القانونية" [level=3] [ref=e61]
+          - paragraph [ref=e62]: انقر لمشاهدة العرض التوضيحي القصير وتعرف على مميزات النظام
+    - generic [ref=e65]:
+      - generic [ref=e66]:
+        - generic [ref=e67]: 60%
+        - generic [ref=e68]: توفير في وقت الإدارة
+      - generic [ref=e69]:
+        - generic [ref=e70]: "+150"
+        - generic [ref=e71]: نموذج قانوني جاهز
+      - generic [ref=e72]:
+        - generic [ref=e73]: 100%
+        - generic [ref=e74]: تشفير وحماية للبيانات
+      - generic [ref=e75]:
+        - generic [ref=e76]: 24/7
+        - generic [ref=e77]: دعم فني متواصل
+    - generic [ref=e79]:
+      - generic [ref=e80]:
+        - generic [ref=e81]: +20 وحدة متكاملة
+        - heading "كل ما يحتاجه مكتبك في منصة واحدة" [level=2] [ref=e82]
+        - paragraph [ref=e83]: استبدل عشرات التطبيقات وملفات الإكسل بنظام ذكي مصمم خصيصاً للمحامي المصري.
+      - generic [ref=e84]:
+        - generic [ref=e85]:
+          - img [ref=e87]
+          - heading "الإدارة القانونية الأساسية" [level=3] [ref=e93]
+        - generic [ref=e94]:
+          - generic [ref=e95]:
+            - img [ref=e97]
+            - heading "إدارة القضايا" [level=4] [ref=e103]
+            - paragraph [ref=e104]: ملف شامل لكل قضية بأطرافها ومحكمتها ودائرتها وحالتها مع ربط تلقائي بالموكلين والجلسات.
+          - generic [ref=e105]:
+            - img [ref=e107]
+            - heading "أجندة الجلسات" [level=4] [ref=e109]
+            - paragraph [ref=e110]: سجل مواعيد المحاكم مطابقاً للأجندة الورقية مع تنبيهات تلقائية وطباعة PDF احترافية.
+          - generic [ref=e111]:
+            - img [ref=e113]
+            - heading "إدارة الموكلين" [level=4] [ref=e118]
+            - paragraph [ref=e119]: "بطاقة شاملة لكل موكل: بياناته، قضاياه، عقوده، فواتيره، ومستنداته في مكان واحد."
+          - generic [ref=e120]:
+            - img [ref=e122]
+            - heading "التنفيذ القضائي" [level=4] [ref=e126]
+            - paragraph [ref=e127]: "متابعة 5 مراحل التنفيذ: استلام الصيغة → إعلان السند → توكيل المحضر → الإشكال → التحصيل."
+      - generic [ref=e128]:
+        - generic [ref=e129]:
+          - img [ref=e131]
+          - heading "المالية والتحصيل" [level=3] [ref=e134]
+        - generic [ref=e135]:
+          - generic [ref=e136]:
+            - img [ref=e138]
+            - heading "الفاتورة الإلكترونية" [level=4] [ref=e141]
+            - paragraph [ref=e142]: إصدار فواتير متوافقة مع منظومة ETA المصرية مع حساب ضريبة القيمة المضافة تلقائياً.
+          - generic [ref=e143]:
+            - img [ref=e145]
+            - heading "نظام التحصيل" [level=4] [ref=e148]
+            - paragraph [ref=e149]: تتبع المستحقات والمدفوعات لكل موكل مع تنبيهات للمبالغ المتأخرة وإشعارات الدفع.
+          - generic [ref=e150]:
+            - img [ref=e152]
+            - heading "تتبع الوقت" [level=4] [ref=e155]
+            - paragraph [ref=e156]: تسجيل ساعات العمل لكل قضية تلقائياً مع تحويلها لفواتير بسعر الساعة المحدد.
+          - generic [ref=e157]:
+            - img [ref=e159]
+            - heading "التقارير المالية" [level=4] [ref=e161]
+            - paragraph [ref=e162]: "لوحة تحكم شاملة: إيرادات، مصروفات، أرباح صافية، وتحليل أداء مالي شهري."
+      - generic [ref=e163]:
+        - generic [ref=e164]:
+          - img [ref=e166]
+          - heading "المستندات والعقود" [level=3] [ref=e169]
+        - generic [ref=e170]:
+          - generic [ref=e171]:
+            - img [ref=e173]
+            - heading "إدارة العقود CLM" [level=4] [ref=e176]
+            - paragraph [ref=e177]: إنشاء العقود من قوالب جاهزة، تتبع دورة حياة العقد، وتنبيهات قبل انتهاء الصلاحية.
+          - generic [ref=e178]:
+            - img [ref=e180]
+            - heading "المستندات والأرشفة" [level=4] [ref=e183]
+            - paragraph [ref=e184]: أرشفة إلكترونية آمنة لكل المرفقات والمستندات مع بحث سريع وتصنيف تلقائي.
+          - generic [ref=e185]:
+            - img [ref=e187]
+            - heading "+150 نموذج قانوني" [level=4] [ref=e189]
+            - paragraph [ref=e190]: "مكتبة قوالب قانونية جاهزة: عقود، توكيلات، إنذارات، مذكرات — بتنسيق احترافي."
+          - generic [ref=e191]:
+            - img [ref=e193]
+            - heading "الملكية الفكرية" [level=4] [ref=e195]
+            - paragraph [ref=e196]: تتبع العلامات التجارية وبراءات الاختراع مع تنبيهات التجديد والمواعيد الحرجة.
+      - generic [ref=e197]:
+        - generic [ref=e198]:
+          - img [ref=e200]
+          - heading "الخدمات الذكية وإدارة الفريق" [level=3] [ref=e203]
+        - generic [ref=e204]:
+          - generic [ref=e205]:
+            - img [ref=e207]
+            - heading "الذكاء الاصطناعي" [level=4] [ref=e215]
+            - paragraph [ref=e216]: صياغة مذكرات، تلخيص مستندات، واستشارات قانونية فورية بتقنية Gemini وGroq.
+          - generic [ref=e217]:
+            - img [ref=e219]
+            - heading "بوت واتساب الذكي" [level=4] [ref=e222]
+            - paragraph [ref=e223]: رد تلقائي على استفسارات الموكلين عبر واتساب بذكاء اصطناعي مدرب على بياناتك.
+          - generic [ref=e224]:
+            - img [ref=e226]
+            - heading "إدارة المهام" [level=4] [ref=e229]
+            - paragraph [ref=e230]: توزيع المهام على المحامين مع 5 حالات عمل وتتبع إنجاز وسجل نشاط لكل مهمة.
+          - generic [ref=e231]:
+            - img [ref=e233]
+            - heading "بوابة الموكلين" [level=4] [ref=e236]
+            - paragraph [ref=e237]: بوابة خاصة يتابع منها الموكل قضاياه وجلساته ومستنداته — بدون إزعاجك بالاتصالات.
+    - generic [ref=e239]:
+      - generic [ref=e240]:
+        - heading "ابدأ في 3 خطوات بسيطة" [level=2] [ref=e241]
+        - paragraph [ref=e242]: من التسجيل للإنتاجية الكاملة في أقل من 10 دقائق.
+      - generic [ref=e243]:
+        - generic [ref=e244]:
+          - generic [ref=e245]: "1"
+          - heading "سجّل مكتبك" [level=3] [ref=e246]
+          - paragraph [ref=e247]: أنشئ حسابك بالبريد أو Google في ثوانٍ — بدون بطاقة ائتمان.
+        - generic [ref=e248]:
+          - generic [ref=e249]: "2"
+          - heading "أضف بياناتك" [level=3] [ref=e250]
+          - paragraph [ref=e251]: أدخل موكليك وقضاياك يدوياً أو استوردهم بملف CSV دفعة واحدة.
+        - generic [ref=e252]:
+          - generic [ref=e253]: "3"
+          - heading "أدِر مكتبك بذكاء" [level=3] [ref=e254]
+          - paragraph [ref=e255]: تابع جلساتك، أصدر فواتيرك، ووزّع مهامك — كل شيء في مكان واحد.
+    - generic [ref=e257]:
+      - generic [ref=e258]:
+        - heading "لمن صُمِّمت ملف؟" [level=2] [ref=e259]
+        - paragraph [ref=e260]: منصة مرنة تتكيف مع حجم عملك وطبيعة مكتبك.
+      - generic [ref=e261]:
+        - generic [ref=e262]:
+          - img [ref=e264]
+          - heading "مكاتب المحاماة الفردية" [level=3] [ref=e269]
+          - paragraph [ref=e270]: إدارة كل شيء لوحدك بدون فريق إداري. وفر وقتك للعمل القانوني الحقيقي بدلاً من الأعمال الإدارية.
+        - generic [ref=e271]:
+          - img [ref=e273]
+          - heading "شركات المحاماة المتوسطة" [level=3] [ref=e276]
+          - paragraph [ref=e277]: تنسيق فرق العمل، توزيع المهام، ومتابعة الأداء اليومي لكل محامٍ في فريقك.
+        - generic [ref=e278]:
+          - img [ref=e280]
+          - heading "الشركات القانونية الكبرى" [level=3] [ref=e284]
+          - paragraph [ref=e285]: حوكمة متكاملة، تقارير تنفيذية دقيقة، وإدارة صلاحيات معقدة للفروع المتعددة.
+    - generic [ref=e288]:
+      - generic [ref=e289]:
+        - generic [ref=e290]: ميزة تنافسية لمكتبك
+        - heading "بوابة موكلين متطورة تبقي عملاءك على اطلاع دائم" [level=2] [ref=e291]:
+          - text: بوابة موكلين متطورة
+          - text: تبقي عملاءك على اطلاع دائم
+        - paragraph [ref=e292]: ارفع مستوى الشفافية والرضا لدى موكليك. من خلال بوابة الموكلين الخاصة بك، يمكن لعملائك متابعة سير قضاياهم، الاطلاع على الجلسات، وتحميل المستندات دون الحاجة لإزعاجك بالاتصالات المتكررة.
+        - list [ref=e293]:
+          - listitem [ref=e294]:
+            - img [ref=e296]
+            - text: تقليل اتصالات الاستفسار بنسبة 70%
+          - listitem [ref=e299]:
+            - img [ref=e301]
+            - text: أرشفة إلكترونية آمنة لمستندات الموكل
+          - listitem [ref=e304]:
+            - img [ref=e306]
+            - text: واجهة احترافية تحمل شعار مكتبك
+          - listitem [ref=e309]:
+            - img [ref=e311]
+            - text: شفافية تامة تعزز ثقة العميل
+        - button "تعرف على بوابة الموكلين" [ref=e314]
+      - generic [ref=e318]:
+        - img "واجهة بوابة الموكلين لمنصة مَلَف" [ref=e320]
+        - generic [ref=e321]:
+          - img [ref=e323]
+          - generic [ref=e326]:
+            - generic [ref=e327]: معدل الإنجاز
+            - generic [ref=e328]: 98.5%
+    - generic [ref=e330]:
+      - generic [ref=e331]:
+        - generic [ref=e332]: باقات الاشتراك
+        - heading "ابدأ مجاناً — وكبّر مع نمو مكتبك" [level=2] [ref=e333]
+        - paragraph [ref=e334]: أسعار شفافة بدون رسوم خفية. أقل من تكلفة كوب قهوة يومياً.
+      - generic [ref=e335]:
+        - generic [ref=e336]:
+          - generic [ref=e337]:
+            - heading "تجربة مجانية" [level=3] [ref=e338]
+            - paragraph [ref=e339]: جرب المنصة بكامل ميزاتها لمدة أسبوع
+            - generic [ref=e341]: مجاناً
+          - list [ref=e342]:
+            - listitem [ref=e343]:
+              - img [ref=e344]
+              - text: تجربة كاملة للباقة المتقدمة
+            - listitem [ref=e347]:
+              - img [ref=e348]
+              - text: موكلون وقضايا غير محدودة
+            - listitem [ref=e351]:
+              - img [ref=e352]
+              - text: الذكاء الاصطناعي وبوت واتساب
+            - listitem [ref=e355]:
+              - img [ref=e356]
+              - text: إدارة العقود والفواتير
+            - listitem [ref=e359]:
+              - img [ref=e360]
+              - text: بدون بطاقة ائتمان
+          - button "ابدأ مجاناً" [ref=e363]
+        - generic [ref=e364]:
+          - generic [ref=e365]:
+            - heading "الأساسية" [level=3] [ref=e366]
+            - paragraph [ref=e367]: للمحامي الفردي والمكاتب الناشئة
+            - generic [ref=e368]:
+              - generic [ref=e369]: "599"
+              - generic [ref=e370]: ج.م/شهر
+            - paragraph [ref=e371]: = 20 ج.م/يوم فقط
+          - list [ref=e372]:
+            - listitem [ref=e373]:
+              - img [ref=e374]
+              - text: 50 قضية
+            - listitem [ref=e377]:
+              - img [ref=e378]
+              - text: الفاتورة الإلكترونية (ETA)
+            - listitem [ref=e381]:
+              - img [ref=e382]
+              - text: التقويم والمواعيد
+            - listitem [ref=e385]:
+              - img [ref=e386]
+              - text: مساعد AI محدود
+            - listitem [ref=e389]:
+              - img [ref=e390]
+              - text: حتى 5 مستخدمين
+            - listitem [ref=e393]:
+              - img [ref=e394]
+              - text: دعم بالبريد
+          - button "ابدأ الآن" [ref=e397]
+        - generic [ref=e398]:
+          - generic [ref=e400]: الأكثر طلباً
+          - generic [ref=e401]:
+            - heading "المتقدمة" [level=3] [ref=e402]
+            - paragraph [ref=e403]: الأنسب للمكاتب المتنامية
+            - generic [ref=e404]:
+              - generic [ref=e405]: "999"
+              - generic [ref=e406]: ج.م/شهر
+            - paragraph [ref=e407]: = 33 ج.م/يوم فقط
+          - list [ref=e408]:
+            - listitem [ref=e409]:
+              - img [ref=e410]
+              - text: 500 قضية
+            - listitem [ref=e413]:
+              - img [ref=e414]
+              - text: إدارة العقود (CLM)
+            - listitem [ref=e417]:
+              - img [ref=e418]
+              - text: التنفيذ القضائي
+            - listitem [ref=e421]:
+              - img [ref=e422]
+              - text: نظام التحصيل الكامل
+            - listitem [ref=e425]:
+              - img [ref=e426]
+              - text: AI غير محدود
+            - listitem [ref=e429]:
+              - img [ref=e430]
+              - text: بوت واتساب الذكي
+            - listitem [ref=e433]:
+              - img [ref=e434]
+              - text: حتى 20 مستخدم
+            - listitem [ref=e437]:
+              - img [ref=e438]
+              - text: تقارير متقدمة
+          - button "ابدأ الآن" [ref=e441]
+        - generic [ref=e442]:
+          - generic [ref=e443]:
+            - heading "المؤسسات" [level=3] [ref=e444]
+            - paragraph [ref=e445]: لشركات المحاماة والمكاتب الكبرى
+            - generic [ref=e446]:
+              - generic [ref=e447]: "1599"
+              - generic [ref=e448]: ج.م/شهر
+            - paragraph [ref=e449]: = 53 ج.م/يوم فقط
+          - list [ref=e450]:
+            - listitem [ref=e451]:
+              - img [ref=e452]
+              - text: قضايا غير محدودة
+            - listitem [ref=e455]:
+              - img [ref=e456]
+              - text: كل ميزات المتقدمة
+            - listitem [ref=e459]:
+              - img [ref=e460]
+              - text: بوابة الموكلين الخاصة
+            - listitem [ref=e463]:
+              - img [ref=e464]
+              - text: الملكية الفكرية
+            - listitem [ref=e467]:
+              - img [ref=e468]
+              - text: إدارة الامتثال
+            - listitem [ref=e471]:
+              - img [ref=e472]
+              - text: مستخدمين غير محدود
+            - listitem [ref=e475]:
+              - img [ref=e476]
+              - text: دعم فني ذو أولوية
+            - listitem [ref=e479]:
+              - img [ref=e480]
+              - text: تقارير تنفيذية
+          - button "ابدأ الآن" [ref=e483]
+      - paragraph [ref=e484]: جميع الأسعار بالجنيه المصري وتشمل ضريبة القيمة المضافة. خصم 20% على الاشتراك السنوي.
+    - generic [ref=e488]:
+      - heading "مكتبك يستحق أكثر من Excel وواتساب" [level=2] [ref=e489]
+      - paragraph [ref=e490]: جرّب مَلَف مجاناً لمدة أسبوع (7 أيام) واستمتع بإدارة ذكية ومتكاملة لمكتبك — بدون الحاجة لبطاقة ائتمان.
+      - button "ابدأ الآن" [ref=e491]
+    - contentinfo [ref=e492]:
+      - generic [ref=e493]:
+        - generic [ref=e494]:
+          - generic [ref=e495]:
+            - generic [ref=e496]:
+              - img [ref=e498]
+              - generic [ref=e502]: مَلَف
+            - paragraph [ref=e503]: منصة SaaS متكاملة مصممة خصيصاً لرقمنة مكاتب المحاماة في مصر والوطن العربي، من خلال حلول ذكية وأتمتة شاملة.
+          - generic [ref=e504]:
+            - heading "روابط سريعة" [level=4] [ref=e505]
+            - list [ref=e506]:
+              - listitem [ref=e507]:
+                - link "الرئيسية" [ref=e508] [cursor=pointer]:
+                  - /url: /
+              - listitem [ref=e509]:
+                - link "الميزات" [ref=e510] [cursor=pointer]:
+                  - /url: "#services"
+              - listitem [ref=e511]:
+                - link "الباقات والأسعار" [ref=e512] [cursor=pointer]:
+                  - /url: "#pricing"
+              - listitem [ref=e513]:
+                - link "من نحن" [ref=e514] [cursor=pointer]:
+                  - /url: "#about"
+          - generic [ref=e515]:
+            - heading "الخدمات" [level=4] [ref=e516]
+            - list [ref=e517]:
+              - listitem [ref=e518]:
+                - link "بوابة الموكلين" [ref=e519] [cursor=pointer]:
+                  - /url: /client-portal
+              - listitem [ref=e520]:
+                - link "تطبيقات الهواتف" [ref=e521] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e522]:
+                - link "مركز المساعدة" [ref=e523] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e524]:
+                - link "API للمطورين" [ref=e525] [cursor=pointer]:
+                  - /url: "#"
+          - generic [ref=e526]:
+            - heading "تواصل معنا" [level=4] [ref=e527]
+            - list [ref=e528]:
+              - listitem [ref=e529]:
+                - img [ref=e530]
+                - generic [ref=e533]: المنصورة — توريل القديمة، شارع بوتاري، محافظة الدقهلية، جمهورية مصر العربية
+              - listitem [ref=e534]:
+                - img [ref=e535]
+                - generic [ref=e537]: +20 114 197 3834
+              - listitem [ref=e538]:
+                - img [ref=e539]
+                - generic [ref=e542]: info@aladala-law.eg
+        - generic [ref=e543]:
+          - generic [ref=e544]: © 2026 شركة ملف لتقنية المعلومات. جميع الحقوق محفوظة.
+          - generic [ref=e545]:
+            - link "الشروط والأحكام" [ref=e546] [cursor=pointer]:
+              - /url: /terms
+            - link "سياسة الخصوصية" [ref=e547] [cursor=pointer]:
+              - /url: /privacy
+    - link "تواصل معنا عبر واتساب" [ref=e548] [cursor=pointer]:
+      - /url: https://wa.me/201141973834
+      - img [ref=e549]
+```
+
+# Test source
+
+```ts
+  1   | // tests/01-homepage.spec.js
+  2   | // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  3   | // الاختبار الأول: الصفحة الرئيسية والصفحات العامة
+  4   | // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  5   | const { test, expect } = require('@playwright/test');
+  6   | const {
+  7   |   waitForPageReady,
+  8   |   attachConsoleMonitor,
+  9   |   screenshotStep,
+  10  |   measureResponseTime,
+  11  |   checkPageStatus,
+  12  | } = require('../helpers/test-helpers');
+  13  | 
+  14  | test.describe('الصفحة الرئيسية والصفحات العامة', () => {
+  15  |   let consoleErrors = [];
+  16  | 
+  17  |   test.beforeEach(async ({ page }) => {
+  18  |     consoleErrors = [];
+  19  |     attachConsoleMonitor(page, consoleErrors);
+  20  |   });
+  21  | 
+  22  |   // ─────────────────────────────────────────────
+  23  |   test('الصفحة الرئيسية تُحمَّل بنجاح', async ({ page }) => {
+  24  |     const ms = await measureResponseTime(page, 'https://malaf.pro');
+  25  |     await screenshotStep(page, '01-homepage');
+  26  | 
+  27  |     // يجب أن تُحمَّل في أقل من 5 ثوان
+> 28  |     expect(ms, `وقت التحميل ${ms}ms — يجب أن يكون أقل من 5000ms`).toBeLessThan(5000);
+      |                                                                   ^ Error: وقت التحميل 8775ms — يجب أن يكون أقل من 5000ms
+  29  | 
+  30  |     // عنوان الصفحة غير فارغ
+  31  |     const title = await page.title();
+  32  |     expect(title.length, 'عنوان الصفحة فارغ').toBeGreaterThan(0);
+  33  | 
+  34  |     // لا يوجد خطأ 404 أو 500
+  35  |     const status = await page.evaluate(() => window.__pageStatus || 200);
+  36  |     expect(status).not.toBe(404);
+  37  | 
+  38  |     // تحقق من وجود أخطاء JS
+  39  |     if (consoleErrors.length > 0) {
+  40  |       console.warn('⚠️  أخطاء Console في الصفحة الرئيسية:', consoleErrors.slice(0, 3));
+  41  |     }
+  42  | 
+  43  |     test.info().annotations.push({
+  44  |       type: 'performance',
+  45  |       description: `وقت التحميل: ${ms}ms — عنوان: ${title}`,
+  46  |     });
+  47  |   });
+  48  | 
+  49  |   // ─────────────────────────────────────────────
+  50  |   test('قائمة التنقل الرئيسية موجودة وقابلة للنقر', async ({ page }) => {
+  51  |     await page.goto('https://malaf.pro');
+  52  |     await waitForPageReady(page);
+  53  | 
+  54  |     // البحث عن روابط التنقل الرئيسية (navbar / header links)
+  55  |     const navLinks = page.locator('nav a, header a, [role="navigation"] a');
+  56  |     const count = await navLinks.count();
+  57  | 
+  58  |     expect(count, 'لا توجد روابط تنقل في الصفحة').toBeGreaterThan(0);
+  59  |     console.log(`  ℹ️  عدد روابط التنقل: ${count}`);
+  60  | 
+  61  |     // تحقق من أن كل رابط له href
+  62  |     for (let i = 0; i < Math.min(count, 10); i++) {
+  63  |       const href = await navLinks.nth(i).getAttribute('href');
+  64  |       const text = await navLinks.nth(i).innerText().catch(() => '');
+  65  |       if (href && text.trim()) {
+  66  |         console.log(`    ✓ ${text.trim()} → ${href}`);
+  67  |       }
+  68  |     }
+  69  |   });
+  70  | 
+  71  |   // ─────────────────────────────────────────────
+  72  |   test('صفحة تسجيل الدخول موجودة', async ({ page }) => {
+  73  |     // محاولة أشكال مختلفة للرابط
+  74  |     const loginUrls = [
+  75  |       'https://malaf.pro/login',
+  76  |       'https://malaf.pro/signin',
+  77  |       'https://malaf.pro/auth/login',
+  78  |       'https://malaf.pro/office/login',
+  79  |     ];
+  80  | 
+  81  |     let loginFound = false;
+  82  |     let foundUrl = '';
+  83  | 
+  84  |     for (const url of loginUrls) {
+  85  |       const status = await checkPageStatus(page, url);
+  86  |       if (status === 200) {
+  87  |         loginFound = true;
+  88  |         foundUrl = url;
+  89  |         break;
+  90  |       }
+  91  |     }
+  92  | 
+  93  |     // البحث في الصفحة الرئيسية عن رابط تسجيل الدخول
+  94  |     if (!loginFound) {
+  95  |       await page.goto('https://malaf.pro');
+  96  |       await waitForPageReady(page);
+  97  |       const loginLink = page.locator(
+  98  |         'a[href*="login"], a[href*="signin"], button:has-text("تسجيل"), a:has-text("دخول")'
+  99  |       ).first();
+  100 |       loginFound = await loginLink.isVisible().catch(() => false);
+  101 |       if (loginFound) foundUrl = await loginLink.getAttribute('href') || 'زر في الصفحة';
+  102 |     }
+  103 | 
+  104 |     expect(loginFound, 'لا يوجد رابط أو صفحة تسجيل دخول').toBe(true);
+  105 |     console.log(`  ✓ رابط تسجيل الدخول: ${foundUrl}`);
+  106 |     await screenshotStep(page, '01-login-page');
+  107 |   });
+  108 | 
+  109 |   // ─────────────────────────────────────────────
+  110 |   test('صفحة تسجيل مكتب جديد موجودة', async ({ page }) => {
+  111 |     const registerUrls = [
+  112 |       'https://malaf.pro/register',
+  113 |       'https://malaf.pro/signup',
+  114 |       'https://malaf.pro/auth/register',
+  115 |       'https://malaf.pro/office/register',
+  116 |       'https://malaf.pro/create-office',
+  117 |     ];
+  118 | 
+  119 |     let registerFound = false;
+  120 |     let foundUrl = '';
+  121 | 
+  122 |     for (const url of registerUrls) {
+  123 |       const status = await checkPageStatus(page, url);
+  124 |       if (status === 200) {
+  125 |         registerFound = true;
+  126 |         foundUrl = url;
+  127 |         break;
+  128 |       }
+```

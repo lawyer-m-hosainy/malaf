@@ -19,11 +19,10 @@ export default function Landing() {
       <nav className="fixed top-0 w-full z-50 bg-white/80 dark:bg-navy-900/80 backdrop-blur-md border-b border-slate-200 dark:border-white/10 transition-all">
         <div className="container mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-2 md:gap-3 cursor-pointer" onClick={() => window.scrollTo(0,0)}>
-            <img src="/logo.png" alt="شعار ملف - محمد الحسيني" className="h-10 md:h-16 w-auto object-contain" />
-            <div className="flex flex-col">
-              <span className="text-xl md:text-2xl font-black tracking-tighter text-navy-900 dark:text-white leading-none">مَلَف</span>
-              <span className="text-[8px] md:text-[10px] font-bold text-primary-600 tracking-widest uppercase">محمد الحسيني</span>
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-primary-600 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/20">
+              <Scale className="text-white w-6 h-6 md:w-7 md:h-7" />
             </div>
+            <span className="text-xl md:text-2xl font-black tracking-tighter text-navy-900 dark:text-white leading-none">مَلَف</span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600 dark:text-slate-300">
             <a href="#services" className="hover:text-primary-600 transition-colors">الميزات</a>
@@ -57,11 +56,9 @@ export default function Landing() {
             className="max-w-4xl mx-auto space-y-6 md:space-y-8"
           >
             <div className="flex justify-center mb-6 md:mb-10">
-              <img 
-                src="/logo.png" 
-                alt="شعار ملف - محمد الحسيني" 
-                className="h-28 md:h-40 w-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-500" 
-              />
+              <div className="w-24 h-24 md:w-32 md:h-32 bg-gradient-to-br from-primary-600 to-emerald-600 rounded-3xl flex items-center justify-center shadow-2xl shadow-primary-500/30 hover:scale-105 transition-transform duration-500">
+                <Scale className="text-white w-14 h-14 md:w-20 md:h-20" />
+              </div>
             </div>
             
             <Badge className="bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400 border border-primary-100 dark:border-primary-800/30 px-4 py-1.5 text-xs md:text-sm font-medium">
@@ -503,11 +500,10 @@ export default function Landing() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
             <div className="space-y-6">
               <div className="flex items-center gap-3">
-                <img src="/logo.png" alt="شعار ملف - محمد الحسيني" className="h-14 w-auto object-contain bg-white/10 rounded-xl p-1" />
-                <div className="flex flex-col">
-                  <span className="text-xl font-black tracking-tighter text-white leading-none">مَلَف</span>
-                  <span className="text-[8px] font-bold text-primary-400 tracking-widest uppercase">محمد الحسيني</span>
+                <div className="w-12 h-12 bg-gradient-to-br from-primary-600 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <Scale className="text-white w-7 h-7" />
                 </div>
+                <span className="text-xl font-black tracking-tighter text-white leading-none">مَلَف</span>
               </div>
               <p className="text-sm leading-relaxed text-slate-400">
                 منصة SaaS متكاملة مصممة خصيصاً لرقمنة مكاتب المحاماة في مصر والوطن العربي، من خلال حلول ذكية وأتمتة شاملة.

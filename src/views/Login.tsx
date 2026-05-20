@@ -136,13 +136,38 @@ export default function Login() {
           data: {
             full_name: name,
             role: "محامي"
-          }
+          },
+          emailRedirectTo: window.location.origin + '/login',
         }
       });
       
       if (error) throw error;
-      
-      toast.success("تم إنشاء الحساب بنجاح! يرجى مراجعة بريدك الإلكتروني للتفعيل.");
+
+      // Case 1: Email confirmation is DISABLED in Supabase Dashboard
+      // → data.session will exist → user is auto-logged-in
+      if (data.session) {
+        toast.success("تم إنشاء الحساب بنجاح! مرحباً بك في مَلَف.");
+        setShowRegisterDialog(false);
+        navigate("/onboarding");
+        return;
+      }
+
+      // Case 2: Email confirmation is ENABLED in Supabase Dashboard
+      // → data.session will be null → user needs to verify email
+      // Check if user was actually created (identities array not empty)
+      if (data.user && data.user.identities && data.user.identities.length > 0) {
+        toast.success(
+          "تم إنشاء الحساب بنجاح! تم إرسال رابط التفعيل إلى بريدك الإلكتروني. يرجى مراجعة صندوق الوارد ومجلد الرسائل غير المرغوبة (Spam).",
+          { duration: 10000 }
+        );
+      } else {
+        // User already exists but hasn't confirmed — resend
+        toast.info(
+          "هذا البريد مسجل مسبقاً ولم يتم تفعيله بعد. تم إرسال رابط تفعيل جديد. تحقق من بريدك الإلكتروني ومجلد Spam.",
+          { duration: 10000 }
+        );
+      }
+
       setShowRegisterDialog(false);
     } catch (error: any) {
       const message = getSupabaseAuthErrorMessage(error, "register");

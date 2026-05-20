@@ -122,25 +122,15 @@ export function MessageInput({ channel, roomType, roomName }: MessageInputProps)
   /* ─── Video call ─── */
   const startVideoCall = async () => {
     try {
-      const apiKey = (import.meta as any).env.VITE_DAILY_API_KEY;
-      if (!apiKey || apiKey === "your_daily_api_key_here") {
-        toast.error("يرجى إعداد VITE_DAILY_API_KEY في ملف .env.local");
-        return;
-      }
-
-      const res = await fetch("https://api.daily.co/v1/rooms", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({ properties: { exp: Math.floor(Date.now() / 1000) + 3600 } }),
+      // Call Edge Function (API key is secure on backend)
+      const { data, error } = await supabase.functions.invoke("create-video-room", {
+        body: { roomName: `malaf-${activeRoomId || Date.now()}` },
       });
 
-      const { url } = await res.json();
-      if (!url) throw new Error("No URL returned");
+      if (error) throw error;
+      if (!data?.url) throw new Error("No URL returned");
 
-      setActiveVideoCall(url);
+      setActiveVideoCall(data.url);
 
       // Send system message about the call
       if (activeRoomId) {
@@ -148,14 +138,14 @@ export function MessageInput({ channel, roomType, roomName }: MessageInputProps)
           room_id: activeRoomId,
           content: `📹 ${currentUser?.name || "شخص ما"} بدأ مكالمة فيديو — اضغط للانضمام`,
           is_system: true,
-          attachment_url: url,
+          attachment_url: data.url,
         });
       }
 
-      window.open(url, "_blank");
+      window.open(data.url, "_blank");
     } catch (error) {
       console.error("Video call error:", error);
-      toast.error("فشل بدء المكالمة");
+      toast.error("فشل بدء المكالمة — تأكد من إعداد DAILY_API_KEY في Supabase Secrets");
     }
   };
 

@@ -4,9 +4,9 @@ const { defineConfig, devices } = require('@playwright/test');
 module.exports = defineConfig({
   testDir: './tests',
   fullyParallel: false,
-  retries: 1,
+  retries: 0,
   workers: 1,
-  timeout: 60000,
+  timeout: 30000, // 30 seconds max per test (was 60s)
 
   reporter: [
     ['list'],
@@ -20,21 +20,21 @@ module.exports = defineConfig({
     headless: true,
     viewport: { width: 1280, height: 800 },
     screenshot: 'only-on-failure',
-    video: 'on-first-retry',
+    video: 'off',
     trace: 'on-first-retry',
+
+    // Auto-grant permissions for camera/mic tests
+    permissions: ['camera', 'microphone'],
 
     // ❌ NO modifications - read-only audit mode
     // All actions are observational only
   },
 
+  // Only use Chromium — WebKit hangs on Windows for permission prompts
   projects: [
     {
       name: 'Desktop Chrome',
       use: { ...devices['Desktop Chrome'] },
-    },
-    {
-      name: 'Mobile Safari',
-      use: { ...devices['iPhone 13'] },
     },
   ],
 

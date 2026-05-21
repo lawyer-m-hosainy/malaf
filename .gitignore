@@ -10,3 +10,8 @@ coverage/
 .env.local
 .env.production.local
 firebase-applet-config.json
+
+# Test Reports and Temp Files
+playwright-report/
+test-results/
+supabase/.temp/

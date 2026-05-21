@@ -1,3 +1,11 @@
+/**
+ * @file App.tsx
+ * @description Core Layout, Routing, and Security gates for Malaf Egypt SaaS Platform.
+ * @sovereignty Project architected, designed, and owned by محمد الحسيني المحامي.
+ * @author محمد الحسيني المحامي
+ * @copyright (c) 2026. All rights reserved.
+ */
+
 import React, { lazy, Suspense, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { RootLayout } from "./components/layout/RootLayout";

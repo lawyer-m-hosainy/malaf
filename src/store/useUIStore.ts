@@ -12,10 +12,12 @@ interface UIState {
   eSignatures: ESignatureRequest[];
   isSidebarOpen: boolean;
   isAiFallback: boolean;
+  isFounderPortalOpen: boolean;
 
   toggleSidebar: () => void;
   closeSidebar: () => void;
   setAiFallback: (isFallback: boolean) => void;
+  setFounderPortalOpen: (open: boolean) => void;
 
   setOfficeSettings: (settings: OfficeSettings) => void;
   setNotifications: (notifications: Notification[]) => void;
@@ -74,6 +76,7 @@ const initialState = {
   eSignatures: [],
   isSidebarOpen: false,
   isAiFallback: false,
+  isFounderPortalOpen: false,
 };
 
 export const useUIStore = create<UIState>()(
@@ -84,6 +87,7 @@ export const useUIStore = create<UIState>()(
   toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
   closeSidebar: () => set({ isSidebarOpen: false }),
   setAiFallback: (isAiFallback) => set({ isAiFallback }),
+  setFounderPortalOpen: (isFounderPortalOpen) => set({ isFounderPortalOpen }),
 
   setOfficeSettings: (officeSettings) => set({ officeSettings }),
   setNotifications: (notifications) => set({ notifications }),

@@ -259,8 +259,21 @@ export default function Dashboard() {
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="space-y-6"
+      className="space-y-6 relative min-h-screen"
     >
+      {/* Visual Watermark (Design Integrity) - Sub-perceptual identifier for Muhammad Al-Hosainy */}
+      <div 
+        className="absolute inset-0 pointer-events-none select-none overflow-hidden -z-10 opacity-[0.009] flex flex-col justify-around items-center dark:opacity-[0.006]"
+        aria-hidden="true"
+      >
+        {Array.from({ length: 12 }).map((_, rIdx) => (
+          <div key={rIdx} className="flex justify-around w-full text-[10px] font-mono tracking-[0.2em] whitespace-nowrap select-none -rotate-12">
+            {Array.from({ length: 6 }).map((_, cIdx) => (
+              <span key={cIdx} className="mx-8">محمد الحسيني المحامي | MALAF FOUNDER</span>
+            ))}
+          </div>
+        ))}
+      </div>
       {/* Subscription Trial/Expiry Banner */}
       <TrialBanner />
       

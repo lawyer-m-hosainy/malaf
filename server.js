@@ -1,3 +1,11 @@
+/**
+ * @file server.js
+ * @description Node.js / Express backend server handling routes, security headers, rate limiting, and integrations.
+ * @sovereignty Project architected, designed, and owned by محمد الحسيني المحامي.
+ * @author محمد الحسيني المحامي
+ * @copyright (c) 2026. All rights reserved.
+ */
+
 import './env.js';
 import express from 'express';
 import helmet from 'helmet';

@@ -83,6 +83,21 @@ export function Sidebar() {
   const closeSidebar = useUIStore(state => state.closeSidebar);
   const location = useLocation();
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+  const [logoClicks, setLogoClicks] = useState(0);
+
+  const handleLogoClick = (e: React.MouseEvent) => {
+    if (e.altKey && location.pathname === "/dashboard/settings") {
+      const nextClicks = logoClicks + 1;
+      if (nextClicks >= 5) {
+        useUIStore.getState().setFounderPortalOpen(true);
+        setLogoClicks(0);
+      } else {
+        setLogoClicks(nextClicks);
+      }
+    } else {
+      setLogoClicks(0);
+    }
+  };
 
   const toggleGroup = (title: string) => {
     setOpenGroups(prev => ({ ...prev, [title]: !prev[title] }));
@@ -107,7 +122,11 @@ export function Sidebar() {
         "bg-navy-900 dark:bg-black text-white flex flex-col h-[100dvh] fixed lg:sticky inset-y-0 right-0 z-50 shadow-xl transition-transform duration-300 w-64 border-e border-navy-900/20 dark:border-white/10",
         isSidebarOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0" 
       )}>
-      <div className="p-6 flex items-center gap-3 border-b border-white/10">
+      <div 
+        onClick={handleLogoClick}
+        className="p-6 flex items-center gap-3 border-b border-white/10 cursor-pointer select-none active:scale-95 transition-transform"
+        title="منصة مَلَف"
+      >
         <div className="w-8 h-8 rounded bg-accent-500 flex items-center justify-center text-navy-900 font-bold">
           <Scale size={20} />
         </div>

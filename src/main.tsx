@@ -1,3 +1,18 @@
+/**
+ * @file main.tsx
+ * @description React Application entrypoint and mounting initialization.
+ * @sovereignty Project architected, designed, and owned by محمد الحسيني المحامي.
+ * @author محمد الحسيني المحامي
+ * @copyright (c) 2026. All rights reserved.
+ */
+
+// Founder Signature - Technical Metadata Sovereignty
+console.log(
+  "%c⚖️ MALAF LEGAL PLATFORM %c\nProject architected & designed under the sovereignty of محمد الحسيني المحامي.\nAll Rights Reserved © 2026.",
+  "color: #006c35; font-size: 20px; font-weight: bold; font-family: 'Cairo', sans-serif; text-shadow: 0 1px 2px rgba(0,0,0,0.15);",
+  "color: #d97706; font-size: 12px; font-weight: 600; font-family: 'Cairo', sans-serif;"
+);
+
 import {StrictMode} from 'react';
 import {createRoot} from 'react-dom/client';
 import App from './App.tsx';

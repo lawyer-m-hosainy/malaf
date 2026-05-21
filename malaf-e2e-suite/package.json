@@ -10,7 +10,7 @@
     "audit": "node run-audit.js"
   },
   "devDependencies": {
-    "@playwright/test": "^1.44.0",
+    "@playwright/test": "^1.60.0",
     "chalk": "^4.1.2",
     "fs-extra": "^11.2.0"
   }

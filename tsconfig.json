@@ -26,5 +26,5 @@
     "allowImportingTsExtensions": true,
     "noEmit": true
   },
-  "exclude": ["functions", "supabase/functions"]
+  "exclude": ["functions", "supabase/functions", "malaf-e2e", "malaf-e2e-suite", "malaf-performance", "src/supabase-integration.test.ts"]
 }

@@ -1,3 +1,20 @@
+@font-face {
+  font-family: 'Cairo';
+  src: url('/assets/cairo-arabic.woff2') format('woff2');
+  font-weight: 300 800;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0600-06FF;
+}
+@font-face {
+  font-family: 'Cairo';
+  src: url('/assets/cairo-latin.woff2') format('woff2');
+  font-weight: 300 800;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF;
+}
+
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -5,7 +22,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: "Cairo Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Cairo", ui-sans-serif, system-ui, sans-serif;
   
   --color-primary-50: #e6f0eb;
   --color-primary-100: #cce2d6;

@@ -16,7 +16,6 @@ console.log(
 import {StrictMode} from 'react';
 import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
-import '@fontsource-variable/cairo';
 import './index.css';
 import { logEvent } from './observability/logger';
 

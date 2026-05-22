@@ -27,11 +27,15 @@
     
     <title>منصة مَلَف — النظام الشامل لإدارة مكاتب المحاماة</title>
     
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Preload Fonts -->
+    <link rel="preload" href="/assets/cairo-arabic.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/cairo-latin.woff2" as="font" type="font/woff2" crossorigin>
+
+    <!-- Preload CSS -->
+    <link rel="preload" href="/assets/index.css" as="style">
+
+    <!-- SW defer -->
+    <script defer src="/registerSW.js"></script>
     <link rel="icon" type="image/png" href="/logo.png" />
   </head>
   <body class="bg-slate-50 font-sans text-slate-900 antialiased">

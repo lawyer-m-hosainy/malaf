@@ -14,7 +14,7 @@ export default defineConfig(({mode}) => {
       VitePWA({
         registerType: 'autoUpdate',
         // السماح بتسجيل sw-push.js يدوياً بجانب الـ PWA SW
-        injectRegister: 'auto',
+        injectRegister: 'script',
         workbox: {
           // استثناء sw-push.js من الـ precache
           navigateFallbackDenylist: [/^\/sw-push\.js$/],
@@ -82,11 +82,18 @@ export default defineConfig(({mode}) => {
     build: {
       rollupOptions: {
         output: {
+          assetFileNames: (assetInfo) => {
+            if (assetInfo.name?.endsWith('.css')) {
+              return 'assets/index.css';
+            }
+            return 'assets/[name]-[hash][extname]';
+          },
           manualChunks: {
-            'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-            'vendor-ui': ['lucide-react', 'motion/react', 'clsx', 'tailwind-merge'],
-            'vendor-charts': ['recharts'],
-            'vendor-utils': ['zod', 'date-fns', '@supabase/supabase-js'],
+            vendor: ['react', 'react-dom'],
+            motion: ['motion'],
+            ui: ['lucide-react'],
+            supabase: ['@supabase/supabase-js'],
+            charts: ['recharts'],
           }
         },
         // R8-FIX: Tree-shaking optimization
@@ -99,7 +106,7 @@ export default defineConfig(({mode}) => {
       minify: isProd ? 'esbuild' : false,
       target: 'es2020',
       chunkSizeWarningLimit: 800,
-      sourcemap: !isProd,
+      sourcemap: false,
       // R8-FIX: CSS code splitting for better caching
       cssCodeSplit: true,
       // R8-FIX: Reduce console noise in production

@@ -24,7 +24,7 @@ export default function Landing() {
             </div>
             <span className="text-xl md:text-2xl font-black tracking-tighter text-navy-900 dark:text-white leading-none">مَلَف</span>
           </div>
-          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600 dark:text-slate-300">
+          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-800 dark:text-slate-200">
             <a href="#services" className="hover:text-primary-600 transition-colors">الميزات</a>
             <a href="#pricing" className="hover:text-primary-600 transition-colors">الباقات</a>
             <a href="#about" className="hover:text-primary-600 transition-colors">من نحن</a>
@@ -35,7 +35,7 @@ export default function Landing() {
             <Button variant="ghost" className="hidden md:flex font-medium" onClick={() => navigate('/login')}>
               تسجيل الدخول
             </Button>
-            <Button className="bg-primary-600 hover:bg-primary-700 text-white shadow-md shadow-primary-500/20 rounded-full px-6" onClick={() => navigate('/login')}>
+            <Button className="bg-primary-600 hover:bg-primary-700 text-white shadow-md shadow-primary-500/20 rounded-full px-6" aria-label="ابدأ مجاناً — سجّل حساب جديد" onClick={() => navigate('/login')}>
               ابدأ مجاناً
             </Button>
           </div>
@@ -71,11 +71,11 @@ export default function Landing() {
                 مكتب ذكي
               </span>
             </h1>
-            <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 leading-relaxed max-w-2xl mx-auto">
+            <p className="text-lg md:text-xl text-slate-800 dark:text-slate-300 leading-relaxed max-w-2xl mx-auto">
               ملف يجمع إدارة القضايا، الموكلين، الجلسات، العقود، والفواتير في منصة واحدة مصممة خصيصاً للمحامي المصري.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8">
-              <Button size="lg" className="w-full sm:w-auto bg-primary-600 hover:bg-primary-700 text-white h-14 px-8 text-lg rounded-full shadow-xl shadow-primary-500/20 transition-transform hover:scale-105" onClick={() => navigate('/login')}>
+              <Button size="lg" className="w-full sm:w-auto bg-primary-600 hover:bg-primary-700 text-white h-14 px-8 text-lg rounded-full shadow-xl shadow-primary-500/20 transition-transform hover:scale-105" aria-label="ابدأ تجربتك المجانية لمدة أسبوع — سجّل حساب جديد" onClick={() => navigate('/login')}>
                 ابدأ تجربتك المجانية لمدة أسبوع
                 <ArrowLeft className="ms-2 w-5 h-5" />
               </Button>
@@ -84,7 +84,7 @@ export default function Landing() {
               </Button>
             </div>
             
-            <div className="pt-12 flex items-center justify-center gap-8 text-sm font-medium text-slate-500 dark:text-slate-400">
+            <div className="pt-12 flex items-center justify-center gap-8 text-sm font-medium text-slate-700 dark:text-slate-300">
               <div className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-green-500" /> خوادم سحابية آمنة</div>
               <div className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-green-500" /> تشفير بيانات بنكي</div>
               <div className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-green-500" /> نسخ احتياطي يومي</div>
@@ -111,7 +111,7 @@ export default function Landing() {
                   <div className="w-16 h-16 md:w-20 md:h-20 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center mb-4 md:mb-6 group-hover:bg-primary-600 transition-all duration-500 border border-white/20 shadow-xl group-hover:scale-110 group-hover:border-primary-500">
                     <div className="w-0 h-0 border-y-[10px] md:border-y-[12px] border-y-transparent border-l-[14px] md:border-l-[18px] border-l-white ml-2"></div>
                   </div>
-                  <h3 className="text-xl md:text-3xl font-black text-white mb-2 md:mb-3 px-2">مقدمة منصة مَلَف القانونية</h3>
+                  <h2 className="text-xl md:text-3xl font-black text-white mb-2 md:mb-3 px-2">مقدمة منصة مَلَف القانونية</h2>
                   <p className="text-primary-100/80 text-sm md:text-base font-medium max-w-sm px-4">انقر لمشاهدة العرض التوضيحي القصير وتعرف على مميزات النظام</p>
                 </div>
               </a>
@@ -132,7 +132,7 @@ export default function Landing() {
             ].map((stat, i) => (
               <div key={i} className="space-y-2">
                 <div className="text-4xl md:text-5xl font-bold text-navy-900 dark:text-white">{stat.value}</div>
-                <div className="text-sm text-slate-500 dark:text-slate-400 font-medium">{stat.label}</div>
+                <div className="text-sm text-slate-700 dark:text-slate-300 font-medium">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -145,7 +145,7 @@ export default function Landing() {
           <div className="text-center mb-16 max-w-3xl mx-auto">
             <Badge className="bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400 border-none px-4 py-1.5 text-sm mb-4">+20 وحدة متكاملة</Badge>
             <h2 className="text-3xl md:text-5xl font-black mb-4">كل ما يحتاجه مكتبك في منصة واحدة</h2>
-            <p className="text-slate-600 dark:text-slate-400 text-lg">استبدل عشرات التطبيقات وملفات الإكسل بنظام ذكي مصمم خصيصاً للمحامي المصري.</p>
+            <p className="text-slate-800 dark:text-slate-300 text-lg">استبدل عشرات التطبيقات وملفات الإكسل بنظام ذكي مصمم خصيصاً للمحامي المصري.</p>
           </div>
 
           {/* Category 1: Core Legal */}
@@ -162,7 +162,7 @@ export default function Landing() {
                   className="p-5 rounded-2xl bg-white dark:bg-navy-800 border border-slate-100 dark:border-white/5 hover:shadow-lg hover:shadow-primary-500/5 hover:border-primary-200 dark:hover:border-primary-800/30 transition-all group">
                   <div className="w-11 h-11 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary-600 group-hover:text-white transition-colors"><f.icon className="w-5 h-5" /></div>
                   <h4 className="font-bold mb-2 text-navy-900 dark:text-white">{f.title}</h4>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{f.desc}</p>
+                  <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{f.desc}</p>
                 </motion.div>
               ))}
             </div>
@@ -182,7 +182,7 @@ export default function Landing() {
                   className="p-5 rounded-2xl bg-white dark:bg-navy-800 border border-slate-100 dark:border-white/5 hover:shadow-lg hover:border-emerald-200 dark:hover:border-emerald-800/30 transition-all group">
                   <div className="w-11 h-11 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center mb-4 group-hover:bg-emerald-600 group-hover:text-white transition-colors"><f.icon className="w-5 h-5" /></div>
                   <h4 className="font-bold mb-2 text-navy-900 dark:text-white">{f.title}</h4>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{f.desc}</p>
+                  <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{f.desc}</p>
                 </motion.div>
               ))}
             </div>
@@ -202,7 +202,7 @@ export default function Landing() {
                   className="p-5 rounded-2xl bg-white dark:bg-navy-800 border border-slate-100 dark:border-white/5 hover:shadow-lg hover:border-violet-200 dark:hover:border-violet-800/30 transition-all group">
                   <div className="w-11 h-11 bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 rounded-xl flex items-center justify-center mb-4 group-hover:bg-violet-600 group-hover:text-white transition-colors"><f.icon className="w-5 h-5" /></div>
                   <h4 className="font-bold mb-2 text-navy-900 dark:text-white">{f.title}</h4>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{f.desc}</p>
+                  <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{f.desc}</p>
                 </motion.div>
               ))}
             </div>
@@ -222,7 +222,7 @@ export default function Landing() {
                   className="p-5 rounded-2xl bg-white dark:bg-navy-800 border border-slate-100 dark:border-white/5 hover:shadow-lg hover:border-amber-200 dark:hover:border-amber-800/30 transition-all group">
                   <div className="w-11 h-11 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-xl flex items-center justify-center mb-4 group-hover:bg-amber-600 group-hover:text-white transition-colors"><f.icon className="w-5 h-5" /></div>
                   <h4 className="font-bold mb-2 text-navy-900 dark:text-white">{f.title}</h4>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{f.desc}</p>
+                  <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{f.desc}</p>
                 </motion.div>
               ))}
             </div>
@@ -235,7 +235,7 @@ export default function Landing() {
         <div className="container mx-auto px-6">
           <div className="text-center mb-14 max-w-2xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">ابدأ في 3 خطوات بسيطة</h2>
-            <p className="text-slate-500 dark:text-slate-400">من التسجيل للإنتاجية الكاملة في أقل من 10 دقائق.</p>
+            <p className="text-slate-700 dark:text-slate-300">من التسجيل للإنتاجية الكاملة في أقل من 10 دقائق.</p>
           </div>
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             {[
@@ -246,7 +246,7 @@ export default function Landing() {
               <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.15 }} className="text-center">
                 <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${step.gradient} text-white text-2xl font-black flex items-center justify-center mx-auto mb-5 shadow-lg`}>{step.num}</div>
                 <h3 className="text-lg font-bold mb-2">{step.title}</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{step.desc}</p>
+                <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{step.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -258,7 +258,7 @@ export default function Landing() {
         <div className="container mx-auto px-6">
           <div className="text-center mb-16 max-w-2xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">لمن صُمِّمت ملف؟</h2>
-            <p className="text-slate-600 dark:text-slate-400 text-lg">منصة مرنة تتكيف مع حجم عملك وطبيعة مكتبك.</p>
+            <p className="text-slate-800 dark:text-slate-300 text-lg">منصة مرنة تتكيف مع حجم عملك وطبيعة مكتبك.</p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
             {[
@@ -271,7 +271,7 @@ export default function Landing() {
                   <audience.icon className="w-8 h-8" />
                 </div>
                 <h3 className="text-xl font-bold mb-4">{audience.title}</h3>
-                <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                <p className="text-slate-800 dark:text-slate-300 leading-relaxed">
                   {audience.desc}
                 </p>
               </div>
@@ -291,7 +291,7 @@ export default function Landing() {
               <h2 className="text-3xl md:text-4xl font-bold leading-tight">
                 بوابة موكلين متطورة <br /> تبقي عملاءك على اطلاع دائم
               </h2>
-              <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
+              <p className="text-lg text-slate-800 dark:text-slate-300 leading-relaxed">
                 ارفع مستوى الشفافية والرضا لدى موكليك. من خلال بوابة الموكلين الخاصة بك، يمكن لعملائك متابعة سير قضاياهم، الاطلاع على الجلسات، وتحميل المستندات دون الحاجة لإزعاجك بالاتصالات المتكررة.
               </p>
               <ul className="space-y-4">
@@ -323,14 +323,14 @@ export default function Landing() {
                 <div className="absolute -inset-4 bg-gradient-to-tr from-primary-500/20 to-emerald-500/20 rounded-[2rem] blur-2xl"></div>
                 <div className="relative bg-white dark:bg-navy-800 border border-slate-200 dark:border-white/10 rounded-[2rem] p-2 shadow-2xl overflow-hidden group">
                   <div className="absolute inset-0 bg-primary-600/10 opacity-0 group-hover:opacity-100 transition-opacity z-10 rounded-[1.5rem]"></div>
-                  <img src="/client-portal-mockup.png" alt="واجهة بوابة الموكلين لمنصة مَلَف" className="w-full h-auto rounded-[1.5rem] aspect-[3/2] object-cover transition-transform duration-700 group-hover:scale-105" />
+                  <img src="/client-portal-mockup.webp" alt="واجهة بوابة الموكلين لمنصة مَلَف" className="w-full h-auto rounded-[1.5rem] aspect-[3/2] object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" />
                   {/* Floating badge */}
                   <div className="absolute top-8 -start-6 bg-white dark:bg-navy-900 p-4 rounded-2xl shadow-xl border border-slate-100 dark:border-white/5 flex items-center gap-3 animate-bounce-slow">
                     <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center text-emerald-600">
                       <TrendingUp size={20} />
                     </div>
                     <div>
-                      <div className="text-[10px] text-slate-400 font-bold uppercase">معدل الإنجاز</div>
+                      <div className="text-[10px] text-slate-700 dark:text-slate-300 font-bold uppercase">معدل الإنجاز</div>
                       <div className="text-lg font-black text-navy-900 dark:text-white">98.5%</div>
                     </div>
                   </div>
@@ -350,7 +350,7 @@ export default function Landing() {
               باقات الاشتراك
             </Badge>
             <h2 className="text-3xl md:text-4xl font-bold mb-4">ابدأ مجاناً — وكبّر مع نمو مكتبك</h2>
-            <p className="text-slate-600 dark:text-slate-400 text-lg">أسعار شفافة بدون رسوم خفية. أقل من تكلفة كوب قهوة يومياً.</p>
+            <p className="text-slate-800 dark:text-slate-300 text-lg">أسعار شفافة بدون رسوم خفية. أقل من تكلفة كوب قهوة يومياً.</p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
             {[
@@ -445,16 +445,16 @@ export default function Landing() {
                 )}
                 <div className="text-center mb-6">
                   <h3 className="text-xl font-bold text-navy-900 dark:text-white mb-2">{plan.name}</h3>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">{plan.desc}</p>
+                  <p className="text-sm text-slate-700 dark:text-slate-300 mb-4">{plan.desc}</p>
                   <div className="flex items-baseline justify-center gap-1">
                     <span className={`font-black text-navy-900 dark:text-white ${plan.isFree ? 'text-3xl' : 'text-5xl'}`}>{plan.priceLabel}</span>
-                    {!plan.isFree && <span className="text-sm text-slate-400 font-medium">ج.م/شهر</span>}
+                    {!plan.isFree && <span className="text-sm text-slate-700 dark:text-slate-300 font-medium">ج.م/شهر</span>}
                   </div>
                   {!plan.isFree && <p className="text-[11px] text-primary-600 dark:text-primary-400 font-medium mt-1">= {Math.round(plan.price / 30)} ج.م/يوم فقط</p>}
                 </div>
                 <ul className="space-y-3 mb-8">
                   {plan.features.map((f, j) => (
-                    <li key={j} className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+                    <li key={j} className="flex items-center gap-2 text-sm text-slate-800 dark:text-slate-200">
                       <CheckCircle2 className="w-4 h-4 text-primary-500 shrink-0" />
                       {f}
                     </li>
@@ -462,6 +462,7 @@ export default function Landing() {
                 </ul>
                 <Button
                   onClick={() => navigate('/login')}
+                  aria-label={`${plan.isFree ? 'ابدأ مجاناً — باقة التجربة المجانية لمدة أسبوع' : `ابدأ الآن — اشترك في باقة ${plan.name}`}`}
                   className={`w-full py-5 rounded-xl font-bold transition-all ${
                     plan.popular
                       ? "bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-500/20"
@@ -475,7 +476,7 @@ export default function Landing() {
               </motion.div>
             ))}
           </div>
-          <p className="text-center text-sm text-slate-400 mt-8">جميع الأسعار بالجنيه المصري وتشمل ضريبة القيمة المضافة. خصم 20% على الاشتراك السنوي.</p>
+          <p className="text-center text-sm text-slate-700 dark:text-slate-300 mt-8">جميع الأسعار بالجنيه المصري وتشمل ضريبة القيمة المضافة. خصم 20% على الاشتراك السنوي.</p>
         </div>
       </section>
 
@@ -488,7 +489,7 @@ export default function Landing() {
           <p className="text-primary-100 text-lg mb-10 max-w-2xl mx-auto">
             جرّب مَلَف مجاناً لمدة أسبوع (7 أيام) واستمتع بإدارة ذكية ومتكاملة لمكتبك — بدون الحاجة لبطاقة ائتمان.
           </p>
-          <Button size="lg" className="bg-white dark:bg-navy-900 text-primary-600 hover:bg-slate-50 h-14 px-10 text-lg rounded-full shadow-xl" onClick={() => navigate('/login')}>
+          <Button size="lg" className="bg-white dark:bg-navy-900 text-primary-600 hover:bg-slate-50 h-14 px-10 text-lg rounded-full shadow-xl" aria-label="ابدأ الآن — سجّل مكتبك وابدأ تجربة مجانية" onClick={() => navigate('/login')}>
             ابدأ الآن
           </Button>
         </div>

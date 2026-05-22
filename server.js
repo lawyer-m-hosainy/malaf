@@ -107,6 +107,11 @@ app.use(helmet({
             frameAncestors: ["'none'"],
         }
     },
+    hsts: {
+        maxAge: 31536000,
+        includeSubDomains: true,
+        preload: true
+    },
     // ✅ R6-FIX: Security headers
     crossOriginEmbedderPolicy: false, // Required for Supabase/Daily.co
     crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' }, // Google Auth popup

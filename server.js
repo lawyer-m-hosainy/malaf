@@ -90,7 +90,7 @@ app.use(helmet({
             styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
             fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
             // R6-FIX: tightened imgSrc — no wildcard https://*
-            imgSrc: ["'self'", "data:", "blob:", "https://*.supabase.co"],
+            imgSrc: ["'self'", "data:", "blob:", "https://*.supabase.co", "https://www.transparenttextures.com"],
             connectSrc: [
                 "'self'",
                 "https://*.supabase.co", "wss://*.supabase.co",

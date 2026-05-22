@@ -12,7 +12,7 @@ import { PLANS, PlanTier } from "@/modules/subscriptions/subscriptionService";
 import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/components/AuthProvider";
-import { ensureUserOrganization } from "@/services/organizationSetup";
+import { ensureUserOrganization, getLastOrganizationSetupError } from "@/services/organizationSetup";
 import { setTenantIdCache } from "@/lib/tenant";
 import { useAuthStore } from "@/store/useAuthStore";
 
@@ -97,7 +97,7 @@ export default function OnboardingFlow() {
           options: {
             data: {
               full_name: data.adminName,
-              role: 'مدير_مكتب',
+              role: 'مدير مكتب',
             },
             emailRedirectTo: `${window.location.origin}/dashboard`,
           },
@@ -146,24 +146,35 @@ export default function OnboardingFlow() {
       const orgId = await ensureUserOrganization(sessionUser, {
         officeName: data.officeName,
         plan: data.selectedPlan,
-        role: 'org_admin',
+        role: 'مدير مكتب',
       });
 
       if (!orgId) {
-        toast.error("فشل في إنشاء المكتب. يرجى المحاولة مرة أخرى.");
+        const detail = getLastOrganizationSetupError();
+        const isRls = /row-level security|policy|permission denied|42501/i.test(detail);
+        toast.error(
+          isRls
+            ? "تعذر إنشاء المكتب: صلاحيات قاعدة البيانات. شغّل ملف supabase/migrations/003_fix_auth_trigger.sql في Supabase."
+            : detail
+              ? `فشل في إنشاء المكتب: ${detail}`
+              : "فشل في إنشاء المكتب. تأكد من تسجيل الدخول ثم أعد المحاولة."
+        );
         setLoading(false);
         return;
       }
 
-      // تحديث اسم المكتب والباقة إن وُجدت الأعمدة
-      await supabase
+      // تحديث اسم المكتب والباقة (onboarding_completed اختياري إن وُجد العمود)
+      const orgUpdate: Record<string, unknown> = {
+        name: data.officeName,
+        plan: data.selectedPlan === 'basic' ? 'free' : data.selectedPlan,
+      };
+      const { error: orgUpdateErr } = await supabase
         .from('organizations')
-        .update({
-          name: data.officeName,
-          plan: data.selectedPlan === 'basic' ? 'free' : data.selectedPlan,
-          onboarding_completed: true,
-        })
+        .update({ ...orgUpdate, onboarding_completed: true })
         .eq('id', orgId);
+      if (orgUpdateErr?.message?.includes('onboarding_completed')) {
+        await supabase.from('organizations').update(orgUpdate).eq('id', orgId);
+      }
 
       setTenantIdCache(orgId);
       useAuthStore.getState().setCurrentUser({

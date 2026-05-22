@@ -8,7 +8,15 @@ import { setTenantIdCache } from "@/lib/tenant";
 import type { UserRole } from "@/types";
 
 const DEFAULT_ROLE: UserRole = "محامي";
+/** دور مؤسس المكتب — يجب أن يطابق enum/TEXT في Supabase (ليس org_admin) */
+const OFFICE_FOUNDER_ROLE: UserRole = "مدير مكتب";
 const PROFILE_SELECT = "id, role, full_name, org_id, organization_id, email";
+
+let lastSetupError = "";
+
+export function getLastOrganizationSetupError(): string {
+  return lastSetupError;
+}
 
 function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
@@ -66,6 +74,7 @@ async function createOrganization(user: {
     .single();
 
   if (error) {
+    lastSetupError = error.message || "org_insert_failed";
     console.error("[organizationSetup] org insert failed:", error);
     return "";
   }
@@ -75,7 +84,7 @@ async function createOrganization(user: {
 async function upsertProfile(
   user: { id: string; email?: string; user_metadata?: Record<string, unknown> },
   orgId: string,
-  role: string = "org_admin"
+  role: string = OFFICE_FOUNDER_ROLE
 ) {
   const payload: Record<string, unknown> = {
     id: user.id,
@@ -91,12 +100,14 @@ async function upsertProfile(
 
   const { error } = await supabase.from("profiles").upsert(payload, { onConflict: "id" });
   if (error) {
+    lastSetupError = error.message || "profile_upsert_failed";
     // احتياط: بعض قواعد البيانات تستخدم org_id فقط
     const { error: retryError } = await supabase.from("profiles").upsert(
       { ...payload, organization_id: undefined },
       { onConflict: "id" }
     );
     if (retryError) {
+      lastSetupError = retryError.message || "profile_upsert_failed";
       console.error("[organizationSetup] profile upsert failed:", retryError);
       return false;
     }
@@ -175,10 +186,11 @@ export async function ensureUserOrganization(
   options?: { officeName?: string; plan?: PlanTier; role?: string }
 ): Promise<string> {
   if (!user?.id) return "";
+  lastSetupError = "";
 
   const officeName = options?.officeName;
   const plan = options?.plan ?? "advanced";
-  const role = options?.role ?? DEFAULT_ROLE;
+  const role = options?.role ?? OFFICE_FOUNDER_ROLE;
 
   // انتظار trigger قاعدة البيانات (حتى 6 محاولات)
   for (let i = 0; i < 6; i++) {
@@ -203,11 +215,11 @@ export async function ensureUserOrganization(
   const orgId = await createOrganization(user, officeName);
   if (!orgId) return "";
 
-  const profileOk = await upsertProfile(user, orgId, "org_admin");
+  const profileOk = await upsertProfile(user, orgId, OFFICE_FOUNDER_ROLE);
   if (!profileOk) return "";
 
   await initTrialSubscription(orgId, plan);
-  await syncOrgToJwt(orgId, "org_admin");
+  await syncOrgToJwt(orgId, OFFICE_FOUNDER_ROLE);
   setTenantIdCache(orgId);
 
   return orgId;

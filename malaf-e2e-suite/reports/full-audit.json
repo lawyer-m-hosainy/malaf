@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-05-20T23:29:58.347Z",
+  "timestamp": "2026-05-22T05:48:33.454Z",
   "platform": "malaf.pro",
   "tester": "Playwright E2E Audit Suite v1.0",
   "note": "تقرير قراءة فقط - لا تعديلات على الكود أو البيانات",
@@ -7,28 +7,28 @@
     "homepage": {
       "url": "https://malaf.pro/",
       "status": 200,
-      "loadTime": 1332,
+      "loadTime": 1143,
       "accessible": true,
       "requiresAuth": false
     },
     "registration": {
       "url": "https://malaf.pro/register",
       "status": 200,
-      "loadTime": 179,
+      "loadTime": 207,
       "accessible": true,
       "requiresAuth": false
     },
     "login": {
       "url": "https://malaf.pro/login",
       "status": 200,
-      "loadTime": 207,
+      "loadTime": 225,
       "accessible": true,
       "requiresAuth": false
     },
     "dashboard": {
       "url": "https://malaf.pro/dashboard",
       "status": 200,
-      "loadTime": 202,
+      "loadTime": 207,
       "accessible": true,
       "requiresAuth": false
     },
@@ -36,14 +36,14 @@
     "chat": {
       "url": "https://malaf.pro/chat",
       "status": 200,
-      "loadTime": 354,
+      "loadTime": 373,
       "accessible": true,
       "requiresAuth": false
     },
     "videoCall": {
       "url": "https://malaf.pro/video-call",
       "status": 200,
-      "loadTime": 203,
+      "loadTime": 329,
       "accessible": true,
       "requiresAuth": false
     },

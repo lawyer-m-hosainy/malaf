@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "motion/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,10 @@ import { toast } from "sonner";
 import { PLANS, PlanTier } from "@/modules/subscriptions/subscriptionService";
 import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/components/AuthProvider";
+import { ensureUserOrganization } from "@/services/organizationSetup";
+import { setTenantIdCache } from "@/lib/tenant";
+import { useAuthStore } from "@/store/useAuthStore";
 
 interface OnboardingData {
   officeName: string;
@@ -43,13 +47,26 @@ export default function OnboardingFlow() {
   });
   const [emailInput, setEmailInput] = useState("");
   const navigate = useNavigate();
+  const { user: authUser } = useAuth();
+
+  useEffect(() => {
+    if (!authUser) return;
+    setData((prev) => ({
+      ...prev,
+      adminName: prev.adminName || (authUser.user_metadata?.full_name as string) || "",
+      email: prev.email || authUser.email || "",
+      officeName: prev.officeName || (authUser.user_metadata?.full_name as string) || "",
+    }));
+  }, [authUser]);
 
   const handleNext = () => {
     if (step === 1) {
       if (!data.officeName.trim()) { toast.error("يرجى إدخال اسم المكتب"); return; }
       if (!data.adminName.trim()) { toast.error("يرجى إدخال اسم المسؤول"); return; }
-      if (!data.email.includes("@")) { toast.error("يرجى إدخال بريد إلكتروني صحيح"); return; }
-      if (data.password.length < 8) { toast.error("كلمة المرور يجب أن تكون 8 أحرف على الأقل"); return; }
+      if (!authUser) {
+        if (!data.email.includes("@")) { toast.error("يرجى إدخال بريد إلكتروني صحيح"); return; }
+        if (data.password.length < 8) { toast.error("كلمة المرور يجب أن تكون 8 أحرف على الأقل"); return; }
+      }
     }
     if (step < 4) setStep(step + 1);
   };
@@ -72,109 +89,96 @@ export default function OnboardingFlow() {
   const handleComplete = async () => {
     setLoading(true);
     try {
-      // ═══ Step 1: Create auth user ═══
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: data.email,
-        password: data.password,
-        options: {
-          data: {
-            full_name: data.adminName,
-            role: 'مدير_مكتب',
+      // ═══ مسار 1: إنشاء حساب جديد إن لم يكن مسجلاً ═══
+      if (!authUser) {
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email: data.email,
+          password: data.password,
+          options: {
+            data: {
+              full_name: data.adminName,
+              role: 'مدير_مكتب',
+            },
+            emailRedirectTo: `${window.location.origin}/dashboard`,
           },
-          emailRedirectTo: `${window.location.origin}/dashboard`,
-        },
+        });
+
+        if (authError) {
+          if (authError.message.includes('already registered')) {
+            toast.error("هذا البريد الإلكتروني مسجل بالفعل. يرجى تسجيل الدخول.");
+          } else {
+            toast.error(`خطأ في التسجيل: ${authError.message}`);
+          }
+          setLoading(false);
+          return;
+        }
+
+        if (!authData.user) {
+          toast.error("حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.");
+          setLoading(false);
+          return;
+        }
+
+        if (authData.user.identities?.length === 0) {
+          toast.info("يرجى تفعيل حسابك عبر رابط التأكيد المرسل لبريدك.");
+          navigate('/login');
+          setLoading(false);
+          return;
+        }
+
+        if (!authData.session) {
+          toast.success("تم إنشاء مكتبك بنجاح! 🎉 يرجى تفعيل حسابك عبر البريد الإلكتروني.");
+          setStep(4);
+          setLoading(false);
+          return;
+        }
+      }
+
+      // ═══ مسار 2: إنشاء/ربط المكتب (موحّد) ═══
+      const sessionUser = authUser || (await supabase.auth.getUser()).data.user;
+      if (!sessionUser) {
+        toast.error("يرجى تسجيل الدخول أولاً.");
+        navigate('/login');
+        setLoading(false);
+        return;
+      }
+
+      const orgId = await ensureUserOrganization(sessionUser, {
+        officeName: data.officeName,
+        plan: data.selectedPlan,
+        role: 'org_admin',
       });
 
-      if (authError) {
-        if (authError.message.includes('already registered')) {
-          toast.error("هذا البريد الإلكتروني مسجل بالفعل. يرجى تسجيل الدخول.");
-        } else {
-          toast.error(`خطأ في التسجيل: ${authError.message}`);
-        }
-        setLoading(false);
-        return;
-      }
-
-      if (!authData.user) {
-        toast.error("حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.");
-        setLoading(false);
-        return;
-      }
-
-      // ═══ Step 2: Create organization ═══
-      const { data: org, error: orgError } = await supabase
-        .from('organizations')
-        .insert({
-          name: data.officeName,
-          slug: data.officeName.replace(/\s+/g, '-').toLowerCase() + '-' + Date.now().toString(36),
-          plan: data.selectedPlan === 'basic' ? 'free' : data.selectedPlan, // Start on free trial
-        })
-        .select('id')
-        .single();
-
-      if (orgError || !org) {
+      if (!orgId) {
         toast.error("فشل في إنشاء المكتب. يرجى المحاولة مرة أخرى.");
         setLoading(false);
         return;
       }
 
-      // ═══ Step 3: Create admin profile ═══
-      await supabase.from('profiles').insert({
-        id: authData.user.id,
-        org_id: org.id,
-        full_name: data.adminName,
-        email: data.email,
-        role: 'org_admin',
+      // تحديث اسم المكتب والباقة إن وُجدت الأعمدة
+      await supabase
+        .from('organizations')
+        .update({
+          name: data.officeName,
+          plan: data.selectedPlan === 'basic' ? 'free' : data.selectedPlan,
+          onboarding_completed: true,
+        })
+        .eq('id', orgId);
+
+      setTenantIdCache(orgId);
+      useAuthStore.getState().setCurrentUser({
+        id: sessionUser.id,
+        name: data.adminName || sessionUser.user_metadata?.full_name || "المستخدم",
+        email: data.email || sessionUser.email || "",
+        role: "مدير مكتب",
+        orgId,
       });
 
-      // ═══ Step 4: Update user metadata with org_id ═══
-      await supabase.auth.updateUser({
-        data: {
-          org_id: org.id,
-          role: 'مدير_مكتب',
-          full_name: data.adminName,
-        },
-      });
-
-      // ═══ Step 5: Create subscription with 14-day trial ═══
-      const trialEnd = new Date();
-      trialEnd.setDate(trialEnd.getDate() + 14);
-
-      await supabase.from('subscriptions').insert({
-        org_id: org.id,
-        plan: data.selectedPlan,
-        status: 'trial',
-        trial_ends_at: trialEnd.toISOString(),
-        current_period_end: trialEnd.toISOString(),
-        billing_cycle: 'monthly',
-        auto_renew: false,
-      });
-
-      // ═══ Step 6: Initialize usage_limits ═══
-      const planLimits = PLANS[data.selectedPlan];
-      await supabase.from('usage_limits').insert({
-        org_id: org.id,
-        cases_used: 0,
-        cases_limit: planLimits.maxCases === -1 ? 999999 : planLimits.maxCases,
-        users_used: 1,
-        users_limit: planLimits.maxUsers === -1 ? 999999 : planLimits.maxUsers,
-      });
-
-      // ═══ Step 7: Check email verification ═══
-      if (authData.user.identities?.length === 0) {
-        // User already exists but not confirmed
-        toast.info("يرجى تفعيل حسابك عبر رابط التأكيد المرسل لبريدك.");
-        navigate('/login');
-      } else if (!authData.session) {
-        // Email confirmation required
-        toast.success("تم إنشاء مكتبك بنجاح! 🎉 يرجى تفعيل حسابك عبر البريد الإلكتروني.");
-        setStep(4); // Show success step
-      } else {
-        // Auto-confirmed (dev mode)
-        toast.success("مبروك! تم إنشاء مكتبك بنجاح! 🎉");
-        navigate('/dashboard');
-      }
+      localStorage.setItem('onboarding_completed', '1');
+      toast.success("مبروك! تم إنشاء مكتبك بنجاح! 🎉");
+      navigate('/dashboard');
     } catch (err) {
+      console.error("[Onboarding] complete error:", err);
       toast.error("حدث خطأ غير متوقع. يرجى المحاولة لاحقاً.");
     } finally {
       setLoading(false);

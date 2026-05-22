@@ -131,6 +131,11 @@ export function ProtectedRoute({
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  // مستخدم بدون مكتب مربوط — إكمال الإعداد أولاً
+  if (user && !isDemoMode && !orgId && location.pathname !== "/onboarding") {
+    return <Navigate to="/onboarding" replace />;
+  }
+
   if (!user && isDemoMode) {
     if ((import.meta as any).env?.VITE_ENABLE_DEMO !== "true") {
       return <Navigate to="/login" state={{ from: location }} replace />;

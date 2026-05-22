@@ -10,6 +10,8 @@ import { toast } from "sonner";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useAuth } from "@/components/AuthProvider";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ensureUserOrganization } from "@/services/organizationSetup";
+import { setTenantIdCache } from "@/lib/tenant";
 
 function getSupabaseAuthErrorMessage(error: any, context: "login" | "register" = "login") {
   const code = error?.status || error?.code || "";
@@ -35,7 +37,8 @@ function getSupabaseAuthErrorMessage(error: any, context: "login" | "register" =
 
 export default function Login() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const currentUser = useAuthStore(state => state.currentUser);
   const isDemoMode = useAuthStore(state => state.isDemoMode);
   const [isLoading, setIsLoading] = useState(false);
   const [isEmailLoading, setIsEmailLoading] = useState(false);
@@ -53,9 +56,12 @@ export default function Login() {
   const [registerPassword, setRegisterPassword] = useState("");
   const [registerConfirm, setRegisterConfirm] = useState("");
 
-  // ✅ إذا كان المستخدم مسجل دخوله بالفعل (مثلاً بعد إعادة التوجيه من Google)
-  // يتم تحويله مباشرة للداشبورد بدلاً من عرض صفحة تسجيل الدخول مرة أخرى
-  if (user || isDemoMode) {
+  // مستخدم مسجل — توجيه حسب اكتمال ربط المكتب
+  if (!authLoading && (user || isDemoMode)) {
+    const orgId = currentUser?.orgId || user?.user_metadata?.org_id;
+    if (user && !orgId && !isDemoMode) {
+      return <Navigate to="/onboarding" replace />;
+    }
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -143,12 +149,27 @@ export default function Login() {
       
       if (error) throw error;
 
-      // Case 1: Email confirmation is DISABLED in Supabase Dashboard
-      // → data.session will exist → user is auto-logged-in
-      if (data.session) {
-        toast.success("تم إنشاء الحساب بنجاح! مرحباً بك في مَلَف.");
+      // Case 1: Email confirmation is DISABLED — دخول فوري + إنشاء المكتب
+      if (data.session && data.user) {
+        const orgId = await ensureUserOrganization(data.user);
+        if (!orgId) {
+          toast.error("تعذر إنشاء مكتبك تلقائياً. أكمل الإعداد في الخطوة التالية.");
+          setShowRegisterDialog(false);
+          navigate("/onboarding");
+          return;
+        }
+        setTenantIdCache(orgId);
+        useAuthStore.getState().setCurrentUser({
+          id: data.user.id,
+          name: name,
+          email: regEmail,
+          role: "مدير مكتب",
+          orgId,
+        });
+        localStorage.setItem("onboarding_completed", "1");
+        toast.success("تم إنشاء الحساب والمكتب بنجاح! مرحباً بك في مَلَف.");
         setShowRegisterDialog(false);
-        navigate("/onboarding");
+        navigate("/dashboard");
         return;
       }
 

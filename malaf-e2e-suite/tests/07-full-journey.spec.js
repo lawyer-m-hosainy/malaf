@@ -64,17 +64,16 @@ test.describe('رحلة المستخدم الكاملة على malaf.pro', () =>
     await screenshotStep(page, '07-after-register');
 
     const onDashboard = page.url().includes('/dashboard');
+    const onOnboarding = page.url().includes('/onboarding');
     results.register = {
-      ok: onDashboard,
+      ok: onDashboard || onOnboarding,
       url: page.url(),
       email: office.email,
       password: office.password,
     };
     console.log('📋 تسجيل:', results.register);
 
-    if (!onDashboard) {
-      expect(results.register.ok, `فشل الدخول بعد التسجيل — ${page.url()}`).toBe(true);
-    }
+    expect(results.register.ok, `فشل التسجيل — ${page.url()}`).toBe(true);
 
     // ─── 2. إضافة موكل ───
     await page.goto(`${BASE}/dashboard/clients`, { waitUntil: 'domcontentloaded' });

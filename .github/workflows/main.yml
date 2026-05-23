@@ -24,7 +24,10 @@ jobs:
           cache: 'npm'
 
       - name: Install Dependencies
-        run: npm install
+        run: |
+          npm install
+          VERSION=$(node -e "console.log(require('./package-lock.json').packages['node_modules/@tailwindcss/oxide'].version)")
+          npm install @tailwindcss/oxide-linux-x64-gnu@$VERSION --no-save
 
       - name: Type Checking (Lint)
         run: npm run lint

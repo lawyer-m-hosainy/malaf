@@ -238,7 +238,7 @@ router.post('/manual/confirm', authMiddleware, async (req, res) => {
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
-      .eq('id', req.userId)
+      .eq('id', req.user.uid)
       .single();
 
     if (!profile || profile.role !== 'super_admin') {
@@ -267,7 +267,7 @@ router.post('/manual/confirm', authMiddleware, async (req, res) => {
       .from('manual_payment_requests')
       .update({
         status: action,
-        confirmed_by: req.userId,
+        confirmed_by: req.user.uid,
         confirmed_at: new Date().toISOString(),
         notes: notes || null,
       })

@@ -35,6 +35,8 @@ export function FounderSignatureModal() {
             {/* Close Button */}
             <button
               onClick={() => setFounderPortalOpen(false)}
+              title="إغلاق"
+              aria-label="إغلاق"
               className="absolute left-6 top-6 flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 transition-colors hover:bg-white/15 active:scale-95"
             >
               <X size={18} className="text-white/80" />

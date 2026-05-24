@@ -1,7 +1,7 @@
 import { motion } from "motion/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,9 +13,11 @@ import { useState, useEffect, useRef } from "react";
 import { useFinanceStore } from '@/store/useFinanceStore';
 import { useCasesStore } from '@/store/useCasesStore';
 import { useTeamStore } from '@/store/useTeamStore';
+import { useClientsStore } from '@/store/useClientsStore';
 import { cn } from "@/lib/utils";
 import { fetchTimeEntries, saveTimeEntry, deleteTimeEntryRecord } from "@/services/legalDataService";
 import { formatDateEG } from "@/lib/formatEG";
+import { Link } from "react-router-dom";
 export default function TimeTracking() {
   const timeEntries = useFinanceStore((state) => state.timeEntries);
   const setTimeEntries = useFinanceStore((state) => state.setTimeEntries);
@@ -25,6 +27,7 @@ export default function TimeTracking() {
   const toggleTimeEntryBilledStatusStore = useFinanceStore((state) => state.toggleTimeEntryBilledStatus);
   const cases = useCasesStore((state) => state.cases) ?? [];
   const teamMembers = useTeamStore((state) => state.teamMembers) ?? [];
+  const clients = useClientsStore((state) => state.clients) ?? [];
   const [isTracking, setIsTracking] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
   const [manualCaseId, setManualCaseId] = useState("");
@@ -350,6 +353,24 @@ export default function TimeTracking() {
               ) : timeEntries.map((entry) => {
                 const lawyer = teamMembers.find(m => m.id === entry.lawyerId);
                 const caseItem = cases.find(c => c.id === entry.caseId);
+                
+                const client = clients.find(c => c.id === caseItem?.clientId);
+                const clientName = client?.name || "";
+                const clientTaxId = client?.commercialRegistration || client?.nationalId || "123-456-789";
+                const hours = entry.duration / 60;
+                const officeHourlyRate = 500; // 500 EGP/hour default rate
+                const baseAmount = Math.round(hours * officeHourlyRate);
+                const serviceDescription = `أتعاب قانونية — ${caseItem?.title || entry.description} — ${hours.toFixed(1)} ساعة`;
+                
+                const prefillData = {
+                  clientName,
+                  clientTaxId,
+                  serviceDescription,
+                  baseAmount,
+                  caseId: entry.caseId,
+                  timeEntryId: entry.id
+                };
+
                 return (
                   <TableRow key={entry.id}>
                     <TableCell>
@@ -375,26 +396,45 @@ export default function TimeTracking() {
                       {Math.floor(entry.duration / 60).toLocaleString('ar-EG')}س {(entry.duration % 60).toLocaleString('ar-EG')}د
                     </TableCell>
                     <TableCell>
-                      <Badge 
-                        variant={entry.isBilled ? "secondary" : "outline"} 
-                        className={cn("cursor-pointer select-none transition-colors", entry.isBilled ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:hover:bg-emerald-900/40" : "hover:bg-slate-100 dark:hover:bg-white/10")}
-                        onClick={async () => {
-                          toggleTimeEntryBilledStatusStore(entry.id);
-                          try {
-                            if (!entry.id.startsWith("TE-")) {
-                              await saveTimeEntry({ id: entry.id, is_billed: !entry.isBilled });
+                      {entry.isBilled ? (
+                        <Badge className="bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400 border-none font-bold">
+                          🟢 مُفوتَر
+                        </Badge>
+                      ) : entry.billable ? (
+                        <Badge 
+                          className="bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400 border-none font-bold cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-950/50 transition-colors"
+                          onClick={async () => {
+                            // Let the user easily toggle billed status manually by clicking
+                            toggleTimeEntryBilledStatusStore(entry.id);
+                            try {
+                              if (!entry.id.startsWith("TE-")) {
+                                await saveTimeEntry({ id: entry.id, is_billed: true });
+                              }
+                              toast.success("تم تغيير الحالة إلى: تمت الفوترة");
+                            } catch (e) {
+                              toast.error("فشل التحديث");
                             }
-                            toast.success(!entry.isBilled ? 'تم تغيير الحالة إلى: تمت الفوترة' : 'تم تغيير الحالة إلى: بانتظار الفوترة');
-                          } catch (e) {
-                            toast.error("فشل التحديث");
-                          }
-                        }}
-                      >
-                        {entry.isBilled ? 'تمت الفوترة' : 'بانتظار الفوترة'}
-                      </Badge>
+                          }}
+                        >
+                          🟡 قابل للفوترة
+                        </Badge>
+                      ) : (
+                        <Badge className="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400 border-none font-bold">
+                          ⚪ غير قابل للفوترة
+                        </Badge>
+                      )}
                     </TableCell>
                     <TableCell className="text-end">
                       <div className="flex items-center justify-end gap-1">
+                        {entry.billable && !entry.isBilled && (
+                          <Link 
+                            to="/dashboard/invoices/eta" 
+                            state={{ prefill: prefillData }}
+                            className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 font-bold inline-flex items-center")}
+                          >
+                            إنشاء فاتورة
+                          </Link>
+                        )}
                         <Button 
                           variant="ghost" 
                           size="sm"
@@ -424,7 +464,7 @@ export default function TimeTracking() {
                                 }
                                 toast.success("تم حذف السجل بنجاح");
                               } catch (e) {
-                                toast.error("فشل החذف");
+                                toast.error("فشل الحذف");
                               }
                             }
                           }}

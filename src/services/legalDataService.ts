@@ -877,7 +877,7 @@ export async function fetchTimeEntries(): Promise<any[]> {
   try {
     const { data, error } = await supabase
       .from("time_entries")
-      .select("id, case_id, user_id, description, hours, billable, rate, date, created_at")
+      .select("id, case_id, lawyer_id, description, duration_minutes, billable, is_billed, date, created_at")
       .eq("organization_id", orgId)
       .order("created_at", { ascending: false });
     if (error) throw error;

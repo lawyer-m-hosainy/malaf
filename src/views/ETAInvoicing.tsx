@@ -11,6 +11,9 @@ import { formatDateEG, formatEGP } from "@/lib/formatEG";
 import { QRCodeSVG } from "qrcode.react";
 import { fetchETAInvoices, saveETAInvoice } from "@/services/legalDataService";
 
+import { useLocation } from "react-router-dom";
+import { supabase } from "@/lib/supabase";
+
 // R7-FIX: كود النشاط — 8211 = خدمات قانونية (ثابت لجميع مكاتب المحاماة)
 const ETA_ACTIVITY_CODE = '8211';
 
@@ -33,6 +36,7 @@ interface ETAInvoice {
 
 
 export default function ETAInvoicing() {
+  const location = useLocation();
   const [invoices, setInvoices] = useState<ETAInvoice[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('الكل');
@@ -42,6 +46,28 @@ export default function ETAInvoicing() {
   const clients = useClientsStore(s => s.clients);
   // رقم التسجيل الضريبي اختياري — يكتبه المحامي إذا شاء
   const [officeTaxReg, setOfficeTaxReg] = useState('');
+
+  // Prefill states
+  const [prefillClient, setPrefillClient] = useState('');
+  const [prefillTaxId, setPrefillTaxId] = useState('');
+  const [prefillAmount, setPrefillAmount] = useState('');
+  const [prefillDescription, setPrefillDescription] = useState('');
+  const [prefillTimeEntryId, setPrefillTimeEntryId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (location.state?.prefill) {
+      const data = location.state.prefill;
+      setPrefillClient(data.clientName || '');
+      setPrefillTaxId(data.clientTaxId || '');
+      setPrefillAmount(data.baseAmount?.toString() || '');
+      setPrefillDescription(data.serviceDescription || '');
+      setPrefillTimeEntryId(data.timeEntryId || null);
+      setShowAddDialog(true);
+
+      // Clear location state to prevent dialog reopening on reload
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -135,10 +161,26 @@ export default function ETAInvoicing() {
       uuid: null,
       date: new Date().toISOString().split('T')[0],
       description: form.get('description') as string,
+      time_entry_id: prefillTimeEntryId || null,
     };
 
     try {
       await saveETAInvoice(dbInvoice);
+
+      // R2-FIX: Update the linked time entry as billed in Supabase
+      if (prefillTimeEntryId) {
+        const { error: updateErr } = await supabase
+          .from("time_entries")
+          .update({ is_billed: true })
+          .eq("id", prefillTimeEntryId);
+
+        if (updateErr) {
+          console.error("Error updating time entry billed status:", updateErr);
+        } else {
+          toast.success("تم تحديث حالة سجل الوقت إلى: تمت الفوترة");
+        }
+      }
+
       const data = await fetchETAInvoices();
       setInvoices(data.map((d: any) => ({
         id: d.id,
@@ -156,6 +198,13 @@ export default function ETAInvoicing() {
         date: d.date,
         description: d.description,
       })) as ETAInvoice[]);
+
+      // Reset prefill states and close dialog
+      setPrefillClient('');
+      setPrefillTaxId('');
+      setPrefillAmount('');
+      setPrefillDescription('');
+      setPrefillTimeEntryId(null);
       setShowAddDialog(false);
       toast.success('تم إنشاء فاتورة إلكترونية جديدة');
     } catch (err) {
@@ -269,8 +318,8 @@ export default function ETAInvoicing() {
               <Button variant="ghost" size="sm" onClick={() => setShowAddDialog(false)}><X size={18} /></Button>
             </div>
             <form onSubmit={handleAddInvoice} className="space-y-4">
-              <div><Label>اسم العميل</Label><Input name="client" required placeholder="مثال: شركة النيل للتجارة" /></div>
-              <div><Label>الرقم الضريبي للعميل</Label><Input name="taxId" required placeholder="مثال: 123-456-789" /></div>
+              <div><Label>اسم العميل</Label><Input name="client" required value={prefillClient} onChange={(e) => setPrefillClient(e.target.value)} placeholder="مثال: شركة النيل للتجارة" /></div>
+              <div><Label>الرقم الضريبي للعميل</Label><Input name="taxId" required value={prefillTaxId} onChange={(e) => setPrefillTaxId(e.target.value)} placeholder="مثال: 123-456-789" /></div>
               <div className="space-y-2">
                 <Label>رقم التسجيل الضريبي للمكتب <span className="text-xs text-slate-400">(اختياري)</span></Label>
                 <Input value={officeTaxReg} onChange={(e) => setOfficeTaxReg(e.target.value)} placeholder="مثال: 123-456-789 (اتركه فارغاً إذا لم تشأ)" />
@@ -278,8 +327,8 @@ export default function ETAInvoicing() {
               <div className="p-3 bg-slate-50 dark:bg-slate-900/20 rounded-md">
                 <p className="text-xs text-slate-500">كود النشاط (ETA): <span className="font-mono font-bold">{ETA_ACTIVITY_CODE}</span> — خدمات قانونية</p>
               </div>
-              <div><Label>المبلغ الأساسي (ج.م)</Label><Input name="amount" type="number" required min="1" placeholder="25000" /></div>
-              <div><Label>وصف الخدمة</Label><Input name="description" required placeholder="أتعاب قضية مدنية" /></div>
+              <div><Label>المبلغ الأساسي (ج.م)</Label><Input name="amount" type="number" required min="1" value={prefillAmount} onChange={(e) => setPrefillAmount(e.target.value)} placeholder="25000" /></div>
+              <div><Label>وصف الخدمة</Label><Input name="description" required value={prefillDescription} onChange={(e) => setPrefillDescription(e.target.value)} placeholder="أتعاب قضية مدنية" /></div>
               <div className="flex items-center gap-2">
                 <input type="checkbox" id="scheduleTax" name="scheduleTax" aria-label="تطبيق ضريبة جدول 10%" title="تطبيق ضريبة جدول 10%" className="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500" />
                 <Label htmlFor="scheduleTax">تطبيق ضريبة جدول 10% (استشارات وخدمات قانونية)</Label>

@@ -7,14 +7,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Receipt, Wallet, TrendingDown, History, Search, Filter } from "lucide-react";
+import { Plus, Receipt, Wallet, TrendingDown, History, Search, Filter, RefreshCw, AlertTriangle, CheckCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { formatDateEG } from "@/lib/formatEG";
 import { toast } from "sonner";
 import { useFinanceStore } from '@/store/useFinanceStore';
 import { useCasesStore } from '@/store/useCasesStore';
 import { useClientsStore } from '@/store/useClientsStore';
+import { saveExpense, saveTrustTransaction } from "@/services/legalDataService";
 
 export default function Expenses() {
   const expenses = useFinanceStore((state) => state.expenses);
@@ -23,7 +24,44 @@ export default function Expenses() {
   const clients = useClientsStore((state) => state.clients) || [];
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [newExpense, setNewExpense] = useState({ caseId: "", category: "", amount: "", description: "" });
+  const [newExpense, setNewExpense] = useState({
+    caseId: "",
+    clientId: "",
+    category: "",
+    amount: "",
+    description: "",
+    fundingSource: "office"
+  });
+
+  const getClientBalance = useFinanceStore(state => state.getClientBalance);
+  const [clientBalance, setClientBalance] = useState<number | null>(null);
+  const [isCalculatingBalance, setIsCalculatingBalance] = useState(false);
+
+  useEffect(() => {
+    if (newExpense.fundingSource !== 'trust' || !newExpense.clientId) {
+      setClientBalance(null);
+      return;
+    }
+    const fetchBal = async () => {
+      setIsCalculatingBalance(true);
+      try {
+        const bal = await getClientBalance(newExpense.clientId, newExpense.caseId || undefined);
+        setClientBalance(bal);
+      } catch {
+        setClientBalance(0);
+      } finally {
+        setIsCalculatingBalance(false);
+      }
+    };
+    fetchBal();
+  }, [newExpense.fundingSource, newExpense.clientId, newExpense.caseId, getClientBalance]);
+
+  const isClientExpense = ['رسوم قضائية', 'أمانة خبير', 'رسم إعلان (محضر)'].includes(newExpense.category);
+  const amountNum = parseFloat(newExpense.amount);
+  const balanceWarning = newExpense.fundingSource === 'trust' &&
+    clientBalance !== null &&
+    !isNaN(amountNum) &&
+    amountNum > clientBalance;
 
   const filteredExpenses = expenses.filter(exp => 
     (exp.caseName && exp.caseName.toLowerCase().includes(searchQuery.toLowerCase())) ||
@@ -64,7 +102,19 @@ export default function Expenses() {
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
                 <Label htmlFor="case">القضية</Label>
-                <Select value={newExpense.caseId} onValueChange={(v) => v && setNewExpense(prev => ({ ...prev, caseId: v }))}>
+                <Select
+                  value={newExpense.caseId}
+                  onValueChange={(v) => {
+                    if (v) {
+                      const caseData = cases.find((c: any) => c.id === v);
+                      setNewExpense(prev => ({
+                        ...prev,
+                        caseId: v,
+                        clientId: caseData ? caseData.clientId : prev.clientId
+                      }));
+                    }
+                  }}
+                >
                   <SelectTrigger className="dark:bg-navy-800">
                     <SelectValue placeholder="اختر القضية" />
                   </SelectTrigger>
@@ -84,9 +134,9 @@ export default function Expenses() {
                   <SelectContent className="dark:bg-navy-800">
                     <SelectItem value="دمغة محاماة">دمغة محاماة</SelectItem>
                     <SelectItem value="رسوم نقابة">رسوم نقابة</SelectItem>
-                    <SelectItem value="أمانة خبير">أمانة خبير</SelectItem>
-                    <SelectItem value="رسم إعلان (محضر)">رسم إعلان (محضر)</SelectItem>
-                    <SelectItem value="رسوم قضائية">رسوم قضائية (تلقائي)</SelectItem>
+                    <SelectItem value="أمانة خبير">رسوم خبراء — على الموكل</SelectItem>
+                    <SelectItem value="رسم إعلان (محضر)">رسوم إعلانات — على الموكل</SelectItem>
+                    <SelectItem value="رسوم قضائية">رسوم قضائية — على الموكل</SelectItem>
                     <SelectItem value="مصروفات انتقال">مصروفات انتقال</SelectItem>
                     <SelectItem value="مصروفات طباعة ونسخ">مصروفات طباعة ونسخ</SelectItem>
                     <SelectItem value="أمانة تنفيذ">أمانة تنفيذ</SelectItem>
@@ -95,6 +145,68 @@ export default function Expenses() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {isClientExpense && (
+                <>
+                  <div className="grid gap-2">
+                    <Label htmlFor="client">الموكل المستحق عليه</Label>
+                    <Select
+                      disabled={!!newExpense.caseId}
+                      value={newExpense.clientId}
+                      onValueChange={(v) => setNewExpense(prev => ({ ...prev, clientId: v || "" }))}
+                    >
+                      <SelectTrigger className="dark:bg-navy-800">
+                        <SelectValue placeholder="اختر الموكل" />
+                      </SelectTrigger>
+                      <SelectContent className="dark:bg-navy-800">
+                        {clients.map((cl: any) => (
+                          <SelectItem key={cl.id} value={cl.id}>{cl.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="funding">مصدر التمويل</Label>
+                    <Select
+                      value={newExpense.fundingSource}
+                      onValueChange={(v) => setNewExpense(prev => ({ ...prev, fundingSource: v || "office" }))}
+                    >
+                      <SelectTrigger className="dark:bg-navy-800">
+                        <SelectValue placeholder="اختر مصدر التمويل" />
+                      </SelectTrigger>
+                      <SelectContent className="dark:bg-navy-800">
+                        <SelectItem value="trust">من حساب الأمانة</SelectItem>
+                        <SelectItem value="office">من المكتب (سيُسترد لاحقاً)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {newExpense.fundingSource === 'trust' && newExpense.clientId && (
+                    <div className="p-3 rounded-lg border dark:border-white/10 flex items-center justify-between gap-3 text-xs bg-slate-50 dark:bg-navy-950/50">
+                      {isCalculatingBalance ? (
+                        <div className="flex items-center gap-1.5 text-slate-500 animate-pulse">
+                          <RefreshCw className="animate-spin w-4 h-4" />
+                          <span>جاري حساب رصيد الأمانة المتاح...</span>
+                        </div>
+                      ) : balanceWarning ? (
+                        <div className="flex items-center gap-1.5 text-red-500 font-bold">
+                          <AlertTriangle className="w-4 h-4 shrink-0 text-red-500" />
+                          <span>
+                            الرصيد المتاح {clientBalance?.toLocaleString("ar-EG")} ج.م فقط — الرصيد غير كافٍ!
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1.5 text-green-600 font-bold">
+                          <CheckCircle className="w-4 h-4 shrink-0 text-green-600" />
+                          <span>
+                            الرصيد المتاح كافٍ: {clientBalance?.toLocaleString("ar-EG")} ج.م
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
               <div className="grid gap-2">
                 <Label htmlFor="amount">المبلغ (ج.م)</Label>
                 <Input id="amount" type="number" className="dark:bg-navy-800" value={newExpense.amount} onChange={(e) => setNewExpense(prev => ({ ...prev, amount: e.target.value }))} />
@@ -105,31 +217,90 @@ export default function Expenses() {
               </div>
             </div>
             <div className="flex justify-end gap-3">
-              <Button variant="outline" className="dark:border-white/10" onClick={() => setDialogOpen(false)}>إلغاء</Button>
-              <Button className="bg-primary-500 text-white" onClick={() => {
-                const amountNum = parseFloat(newExpense.amount);
-                if (!newExpense.caseId || !newExpense.category || isNaN(amountNum) || amountNum <= 0) {
-                  toast.error("يرجى ملء جميع الحقول وإدخال مبلغ صحيح");
-                  return;
-                }
-                const caseData = cases.find((c: any) => c.id === newExpense.caseId);
-                const clientData = caseData ? clients.find((cl: any) => cl.id === caseData.clientId) : null;
-                addExpense({
-                  id: `EXP-${Date.now()}`,
-                  clientId: clientData ? clientData.id : "UNKNOWN",
-                  clientName: clientData ? clientData.name : "غير معروف",
-                  caseId: newExpense.caseId,
-                  caseName: caseData ? `${caseData.plaintiff} ضد ${caseData.defendant}` : newExpense.caseId,
-                  category: newExpense.category as any,
-                  amount: amountNum,
-                  date: new Date().toISOString().split('T')[0],
-                  status: 'مخصوم من الأمانة',
-                  description: newExpense.description,
-                });
-                toast.success("تم حفظ المصروف بنجاح");
+              <Button variant="outline" className="dark:border-white/10" onClick={() => {
                 setDialogOpen(false);
-                setNewExpense({ caseId: "", category: "", amount: "", description: "" });
-              }}>حفظ المصروف</Button>
+                setNewExpense({
+                  caseId: "",
+                  clientId: "",
+                  category: "",
+                  amount: "",
+                  description: "",
+                  fundingSource: "office"
+                });
+              }}>إلغاء</Button>
+              <Button
+                className="bg-primary-500 text-white font-bold"
+                disabled={balanceWarning || isCalculatingBalance || (isClientExpense && !newExpense.clientId) || !newExpense.amount}
+                onClick={async () => {
+                  const amountNum = parseFloat(newExpense.amount);
+                  if (isNaN(amountNum) || amountNum <= 0 || !newExpense.category) {
+                    toast.error("يرجى ملء جميع الحقول وإدخال مبلغ صحيح");
+                    return;
+                  }
+                  if (isClientExpense && !newExpense.clientId) {
+                    toast.error("يرجى تحديد الموكل المستحق عليه المصروف");
+                    return;
+                  }
+                  if (balanceWarning) {
+                    toast.error("لا يمكن الحفظ! الرصيد المتاح في الأمانة غير كافٍ.");
+                    return;
+                  }
+
+                  const caseData = cases.find((c: any) => c.id === newExpense.caseId);
+                  const clientData = newExpense.clientId
+                    ? clients.find((cl: any) => cl.id === newExpense.clientId)
+                    : (caseData ? clients.find((cl: any) => cl.id === caseData.clientId) : null);
+
+                  const loadingToast = toast.loading("جاري حفظ المصروف...");
+                  try {
+                    const expenseId = `EXP-${Date.now()}`;
+                    const expData = {
+                      id: expenseId,
+                      clientId: clientData ? clientData.id : "UNKNOWN",
+                      clientName: clientData ? clientData.name : "غير معروف",
+                      caseId: newExpense.caseId || undefined,
+                      caseName: caseData ? `${caseData.plaintiff} ضد ${caseData.defendant}` : newExpense.caseId,
+                      category: newExpense.category as any,
+                      amount: amountNum,
+                      date: new Date().toISOString().split('T')[0],
+                      status: isClientExpense && newExpense.fundingSource === 'trust' ? 'مخصوم من الأمانة' : 'معلق',
+                      description: newExpense.description,
+                    };
+
+                    // 1. Save to Database
+                    await saveExpense(expData);
+
+                    // 2. Log withdrawal in trust_transactions if funded from trust
+                    if (isClientExpense && newExpense.fundingSource === 'trust' && newExpense.clientId) {
+                      await saveTrustTransaction({
+                        clientId: newExpense.clientId,
+                        caseId: newExpense.caseId || undefined,
+                        transactionType: 'withdrawal',
+                        amount: amountNum,
+                        description: `خصم تلقائي لمصروف: ${newExpense.category} — ${newExpense.description || ""}`,
+                        transactionDate: new Date().toISOString().split('T')[0],
+                      });
+                    }
+
+                    // 3. Update Zustand Store and UI
+                    addExpense(expData as any);
+                    toast.success("تم حفظ المصروف بنجاح", { id: loadingToast });
+                    setDialogOpen(false);
+                    setNewExpense({
+                      caseId: "",
+                      clientId: "",
+                      category: "",
+                      amount: "",
+                      description: "",
+                      fundingSource: "office"
+                    });
+                  } catch (err: any) {
+                    toast.error(err.message || "حدث خطأ أثناء حفظ المصروف", { id: loadingToast });
+                  }
+                }}
+              >
+                حفظ المصروف
+              </Button>
             </div>
           </DialogContent>
         </Dialog>

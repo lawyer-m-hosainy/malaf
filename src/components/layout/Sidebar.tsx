@@ -43,11 +43,14 @@ const sidebarStructure: SidebarItem[] = [
 
   // ── المالية ──
   { type: 'group', title: "المالية", icon: Coins, items: [
+    { name: "لوحة المالية", href: "/dashboard/finance-dashboard", icon: LayoutDashboard },
     { name: "المالية والفواتير", href: "/dashboard/finance", icon: Calculator, testId: "nav-payments" },
     { name: "المصروفات", href: "/dashboard/expenses", icon: Wallet },
+    { name: "الأمانات", href: "/dashboard/trust", icon: Shield },
     { name: "الفاتورة الإلكترونية", href: "/dashboard/invoices/eta", icon: Receipt },
     { name: "تتبع الوقت", href: "/dashboard/time-tracking", icon: Clock },
     { name: "التحصيل", href: "/dashboard/collections", icon: HandCoins },
+    { name: "خطط الدفع والأقساط", href: "/dashboard/payment-plans", icon: Calendar },
   ]},
 
   // ── الخدمات الذكية ──

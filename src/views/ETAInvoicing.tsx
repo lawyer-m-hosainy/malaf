@@ -53,6 +53,7 @@ export default function ETAInvoicing() {
   const [prefillAmount, setPrefillAmount] = useState('');
   const [prefillDescription, setPrefillDescription] = useState('');
   const [prefillTimeEntryId, setPrefillTimeEntryId] = useState<string | null>(null);
+  const [prefillExpenseId, setPrefillExpenseId] = useState<string | null>(null);
 
   useEffect(() => {
     if (location.state?.prefill) {
@@ -62,6 +63,7 @@ export default function ETAInvoicing() {
       setPrefillAmount(data.baseAmount?.toString() || '');
       setPrefillDescription(data.serviceDescription || '');
       setPrefillTimeEntryId(data.timeEntryId || null);
+      setPrefillExpenseId(data.expenseId || null);
       setShowAddDialog(true);
 
       // Clear location state to prevent dialog reopening on reload
@@ -181,6 +183,20 @@ export default function ETAInvoicing() {
         }
       }
 
+      // Update the linked expense as paid/collected in Supabase
+      if (prefillExpenseId) {
+        const { error: updateErr } = await supabase
+          .from("expenses")
+          .update({ status: 'تم السداد' })
+          .eq("id", prefillExpenseId);
+
+        if (updateErr) {
+          console.error("Error updating expense status:", updateErr);
+        } else {
+          toast.success("تم تحديث حالة المصروف إلى: تم السداد");
+        }
+      }
+
       const data = await fetchETAInvoices();
       setInvoices(data.map((d: any) => ({
         id: d.id,
@@ -205,6 +221,7 @@ export default function ETAInvoicing() {
       setPrefillAmount('');
       setPrefillDescription('');
       setPrefillTimeEntryId(null);
+      setPrefillExpenseId(null);
       setShowAddDialog(false);
       toast.success('تم إنشاء فاتورة إلكترونية جديدة');
     } catch (err) {

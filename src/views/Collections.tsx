@@ -5,14 +5,17 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { AlertTriangle, BarChart3, FileWarning, HandCoins, Plus } from "lucide-react";
+import { AlertTriangle, BarChart3, FileWarning, HandCoins, Plus, Receipt } from "lucide-react";
 import { useFinanceStore } from '@/store/useFinanceStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useUIStore } from '@/store/useUIStore';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { formatEGP, formatDateEG } from "@/lib/formatEG";
-import { fetchReceivables, saveReceivable, saveCollectionAction } from "@/services/legalDataService";
+import { fetchReceivables, saveReceivable, saveCollectionAction, fetchExpenses } from "@/services/legalDataService";
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { cn } from "@/lib/utils";
+import PaymentPlans from "./PaymentPlans";
 
 function daysPastDue(dueDate: string) {
   const due = new Date(dueDate).getTime();
@@ -38,28 +41,50 @@ export default function Collections() {
   const addReceivableStore = useFinanceStore((state) => state.addReceivable);
   const setReceivablesStore = useFinanceStore((state) => state.setReceivables);
   const addAuditLog = useUIStore((state) => state.addAuditLog);
+  const setExpenses = useFinanceStore((state) => state.setExpenses);
+  const expenses = useFinanceStore((state) => state.expenses) || [];
+
+  const [activeTab, setActiveTab] = useState<'receivables' | 'court_fees' | 'payment_plans'>('receivables');
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadData();
   }, []);
 
   const loadData = async () => {
-    const data = await fetchReceivables();
-    setReceivablesStore(data.map((d: any) => ({
-      id: d.id,
-      clientId: d.client_id,
-      clientName: d.client_name,
-      caseId: d.case_id,
-      totalAmount: d.total_amount,
-      collectedAmount: d.collected_amount,
-      outstandingAmount: d.outstanding_amount,
-      dueDate: d.due_date,
-      status: d.status,
-      isReconciled: d.is_reconciled,
-      createdAt: d.created_at,
-      actions: []
-    })));
+    try {
+      const [recData, expData] = await Promise.all([
+        fetchReceivables(),
+        fetchExpenses()
+      ]);
+
+      setReceivablesStore(recData.map((d: any) => ({
+        id: d.id,
+        clientId: d.client_id,
+        clientName: d.client_name,
+        caseId: d.case_id,
+        totalAmount: d.total_amount,
+        collectedAmount: d.collected_amount,
+        outstandingAmount: d.outstanding_amount,
+        dueDate: d.due_date,
+        status: d.status,
+        isReconciled: d.is_reconciled,
+        createdAt: d.created_at,
+        actions: []
+      })));
+
+      setExpenses(expData);
+    } catch (e) {
+      console.error("Failed to load collections data:", e);
+    }
   };
+
+  const courtFeesExpenses = useMemo(() => {
+    return expenses.filter(exp => 
+      exp.status === 'معلق' && 
+      ['رسوم قضائية', 'أمانة خبير', 'رسم إعلان (محضر)'].includes(exp.category)
+    );
+  }, [expenses]);
 
   // Form State
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -270,40 +295,149 @@ export default function Collections() {
         </CardContent>
       </Card>
 
-      <Card className="border-none shadow-sm dark:bg-navy-800">
-        <CardHeader><CardTitle className="text-base">أداء التحصيل</CardTitle></CardHeader>
-        <CardContent className="space-y-3">
-          {receivables.map((r) => (
-            <div key={r.id} className="p-3 border rounded-md">
-              <div className="flex items-center justify-between gap-2">
-                <p className="font-bold text-sm">{r.id} • {r.clientName}</p>
-                <Badge className={r.status === "مغلق" ? "bg-emerald-100 text-emerald-700" : r.status === "متأخر" ? "bg-destructive/10 text-destructive" : "bg-blue-100 text-blue-700"}>
-                  {r.status}
-                </Badge>
+      {/* Tabs */}
+      <div className="flex border-b border-slate-100 dark:border-white/5 gap-6">
+        <button
+          className={cn(
+            "pb-3 text-sm font-bold border-b-2 px-1 transition-colors",
+            activeTab === 'receivables' 
+              ? "border-green-600 text-green-600 dark:text-green-400" 
+              : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+          )}
+          onClick={() => setActiveTab('receivables')}
+        >
+          المطالبات بالأتعاب (الذمم المدينة)
+        </button>
+        <button
+          className={cn(
+            "pb-3 text-sm font-bold border-b-2 px-1 transition-colors",
+            activeTab === 'court_fees' 
+              ? "border-green-600 text-green-600 dark:text-green-400" 
+              : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+          )}
+          onClick={() => setActiveTab('court_fees')}
+        >
+          الرسوم القضائية المستحقة ({courtFeesExpenses.length.toLocaleString('ar-EG')})
+        </button>
+        <button
+          className={cn(
+            "pb-3 text-sm font-bold border-b-2 px-1 transition-colors",
+            activeTab === 'payment_plans' 
+              ? "border-green-600 text-green-600 dark:text-green-400" 
+              : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+          )}
+          onClick={() => setActiveTab('payment_plans')}
+        >
+          خطط الدفع والأقساط
+        </button>
+      </div>
+
+      {activeTab === 'receivables' ? (
+        <Card className="border-none shadow-sm dark:bg-navy-800">
+          <CardHeader><CardTitle className="text-base">أداء تحصيل الأتعاب</CardTitle></CardHeader>
+          <CardContent className="space-y-3">
+            {receivables.length > 0 ? (
+              receivables.map((r) => (
+                <div key={r.id} className="p-3 border dark:border-white/10 rounded-md">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-bold text-sm">{r.id} • {r.clientName}</p>
+                    <Badge className={r.status === "مغلق" ? "bg-emerald-100 text-emerald-700" : r.status === "متأخر" ? "bg-destructive/10 text-destructive" : "bg-blue-100 text-blue-700"}>
+                      {r.status}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-1">المتبقي: {formatEGP(r.outstandingAmount)} • الاستحقاق: {formatDateEG(r.dueDate)}</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <Button size="sm" variant="outline" onClick={() => recordAction(r.id, "إصدار مطالبة")}>إصدار مطالبة</Button>
+                    <Button size="sm" variant="outline" onClick={() => recordAction(r.id, "إنذار رسمي")}>إنذار قانوني</Button>
+                    <Button size="sm" variant="outline" onClick={() => recordAction(r.id, "جدولة سداد")}>جدولة سداد</Button>
+                    <Button size="sm" variant="outline" onClick={() => recordAction(r.id, "تسوية")}>تسوية</Button>
+                    <Button size="sm" variant="outline" onClick={async () => { 
+                      reconcileReceivableStore(r.id); 
+                      try {
+                        if (!r.id.startsWith("REC-")) {
+                          await saveReceivable({ id: r.id, is_reconciled: true });
+                        }
+                        toast.success("تمت المطابقة المحاسبية");
+                      } catch (e) {
+                        toast.error("فشل التحديث");
+                      }
+                    }}>مطابقة محاسبية</Button>
+                    <Button size="sm" onClick={() => tryClose(r.id)}>إغلاق مالي</Button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-6 text-slate-400">لا توجد مطالبات أتعاب حالية</div>
+            )}
+          </CardContent>
+        </Card>
+      ) : activeTab === 'court_fees' ? (
+        <Card className="border-none shadow-sm dark:bg-navy-800">
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Receipt size={18} className="text-green-600" />
+              الرسوم القضائية المستحقة على الموكلين (الممولة من جيب المكتب)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {courtFeesExpenses.length > 0 ? (
+              courtFeesExpenses.map((exp) => (
+                <div key={exp.id} className="p-4 border dark:border-white/10 rounded-xl bg-white dark:bg-navy-900 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-navy-900 dark:text-white">{exp.clientName}</span>
+                      <Badge variant="outline" className="text-xs font-bold border-green-200 dark:border-white/10 text-green-700 dark:text-green-400 bg-green-50/50 dark:bg-white/5">
+                        {exp.category}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      القضية: <span className="font-bold text-slate-700 dark:text-slate-300">{exp.caseName || "غير محددة"}</span> • التاريخ: {formatDateEG(exp.date)}
+                    </p>
+                    {exp.description && (
+                      <p className="text-xs text-slate-400 dark:text-slate-500 max-w-xl italic">
+                        الوصف: {exp.description}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-4 justify-between md:justify-end">
+                    <span className="text-lg font-bold text-navy-900 dark:text-white font-mono">
+                      {exp.amount.toLocaleString('ar-EG')} ج.م
+                    </span>
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        navigate("/dashboard/invoices/eta", {
+                          state: {
+                            prefill: {
+                              clientName: exp.clientName,
+                              baseAmount: exp.amount,
+                              serviceDescription: `استرداد رسوم قضائية — ${exp.category} — ${exp.description || ""}`,
+                              expenseId: exp.id
+                            }
+                          }
+                        });
+                        toast.info("تم توجيهك لإنشاء فاتورة إلكترونية بالرسوم القضائية");
+                      }}
+                      className="bg-green-600 hover:bg-green-700 text-white font-bold gap-1 text-xs"
+                    >
+                      <Plus size={14} />
+                      أضف لفاتورة
+                    </Button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-12 text-slate-400 flex flex-col items-center gap-2">
+                <Receipt size={48} className="stroke-[1.5]" />
+                <p className="font-bold text-lg mt-2">لا توجد رسوم قضائية مستحقة</p>
+                <p className="text-xs text-slate-500">تمت تسوية أو استرداد كافة الرسوم القضائية ومصاريف الموكلين بنجاح.</p>
               </div>
-              <p className="text-xs text-slate-500 mt-1">المتبقي: {formatEGP(r.outstandingAmount)} • الاستحقاق: {formatDateEG(r.dueDate)}</p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                <Button size="sm" variant="outline" onClick={() => recordAction(r.id, "إصدار مطالبة")}>إصدار مطالبة</Button>
-                <Button size="sm" variant="outline" onClick={() => recordAction(r.id, "إنذار رسمي")}>إنذار قانوني</Button>
-                <Button size="sm" variant="outline" onClick={() => recordAction(r.id, "جدولة سداد")}>جدولة سداد</Button>
-                <Button size="sm" variant="outline" onClick={() => recordAction(r.id, "تسوية")}>تسوية</Button>
-                <Button size="sm" variant="outline" onClick={async () => { 
-                  reconcileReceivableStore(r.id); 
-                  try {
-                    if (!r.id.startsWith("REC-")) {
-                      await saveReceivable({ id: r.id, is_reconciled: true });
-                    }
-                    toast.success("تمت المطابقة المحاسبية");
-                  } catch (e) {
-                    toast.error("فشل التحديث");
-                  }
-                }}>مطابقة محاسبية</Button>
-                <Button size="sm" onClick={() => tryClose(r.id)}>إغلاق مالي</Button>
-              </div>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+            )}
+          </CardContent>
+        </Card>
+      ) : (
+        <PaymentPlans hideHeader={true} />
+      )}
     </motion.div>
   );
 }

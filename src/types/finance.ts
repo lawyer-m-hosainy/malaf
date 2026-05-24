@@ -139,3 +139,80 @@ export interface ApprovalRequest {
   createdAt: string;
   decidedAt?: string;
 }
+
+// ─── أنواع الأمانات ──────────────────────────────────────────────────
+export type TrustTransactionType = 'deposit' | 'withdrawal';
+
+export interface TrustTransaction {
+  id: string;
+  organization_id?: string;
+  clientId: string;
+  clientName?: string;
+  caseId?: string;
+  caseName?: string;
+  transactionType: TrustTransactionType;
+  amount: number;
+  description?: string;
+  receiptNumber?: string;
+  transactionDate: string;
+  createdBy?: string;
+  createdAt?: string;
+}
+
+export interface TrustBalance {
+  clientId: string;
+  clientName?: string;
+  totalDeposits: number;
+  totalWithdrawals: number;
+  availableBalance: number;
+}
+
+export interface TrustBalanceByCase extends TrustBalance {
+  caseId: string | null;
+  caseName?: string;
+}
+
+export interface TrustPageStats {
+  totalDeposits: number;
+  totalWithdrawals: number;
+  totalAvailableBalance: number;
+  transactionCount: number;
+}
+
+export interface TrustTransactionFormData {
+  transactionType: TrustTransactionType;
+  clientId: string;
+  caseId?: string;
+  amount: string;
+  description?: string;
+  receiptNumber?: string;
+  transactionDate: string;
+}
+
+export interface DBPaymentPlan {
+  id: string;
+  organization_id?: string;
+  caseId?: string;
+  caseName?: string;
+  clientId: string;
+  clientName?: string;
+  totalAmount: number;
+  paidAmount: number;
+  planDescription?: string;
+  status: 'active' | 'completed' | 'defaulted';
+  createdAt: string;
+  installments?: DBPaymentInstallment[];
+}
+
+export interface DBPaymentInstallment {
+  id: string;
+  planId: string;
+  organization_id?: string;
+  dueDate: string;
+  amount: number;
+  paidDate?: string;
+  status: 'pending' | 'paid' | 'overdue';
+  notes?: string;
+}
+
+

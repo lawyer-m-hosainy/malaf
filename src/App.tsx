@@ -82,6 +82,9 @@ const CriminalCases = lazy(() => import("./views/CriminalCases"));
 const ETAInvoicing = lazy(() => import("./views/ETAInvoicing"));
 const ELitigation = lazy(() => import("./views/ELitigation"));
 const ExpertMissions = lazy(() => import("./views/ExpertMissions"));
+const TrustAccountsPage = lazy(() => import("./views/TrustAccountsPage"));
+const PaymentPlans = lazy(() => import("./views/PaymentPlans"));
+const FinancialDashboard = lazy(() => import("./views/FinancialDashboard"));
 
 function PermissionGate({ children, permission, fallback = <Navigate to="/dashboard" replace /> }: { children: React.ReactNode; permission: string; fallback?: React.ReactNode }) {
   const hasPermission = useAuthStore(state => state.hasPermission);
@@ -139,8 +142,10 @@ export default function App() {
                 <Route path="cases" element={<PermissionGate permission="view_cases"><Cases /></PermissionGate>} />
                 <Route path="roll" element={<PermissionGate permission="view_cases"><SessionsRoll /></PermissionGate>} />
                 <Route path="calendar" element={<PermissionGate permission="view_calendar"><Calendar /></PermissionGate>} />
-                <Route path="finance" element={<PermissionGate permission="finance_basic"><Finance /></PermissionGate>} />
-                <Route path="expenses" element={<PermissionGate permission="finance_basic"><Expenses /></PermissionGate>} />
+                  <Route path="finance-dashboard" element={<PermissionGate permission="finance_basic"><FinancialDashboard /></PermissionGate>} />
+                  <Route path="finance" element={<PermissionGate permission="finance_basic"><Finance /></PermissionGate>} />
+                 <Route path="expenses" element={<PermissionGate permission="finance_basic"><Expenses /></PermissionGate>} />
+                 <Route path="trust" element={<PermissionGate permission="finance_basic"><TrustAccountsPage /></PermissionGate>} />
                 <Route path="team" element={<PermissionGate permission="org_admin"><Team /></PermissionGate>} />
                 <Route path="tasks" element={<PermissionGate permission="view_tasks"><Tasks /></PermissionGate>} />
                 <Route path="analytics" element={<PermissionGate permission="view_reports"><Analytics /></PermissionGate>} />
@@ -153,7 +158,8 @@ export default function App() {
                 <Route path="client-portal" element={<PermissionGate permission="org_admin"><PortalManagement /></PermissionGate>} />
                 <Route path="conflict-check" element={<PermissionGate permission="conflict_check"><ConflictCheck /></PermissionGate>} />
                 <Route path="enforcement" element={<PermissionGate permission="view_cases"><Enforcement /></PermissionGate>} />
-                <Route path="collections" element={<PermissionGate permission="finance_basic"><Collections /></PermissionGate>} />
+                  <Route path="collections" element={<PermissionGate permission="finance_basic"><Collections /></PermissionGate>} />
+                  <Route path="payment-plans" element={<PermissionGate permission="finance_basic"><PaymentPlans /></PermissionGate>} />
                 <Route path="clm" element={<PermissionGate permission="documents"><CLM /></PermissionGate>} />
                 <Route path="ip-operations" element={<PermissionGate permission="view_cases"><IPOperations /></PermissionGate>} />
                 <Route path="specialized-tracks" element={<PermissionGate permission="view_cases"><SpecializedTracks /></PermissionGate>} />

@@ -2,7 +2,7 @@ import { motion } from "motion/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Calculator, Receipt, TrendingUp, DollarSign, Printer, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -14,11 +14,11 @@ import { useInvoicesStore } from "@/store/useInvoicesStore";
 import { generateInvoiceId } from "@/lib/invoice";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { invoiceSchema } from "@/lib/schemas";
-import { ZodError } from "zod";
-
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatEGP, formatDateEG } from "@/lib/formatEG";
+import { Link } from "react-router-dom";
+import { supabase } from "@/lib/supabase";
+import { getCurrentTenantId } from "@/lib/tenant";
 
 // بيانات المكتب للفاتورة الإلكترونية المصرية (ETA)
 const SELLER_NAME = "مكتب الملف للمحاماة والاستشارات القانونية";
@@ -159,17 +159,47 @@ const MemoizedInvoiceRow = React.memo(({
 export default function Finance() {
   const invoices = useInvoicesStore(state => state.invoices);
   const isLoading = useInvoicesStore(state => state.isLoading);
-  const addInvoice = useInvoicesStore(state => state.addInvoice);
   const removeInvoice = useInvoicesStore(state => state.removeInvoice);
   const updateInvoiceStatus = useInvoicesStore(state => state.updateInvoiceStatus);
   const loadInvoices = useInvoicesStore(state => state.loadInvoices);
   
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [newInvoice, setNewInvoice] = useState({ clientName: "", clientId: "", base: "" });
+  const [monthlyCount, setMonthlyCount] = useState<number>(0);
+  const [monthlyTotal, setMonthlyTotal] = useState<number>(0);
 
   useEffect(() => {
     loadInvoices();
   }, [loadInvoices]);
+
+  useEffect(() => {
+    async function fetchMonthlyStats() {
+      try {
+        const orgId = getCurrentTenantId();
+        if (!orgId) return;
+
+        // Get the start of the current month
+        const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+
+        const { data, error } = await supabase
+          .from("invoices")
+          .select("total")
+          .eq("organization_id", orgId)
+          .gte("created_at", startOfMonth);
+
+        if (error) throw error;
+
+        if (data) {
+          const count = data.length;
+          const total = data.reduce((sum, item) => sum + (item.total || 0), 0);
+          setMonthlyCount(count);
+          setMonthlyTotal(total);
+        }
+      } catch (err) {
+        console.error("Error fetching monthly stats from Supabase:", err);
+      }
+    }
+
+    fetchMonthlyStats();
+  }, [invoices]);
 
   // Use useCallback so that MemoizedInvoiceRow dependencies don't change
   const handleUpdateStatus = useCallback((id: string, status: string) => {
@@ -179,35 +209,6 @@ export default function Finance() {
   const handleRemove = useCallback((id: string) => {
     removeInvoice(id);
   }, [removeInvoice]);
-
-  const handleCreateInvoice = async () => {
-    const baseNum = parseFloat(newInvoice.base);
-    
-    try {
-      invoiceSchema.parse({
-        ...newInvoice,
-        base: baseNum
-      });
-
-      await addInvoice({
-        id: generateInvoiceId(),
-        clientId: newInvoice.clientId || `C-${Date.now()}`,
-        clientName: newInvoice.clientName,
-        base: baseNum,
-        status: 'مسودة',
-        date: new Date().toISOString()
-      });
-      toast.success("تم تسجيل الفاتورة بنجاح في السجلات المعزولة والآمنة");
-      setIsDialogOpen(false);
-      setNewInvoice({ clientName: "", clientId: "", base: "" });
-    } catch (error) {
-      if (error instanceof ZodError) {
-        toast.error(error.issues[0].message);
-      } else {
-        toast.error("حدث خطأ أثناء حفظ الفاتورة");
-      }
-    }
-  };
 
   const totalRevenue = useMemo(() => invoices.reduce((sum, i) => sum + i.total, 0), [invoices]);
   const totalVat = useMemo(() => invoices.reduce((sum, i) => sum + i.vat, 0), [invoices]);
@@ -233,41 +234,13 @@ export default function Finance() {
           <h1 className="text-2xl font-bold text-navy-900 dark:text-white">المالية والضريبة</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">إدارة الفواتير، التحصيل، وحساب ضريبة القيمة المضافة (14%).</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <Button type="button" className="bg-primary-500 hover:bg-primary-600 text-white gap-2" onClick={() => setIsDialogOpen(true)}>
-            <Receipt size={18} />
-            إنشاء فاتورة ضريبية
-          </Button>
-          <DialogContent className="sm:max-w-md border-none shadow-2xl dark:bg-navy-900">
-            <DialogHeader>
-              <DialogTitle className="text-navy-900 dark:text-white">إصدار فاتورة ضريبية جديدة</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="clientName">اسم العميل</Label>
-                <Input 
-                  id="clientName" 
-                  value={newInvoice.clientName} 
-                  onChange={(e) => setNewInvoice({...newInvoice, clientName: e.target.value})} 
-                  placeholder="شركة مثال..." 
-                  className="dark:bg-white/5" 
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="base">المبلغ الأساسي (قبل الضريبة)</Label>
-                <Input 
-                  id="base" 
-                  type="number" 
-                  value={newInvoice.base} 
-                  onChange={(e) => setNewInvoice({...newInvoice, base: e.target.value})} 
-                  placeholder="مثال: 5000" 
-                  className="dark:bg-white/5" 
-                />
-              </div>
-              <Button onClick={handleCreateInvoice} className="w-full bg-primary-600 hover:bg-primary-700 text-white">حفظ وحساب الضريبة آلياً</Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <Link 
+          to="/dashboard/invoices/eta" 
+          className={cn(buttonVariants({ variant: "default" }), "bg-primary-500 hover:bg-primary-600 text-white gap-2 h-8 px-2.5 inline-flex items-center rounded-lg")}
+        >
+          <Receipt size={18} />
+          إنشاء فاتورة ضريبية
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -288,6 +261,32 @@ export default function Finance() {
           </Card>
         ))}
       </div>
+
+      {/* Quick Stats This Month */}
+      <Card className="border-none shadow-sm dark:bg-navy-800 bg-gradient-to-r from-primary-500/10 to-emerald-500/10 border border-primary-500/20">
+        <CardContent className="p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-primary-500/20 text-primary-700 dark:text-primary-300">
+              <Receipt className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">نشاط الفوترة هذا الشهر</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">تحديث تلقائي مباشر من منظومة مصلحة الضرائب وقاعدة البيانات</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-6">
+            <div className="text-center sm:text-start">
+              <p className="text-xs text-slate-500 dark:text-slate-400">فواتير صادرة هذا الشهر</p>
+              <p className="text-lg font-bold text-navy-900 dark:text-white">{monthlyCount} فواتير</p>
+            </div>
+            <div className="h-8 w-[1px] bg-slate-200 dark:bg-white/10 hidden sm:block" />
+            <div className="text-center sm:text-start">
+              <p className="text-xs text-slate-500 dark:text-slate-400">إجمالي قيمة الفواتير</p>
+              <p className="text-lg font-bold text-primary-600 dark:text-primary-400">{formatEGP(monthlyTotal)}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card className="border-none shadow-sm dark:bg-navy-800">
         <CardHeader className="flex flex-row items-center justify-between border-b border-slate-50 dark:border-white/5 pb-4">

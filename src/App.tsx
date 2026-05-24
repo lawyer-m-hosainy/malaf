@@ -171,7 +171,7 @@ export default function App() {
                 <Route path="real-estate-registry" element={<PermissionGate permission="view_cases"><RealEstateRegistry /></PermissionGate>} />
                 <Route path="family-courts" element={<PermissionGate permission="view_cases"><FamilyCourts /></PermissionGate>} />
                 <Route path="criminal-cases" element={<PermissionGate permission="view_cases"><CriminalCases /></PermissionGate>} />
-                <Route path="eta-invoicing" element={<PermissionGate permission="finance_basic"><ETAInvoicing /></PermissionGate>} />
+                <Route path="invoices/eta" element={<PermissionGate permission="finance_basic"><ETAInvoicing /></PermissionGate>} />
                 <Route path="e-litigation" element={<PermissionGate permission="view_cases"><ELitigation /></PermissionGate>} />
                 <Route path="settings" element={<PermissionGate permission="org_admin"><Settings /></PermissionGate>} />
                 <Route path="billing" element={<PermissionGate permission="org_admin"><Billing /></PermissionGate>} />

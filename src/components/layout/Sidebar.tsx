@@ -45,7 +45,7 @@ const sidebarStructure: SidebarItem[] = [
   { type: 'group', title: "المالية", icon: Coins, items: [
     { name: "المالية والفواتير", href: "/dashboard/finance", icon: Calculator, testId: "nav-payments" },
     { name: "المصروفات", href: "/dashboard/expenses", icon: Wallet },
-    { name: "الفاتورة الإلكترونية", href: "/dashboard/eta-invoicing", icon: Receipt },
+    { name: "الفاتورة الإلكترونية", href: "/dashboard/invoices/eta", icon: Receipt },
     { name: "تتبع الوقت", href: "/dashboard/time-tracking", icon: Clock },
     { name: "التحصيل", href: "/dashboard/collections", icon: HandCoins },
   ]},

@@ -218,13 +218,13 @@ export default function Landing() {
 
           {/* Category 1: Core Legal */}
           <div className="mb-16">
-            <div className="flex items-center gap-3 mb-8"><div className="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center"><Gavel className="w-5 h-5 text-primary-600" /></div><h3 className="text-xl font-bold">الإدارة القانونية الأساسية</h3></div>
+            <div className="flex items-center gap-3 mb-8"><div className="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center"><Gavel className="w-5 h-5 text-primary-600" /></div><h3 className="text-xl font-bold">إدارة القضايا والتقاضي</h3></div>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
               {[
-                { icon: Gavel, title: "إدارة القضايا", desc: "ملف شامل لكل قضية بأطرافها ومحكمتها ودائرتها وحالتها مع ربط تلقائي بالموكلين والجلسات." },
-                { icon: CalendarDays, title: "أجندة الجلسات", desc: "سجل مواعيد المحاكم مطابقاً للأجندة الورقية مع تنبيهات تلقائية وطباعة PDF احترافية." },
-                { icon: Users, title: "إدارة الموكلين", desc: "بطاقة شاملة لكل موكل: بياناته، قضاياه، عقوده، فواتيره، ومستنداته في مكان واحد." },
-                { icon: Hammer, title: "التنفيذ القضائي", desc: "متابعة 5 مراحل التنفيذ: استلام الصيغة → إعلان السند → توكيل المحضر → الإشكال → التحصيل." },
+                { icon: Gavel, title: "الملف الرقمي الموحد", desc: "تنظيم شامل لكل قضية: الخصوم، المحكمة، الدائرة، ونوع الدعوى مع أرشفة كاملة للقرارات." },
+                { icon: CalendarDays, title: "الأجندة والتقويم", desc: "متابعة ذكية لتواريخ الجلسات والمواعيد القانونية والطعون مع تنبيهات استباقية." },
+                { icon: Users, title: "دليل الموكلين", desc: "قاعدة بيانات مركزية للموكلين تشمل بيانات التواصل، التوكيلات، وتاريخ التعاملات القانونية." },
+                { icon: Hammer, title: "متابعة التنفيذ", desc: "إدارة متكاملة لإجراءات التنفيذ القضائي، بدءاً من استلام الصيغة حتى تحصيل المستحقات." },
               ].map((f, i) => (
                 <motion.div key={i} initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
                   className="p-5 rounded-2xl bg-white dark:bg-navy-800 border border-slate-100 dark:border-white/5 hover:shadow-lg hover:shadow-primary-500/5 hover:border-primary-200 dark:hover:border-primary-800/30 transition-all group">
@@ -238,13 +238,13 @@ export default function Landing() {
 
           {/* Category 2: Finance */}
           <div className="mb-16">
-            <div className="flex items-center gap-3 mb-8"><div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center"><Banknote className="w-5 h-5 text-emerald-600" /></div><h3 className="text-xl font-bold">المالية والتحصيل</h3></div>
+            <div className="flex items-center gap-3 mb-8"><div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center"><Banknote className="w-5 h-5 text-emerald-600" /></div><h3 className="text-xl font-bold">المالية والتحصيل والضرائب</h3></div>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
               {[
-                { icon: Receipt, title: "الفاتورة الإلكترونية", desc: "إصدار فواتير متوافقة مع منظومة ETA المصرية مع حساب ضريبة القيمة المضافة تلقائياً.", color: "emerald" },
-                { icon: Banknote, title: "نظام التحصيل", desc: "تتبع المستحقات والمدفوعات لكل موكل مع تنبيهات للمبالغ المتأخرة وإشعارات الدفع.", color: "emerald" },
-                { icon: Clock, title: "تتبع الوقت", desc: "تسجيل ساعات العمل لكل قضية تلقائياً مع تحويلها لفواتير بسعر الساعة المحدد.", color: "emerald" },
-                { icon: BarChart3, title: "التقارير المالية", desc: "لوحة تحكم شاملة: إيرادات، مصروفات، أرباح صافية، وتحليل أداء مالي شهري.", color: "emerald" },
+                { icon: Receipt, title: "الفاتورة الإلكترونية", desc: "إصدار فواتير ضريبية (14%) متوافقة تماماً مع متطلبات مصلحة الضرائب المصرية (ETA)." },
+                { icon: ShieldCheck, title: "حسابات الأمانات", desc: "نظام محاسبي دقيق لفصل أموال الموكلين عن أتعاب المكتب لضمان أعلى معايير النزاهة." },
+                { icon: Banknote, title: "تتبع الرسوم والدمغات", desc: "تسجيل كافة الرسوم القضائية والدمغات وربطها آلياً بملف القضية لسهولة المحاسبة." },
+                { icon: BarChart3, title: "تقارير الربحية", desc: "تحليل مالي دقيق لمداخيل المكتب ومصروفاته مع حساب صافي الأرباح لكل فترة زمنية." },
               ].map((f, i) => (
                 <motion.div key={i} initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
                   className="p-5 rounded-2xl bg-white dark:bg-navy-800 border border-slate-100 dark:border-white/5 hover:shadow-lg hover:border-emerald-200 dark:hover:border-emerald-800/30 transition-all group">
@@ -258,13 +258,13 @@ export default function Landing() {
 
           {/* Category 3: Documents & Contracts */}
           <div className="mb-16">
-            <div className="flex items-center gap-3 mb-8"><div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center"><FileSignature className="w-5 h-5 text-violet-600" /></div><h3 className="text-xl font-bold">المستندات والعقود</h3></div>
+            <div className="flex items-center gap-3 mb-8"><div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center"><FileSignature className="w-5 h-5 text-violet-600" /></div><h3 className="text-xl font-bold">المستندات والعقود الذكية</h3></div>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
               {[
-                { icon: FileSignature, title: "إدارة العقود CLM", desc: "إنشاء العقود من قوالب جاهزة، تتبع دورة حياة العقد، وتنبيهات قبل انتهاء الصلاحية." },
-                { icon: FileText, title: "المستندات والأرشفة", desc: "أرشفة إلكترونية آمنة لكل المرفقات والمستندات مع بحث سريع وتصنيف تلقائي." },
-                { icon: BookOpen, title: "+150 نموذج قانوني", desc: "مكتبة قوالب قانونية جاهزة: عقود، توكيلات، إنذارات، مذكرات — بتنسيق احترافي." },
-                { icon: Shield, title: "الملكية الفكرية", desc: "تتبع العلامات التجارية وبراءات الاختراع مع تنبيهات التجديد والمواعيد الحرجة." },
+                { icon: FileSignature, title: "منشئ العقود الآلي", desc: "توليد مسودات عقود احترافية (إيجار، عمل، شركات) متوافقة مع القانون المصري في ثوانٍ." },
+                { icon: Shield, title: "أرشفة مشفرة آمنة", desc: "تخزين كافة الوثائق والمستندات القانونية بتشفير AES-256 لضمان سرية بيانات موكليك." },
+                { icon: BookOpen, title: "+150 نموذج معيارى", desc: "مكتبة ضخمة من النماذج القانونية الجاهزة للصياغة، تشمل الإنذارات والمذكرات القانونية." },
+                { icon: FileText, title: "إدارة الوثائق CLM", desc: "تتبع دورة حياة الوثيقة من المسودة إلى التوقيع مع سجل كامل للتعديلات والإصدارات." },
               ].map((f, i) => (
                 <motion.div key={i} initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
                   className="p-5 rounded-2xl bg-white dark:bg-navy-800 border border-slate-100 dark:border-white/5 hover:shadow-lg hover:border-violet-200 dark:hover:border-violet-800/30 transition-all group">
@@ -278,13 +278,13 @@ export default function Landing() {
 
           {/* Category 4: Smart & Team */}
           <div>
-            <div className="flex items-center gap-3 mb-8"><div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center"><Sparkles className="w-5 h-5 text-amber-600" /></div><h3 className="text-xl font-bold">الخدمات الذكية وإدارة الفريق</h3></div>
+            <div className="flex items-center gap-3 mb-8"><div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center"><Sparkles className="w-5 h-5 text-amber-600" /></div><h3 className="text-xl font-bold">الذكاء الاصطناعي والتحكم</h3></div>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
               {[
-                { icon: Brain, title: "الذكاء الاصطناعي", desc: "صياغة مذكرات، تلخيص مستندات، واستشارات قانونية فورية بتقنية Gemini وGroq." },
-                { icon: Bot, title: "بوت واتساب الذكي", desc: "رد تلقائي على استفسارات الموكلين عبر واتساب بذكاء اصطناعي مدرب على بياناتك." },
-                { icon: ListChecks, title: "إدارة المهام", desc: "توزيع المهام على المحامين مع 5 حالات عمل وتتبع إنجاز وسجل نشاط لكل مهمة." },
-                { icon: Globe, title: "بوابة الموكلين", desc: "بوابة خاصة يتابع منها الموكل قضاياه وجلساته ومستنداته — بدون إزعاجك بالاتصالات." },
+                { icon: Brain, title: "المساعد القانوني AI", desc: "تحليل مذكرات الخصوم، استخراج الثغرات القانونية، وتلخيص الوثائق الطويلة بذكاء فائق." },
+                { icon: Bot, title: "أتمتة التواصل", desc: "بوت واتساب وماسنجر للرد على استفسارات الموكلين وتحديد المواعيد آلياً على مدار الساعة." },
+                { icon: ListChecks, title: "إدارة فريق العمل", desc: "توزيع المهام بين المحامين المساعدين ومتابعة نسب الإنجاز وسجل النشاط اليومي للمكتب." },
+                { icon: Globe, title: "بوابة الموكلين", desc: "مساحة خاصة للموكل لمتابعة قضاياه وتحميل مستنداته، مما يقلل الاتصالات الهاتفية بنسبة 70%." },
               ].map((f, i) => (
                 <motion.div key={i} initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
                   className="p-5 rounded-2xl bg-white dark:bg-navy-800 border border-slate-100 dark:border-white/5 hover:shadow-lg hover:border-amber-200 dark:hover:border-amber-800/30 transition-all group">

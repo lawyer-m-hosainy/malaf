@@ -210,7 +210,7 @@ export default function PaymentPlans({ hideHeader = false }: { hideHeader?: bool
       )}
 
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent className="sm:max-w-[550px] dark:bg-navy-900 dark:text-white max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[550px] dark:bg-navy-900 dark:text-white max-h-[90vh] overflow-visible">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold">إنشاء خطة دفع وأقساط جديدة</DialogTitle>
           </DialogHeader>
@@ -232,7 +232,7 @@ export default function PaymentPlans({ hideHeader = false }: { hideHeader?: bool
                     <SelectTrigger className="dark:bg-navy-800">
                       <SelectValue placeholder="اختر الموكل" />
                     </SelectTrigger>
-                    <SelectContent className="dark:bg-navy-800">
+                    <SelectContent className="dark:bg-navy-800 max-h-[250px] overflow-y-auto" style={{ zIndex: 9999 }}>
                       {clients.map((cl: any) => (
                         <SelectItem key={cl.id} value={cl.id}>{cl.name}</SelectItem>
                       ))}
@@ -255,10 +255,14 @@ export default function PaymentPlans({ hideHeader = false }: { hideHeader?: bool
                     <SelectTrigger className="dark:bg-navy-800">
                       <SelectValue placeholder="اختر القضية" />
                     </SelectTrigger>
-                    <SelectContent className="dark:bg-navy-800">
-                      {cases.map((c: any) => (
-                        <SelectItem key={c.id} value={c.id}>{c.plaintiff} ضد {c.defendant}</SelectItem>
-                      ))}
+                    <SelectContent className="dark:bg-navy-800 max-h-[250px] overflow-y-auto" style={{ zIndex: 9999 }}>
+                      {cases.length > 0 ? (
+                        cases.map((c: any) => (
+                          <SelectItem key={c.id} value={c.id}>{c.plaintiff} ضد {c.defendant}</SelectItem>
+                        ))
+                      ) : (
+                        <div className="p-2 text-center text-xs text-slate-500">لا توجد قضايا متاحة</div>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>

@@ -1,10 +1,36 @@
 import { supabase } from "@/lib/supabase";
-import { TrustTransaction, TrustTransactionType, TrustPageStats, DBPaymentPlan, DBPaymentInstallment } from "@/types";
+import { TrustTransaction, TrustTransactionType, TrustPageStats, DBPaymentPlan, DBPaymentInstallment, TrustAccount } from "@/types";
 import { requireOrgId, logAuditAction } from "./utils";
 
 // ═══════════════════════════════════════════════════════════════════
 // خدمات الأمانات (Trust Accounts)
 // ═══════════════════════════════════════════════════════════════════
+
+/**
+ * جلب حسابات الأمانات (Legacy support for Dashboard/AppDataLoader)
+ * @returns {Promise<TrustAccount[]>} قائمة حسابات الأمانات
+ */
+export async function fetchTrustAccounts(): Promise<TrustAccount[]> {
+  const orgId = requireOrgId();
+  try {
+    const { data, error } = await supabase
+      .from("trust_accounts")
+      .select("*, clients(name)")
+      .eq("organization_id", orgId)
+      .limit(100);
+    if (error) throw error;
+    return (data || []).map((t: any) => ({
+      ...t,
+      clientId: t.client_id,
+      clientName: t.clients?.name || "غير معروف",
+      caseId: t.case_id,
+      createdAt: t.created_at,
+    })) as TrustAccount[];
+  } catch (error) {
+    console.error("خطأ في جلب حسابات الأمانات:", error);
+    return [];
+  }
+}
 
 /**
  * جلب جميع حركات الأمانات الخاصة بالمكتب

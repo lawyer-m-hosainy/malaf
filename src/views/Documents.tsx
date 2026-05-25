@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -315,7 +316,15 @@ export default function Documents() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {currentDocuments.length === 0 ? (
+                {isLoading ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell colSpan={6} className="p-4">
+                        <Skeleton className="h-12 w-full rounded-md" />
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : currentDocuments.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center py-12 text-slate-500">
                       لا توجد مستندات مطابقة للبحث

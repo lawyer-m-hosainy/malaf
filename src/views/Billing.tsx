@@ -461,7 +461,7 @@ function UsageMeter({ icon: Icon, label, used, limit, color }: {
           {used} / {isUnlimited ? '∞' : limit}
         </span>
       </div>
-      <Progress value={percentage} className={cn(
+      <Progress value={percentage} dir="rtl" className={cn(
         "h-2",
         isAtLimit ? "[&>div]:bg-red-500" : isNearLimit ? "[&>div]:bg-amber-500" : `[&>div]:bg-${color}-500`
       )} />

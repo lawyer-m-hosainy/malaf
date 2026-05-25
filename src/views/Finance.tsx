@@ -16,9 +16,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatEGP, formatDateEG } from "@/lib/formatEG";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { getCurrentTenantId } from "@/lib/tenant";
+import { EmptyState } from "@/components/EmptyState";
 
 // بيانات المكتب للفاتورة الإلكترونية المصرية (ETA)
 const SELLER_NAME = "مكتب الملف للمحاماة والاستشارات القانونية";
@@ -157,6 +158,7 @@ const MemoizedInvoiceRow = React.memo(({
 });
 
 export default function Finance() {
+  const navigate = useNavigate();
   const invoices = useInvoicesStore(state => state.invoices);
   const isLoading = useInvoicesStore(state => state.isLoading);
   const removeInvoice = useInvoicesStore(state => state.removeInvoice);
@@ -303,48 +305,50 @@ export default function Finance() {
           }}>تصدير تقرير الفاتورة الإلكترونية</Button>
         </CardHeader>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader className="bg-slate-50/50 dark:bg-white/5">
-              <TableRow>
-                <TableHead className="text-start font-bold text-navy-900 dark:text-white">رقم الفاتورة</TableHead>
-                <TableHead className="text-start font-bold text-navy-900 dark:text-white">العميل</TableHead>
-                <TableHead className="text-start font-bold text-navy-900 dark:text-white">المبلغ الأساسي</TableHead>
-                <TableHead className="text-start font-bold text-navy-900 dark:text-white">الضريبة (14%)</TableHead>
-                <TableHead className="text-start font-bold text-navy-900 dark:text-white">الإجمالي</TableHead>
-                <TableHead className="text-start font-bold text-navy-900 dark:text-white">الحالة</TableHead>
-                <TableHead className="text-end font-bold text-navy-900 dark:text-white">إجراءات</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell colSpan={7} className="p-4">
-                      <Skeleton className="h-12 w-full rounded-md" />
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : invoices.length > 0 ? (
-                invoices.map(inv => (
-                  <MemoizedInvoiceRow 
-                    key={inv.id} 
-                    inv={inv} 
-                    onUpdateStatus={handleUpdateStatus} 
-                    onRemove={handleRemove} 
-                  />
-                ))
-              ) : (
+          {invoices.length === 0 && !isLoading ? (
+            <div className="p-8">
+              <EmptyState 
+                title="لا توجد فواتير بعد" 
+                description="أنشئ أول فاتورة لموكلك من خلال الزر أدناه" 
+                actionLabel="إنشاء فاتورة" 
+                onAction={() => navigate("/dashboard/invoices/eta")}
+              />
+            </div>
+          ) : (
+            <Table>
+              <TableHeader className="bg-slate-50/50 dark:bg-white/5">
                 <TableRow>
-                  <TableCell colSpan={7} className="h-64 text-center">
-                    <div className="flex flex-col items-center justify-center text-slate-400 gap-2">
-                      <Receipt size={48} className="opacity-20" />
-                      <p>لا توجد فواتير مسجلة حالياً</p>
-                    </div>
-                  </TableCell>
+                  <TableHead className="text-start font-bold text-navy-900 dark:text-white">رقم الفاتورة</TableHead>
+                  <TableHead className="text-start font-bold text-navy-900 dark:text-white">العميل</TableHead>
+                  <TableHead className="text-start font-bold text-navy-900 dark:text-white">المبلغ الأساسي</TableHead>
+                  <TableHead className="text-start font-bold text-navy-900 dark:text-white">الضريبة (14%)</TableHead>
+                  <TableHead className="text-start font-bold text-navy-900 dark:text-white">الإجمالي</TableHead>
+                  <TableHead className="text-start font-bold text-navy-900 dark:text-white">الحالة</TableHead>
+                  <TableHead className="text-end font-bold text-navy-900 dark:text-white">إجراءات</TableHead>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell colSpan={7} className="p-4">
+                        <Skeleton className="h-12 w-full rounded-md" />
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  invoices.map(inv => (
+                    <MemoizedInvoiceRow 
+                      key={inv.id} 
+                      inv={inv} 
+                      onUpdateStatus={handleUpdateStatus} 
+                      onRemove={handleRemove} 
+                    />
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </motion.div>

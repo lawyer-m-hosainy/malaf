@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import {defineConfig, loadEnv} from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import { visualizer } from 'rollup-plugin-visualizer';
 
 export default defineConfig(({mode}) => {
   loadEnv(mode, '.', '');
@@ -12,11 +13,10 @@ export default defineConfig(({mode}) => {
       react(), 
       tailwindcss(),
       VitePWA({
+        // ... existing PWA config ...
         registerType: 'autoUpdate',
-        // السماح بتسجيل sw-push.js يدوياً بجانب الـ PWA SW
         injectRegister: 'script',
         workbox: {
-          // استثناء sw-push.js من الـ precache
           navigateFallbackDenylist: [/^\/sw-push\.js$/],
           globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
           runtimeCaching: [
@@ -27,7 +27,7 @@ export default defineConfig(({mode}) => {
                 cacheName: 'google-fonts-cache',
                 expiration: {
                   maxEntries: 10,
-                  maxAgeSeconds: 60 * 60 * 24 * 365 // <== 365 days
+                  maxAgeSeconds: 60 * 60 * 24 * 365
                 },
                 cacheableResponse: {
                   statuses: [0, 200]
@@ -41,7 +41,7 @@ export default defineConfig(({mode}) => {
                 cacheName: 'gstatic-fonts-cache',
                 expiration: {
                   maxEntries: 10,
-                  maxAgeSeconds: 60 * 60 * 24 * 365 // <== 365 days
+                  maxAgeSeconds: 60 * 60 * 24 * 365
                 },
                 cacheableResponse: {
                   statuses: [0, 200]
@@ -69,6 +69,12 @@ export default defineConfig(({mode}) => {
             }
           ]
         }
+      }),
+      visualizer({ 
+        open: false, 
+        filename: 'bundle-stats.html', 
+        gzipSize: true, 
+        brotliSize: true 
       })
     ],
     resolve: {

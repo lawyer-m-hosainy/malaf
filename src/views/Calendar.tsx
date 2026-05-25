@@ -18,6 +18,19 @@ export default function SessionsCalendar() {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const sessions = useCasesStore((state) => state.sessions);
   const deadlines = useCasesStore((state) => state.deadlines);
+  const loadSessions = useCasesStore((state) => state.loadSessions);
+  const isLoading = useCasesStore((state) => state.isLoading);
+  const [sessionError, setSessionError] = useState(false);
+
+  const refetch = async () => {
+    setSessionError(false);
+    try {
+      await loadSessions();
+    } catch (err) {
+      setSessionError(true);
+      toast.error("تعذر تحميل الجلسات");
+    }
+  };
 
   const selectedDaySessions = sessions.filter(s => 
     date && isSameDay(new Date(s.date), date)
@@ -196,7 +209,19 @@ export default function SessionsCalendar() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            {totalEvents > 0 ? (
+            {sessionError ? (
+              <div className="flex flex-col items-center justify-center p-12 text-center bg-red-50 dark:bg-red-900/10 rounded-xl m-6 border border-red-100 dark:border-red-900/20">
+                <div className="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mb-4 text-red-600">
+                  <AlertCircle size={24} />
+                </div>
+                <h3 className="text-lg font-bold text-red-900 dark:text-red-400 mb-2">
+                  تعذّر تحميل جلسات هذا اليوم
+                </h3>
+                <Button variant="outline" className="mt-4 gap-2 border-red-200 text-red-700 hover:bg-red-100" onClick={() => refetch()}>
+                  إعادة المحاولة
+                </Button>
+              </div>
+            ) : totalEvents > 0 ? (
               <div className="divide-y divide-slate-50 dark:divide-white/5">
                 {/* Sessions */}
                 {selectedDaySessions.map((session) => (

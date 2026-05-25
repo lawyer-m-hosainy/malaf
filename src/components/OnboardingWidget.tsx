@@ -74,7 +74,7 @@ export function OnboardingWidget() {
               <span className="text-2xl font-black text-primary-600">{Math.round(progress)}%</span>
             </div>
           </div>
-          <Progress value={progress} className="h-2 mt-4 [&>div]:bg-primary-500 bg-primary-200/50" />
+          <Progress value={progress} dir="rtl" className="h-2 mt-4 [&>div]:bg-primary-500 bg-primary-200/50" />
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">

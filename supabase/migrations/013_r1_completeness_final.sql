@@ -156,15 +156,15 @@
  COMMENT ON COLUMN invoices.date IS 'R1-FIX: تاريخ الفاتورة — يُستخدم في legalDataService والتقارير المالية'; 
  
  -- Trigger: حساب total تلقائياً عند عدم تحديده 
- CREATE OR REPLACE FUNCTION auto_calc_invoice_total() 
- RETURNS TRIGGER AS $$ 
- BEGIN 
-     IF NEW.total IS NULL AND NEW.amount IS NOT NULL THEN 
-         NEW.total := NEW.amount + COALESCE(NEW.vat_amount, 0); 
-     END IF; 
-     RETURN NEW; 
- END; 
- $$ LANGUAGE plpgsql; 
+CREATE OR REPLACE FUNCTION auto_calc_invoice_total() 
+RETURNS TRIGGER AS $$ 
+BEGIN 
+    IF NEW.total IS NULL AND NEW.base_amount IS NOT NULL THEN 
+        NEW.total := NEW.base_amount + COALESCE(NEW.vat_amount, 0); 
+    END IF; 
+    RETURN NEW; 
+END; 
+$$ LANGUAGE plpgsql; 
  
  DROP TRIGGER IF EXISTS trg_invoices_auto_total ON invoices; 
  CREATE TRIGGER trg_invoices_auto_total 

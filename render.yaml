@@ -2,11 +2,11 @@ services:
   - type: web
     name: malaf-platform
     runtime: node
-    plan: free
+    plan: starter
     region: frankfurt
-    buildCommand: npm install && npm run build:all
-    startCommand: node server.js
-    healthCheckPath: /api/health/ping
+    buildCommand: npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
     autoDeploy: true
     envVars:
       - key: NODE_ENV
@@ -17,14 +17,12 @@ services:
         value: https://zidejnagdyoimyhprxrt.supabase.co
       - key: VITE_SUPABASE_URL
         value: https://zidejnagdyoimyhprxrt.supabase.co
-      # ✅ R2-FIX: ANON_KEY moved to sync: false — يجب إدخاله يدوياً في Render Dashboard
       - key: SUPABASE_ANON_KEY
         sync: false
       - key: VITE_SUPABASE_ANON_KEY
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
-      # ✅ R2-FIX: JWT secret for token verification (get from Supabase → Settings → API → JWT Secret)
       - key: SUPABASE_JWT_SECRET
         sync: false
       - key: GEMINI_API_KEY
@@ -33,7 +31,6 @@ services:
         sync: false
       - key: ENCRYPTION_KEY
         sync: false
-      # R6-FIX: For key rotation — set old key here when rotating ENCRYPTION_KEY
       - key: ENCRYPTION_KEY_PREVIOUS
         sync: false
       - key: DAILY_API_KEY
@@ -44,7 +41,6 @@ services:
         sync: false
       - key: RESEND_API_KEY
         sync: false
-      # Facebook Messenger Bot
       - key: FB_PAGE_ACCESS_TOKEN
         sync: false
       - key: FB_VERIFY_TOKEN
@@ -53,11 +49,23 @@ services:
         sync: false
       - key: PRODUCTION_URL
         value: https://malaf.pro
-      # ✅ R2-FIX: VITE_ENABLE_DEMO removed from production — كانت تفتح كل الـ API بدون مصادقة
     headers:
+      # 1. Static Assets (Vite)
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+      
+      # 2. HTML Pages
       - path: /*
-        name: Strict-Transport-Security
-        value: max-age=31536000; includeSubDomains; preload
+        name: Cache-Control
+        value: no-cache, no-store, must-revalidate
+      
+      # 3. API Routes
+      - path: /api/*
+        name: Cache-Control
+        value: no-store, max-age=0
+
+      # 4. Security Headers
       - path: /*
         name: X-Frame-Options
         value: DENY
@@ -69,7 +77,10 @@ services:
         value: strict-origin-when-cross-origin
       - path: /*
         name: Permissions-Policy
-        value: "geolocation=(), microphone=(), camera=()"
+        value: "camera=(), microphone=(), geolocation=()"
+      - path: /*
+        name: Strict-Transport-Security
+        value: max-age=31536000; includeSubDomains
       - path: /*
         name: Content-Security-Policy
-        value: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.daily.co; frame-ancestors 'none'"
+        value: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://*.supabase.co; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://accounts.google.com https://*.googleapis.com https://*.daily.co; frame-src 'self' https://accounts.google.com https://*.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"

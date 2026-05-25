@@ -216,6 +216,7 @@ export default function Team() {
                 </div>
                 <Progress 
                   value={((member.completedTasks || 0) / Math.max(1, (member.completedTasks || 0) + (member.pendingTasks || 0))) * 100} 
+                  dir="rtl"
                   className="h-2 bg-slate-100 dark:bg-white/5"
                 />
               </div>

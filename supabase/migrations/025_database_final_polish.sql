@@ -7,6 +7,24 @@
  BEGIN; 
  
  -- ╔═══════════════════════════════════════════════════════════════╗ 
+ -- ║  0. ضمان وجود عمود org_id للمزامنة (Sync Columns)             ║ 
+ -- ╚═══════════════════════════════════════════════════════════════ ╝ 
+  -- نضمن وجود العمود في كافة الجداول الأساسية لتجنب أخطاء الاستعلام
+  ALTER TABLE public.clients ADD COLUMN IF NOT EXISTS org_id UUID REFERENCES public.organizations(id) ON DELETE CASCADE;
+  ALTER TABLE public.trust_transactions ADD COLUMN IF NOT EXISTS org_id UUID REFERENCES public.organizations(id) ON DELETE CASCADE;
+  ALTER TABLE public.payment_plans ADD COLUMN IF NOT EXISTS org_id UUID REFERENCES public.organizations(id) ON DELETE CASCADE;
+  ALTER TABLE public.cases ADD COLUMN IF NOT EXISTS case_number TEXT; -- إضافة حقل رقم القضية المفقود
+  ALTER TABLE public.cases ADD COLUMN IF NOT EXISTS closed_at TIMESTAMPTZ; -- إضافة تاريخ الإغلاق للمزامنة مع القيود أدناه
+
+  -- مزامنة البيانات لو كانت موجودة في organization_id
+  UPDATE public.clients SET org_id = organization_id WHERE org_id IS NULL AND organization_id IS NOT NULL;
+  UPDATE public.trust_transactions SET org_id = organization_id WHERE org_id IS NULL AND organization_id IS NOT NULL;
+  UPDATE public.payment_plans SET org_id = organization_id WHERE org_id IS NULL AND organization_id IS NOT NULL;
+  
+  -- محاولة ملء case_number من الأرقام المتاحة لو كان فارغاً
+  UPDATE public.cases SET case_number = first_instance_number WHERE case_number IS NULL AND first_instance_number IS NOT NULL;
+
+ -- ╔═══════════════════════════════════════════════════════════════╗ 
  -- ║  1. نظام التدقيق التلقائي (Automated Audit Triggers)         ║ 
  -- ╚═══════════════════════════════════════════════════════════════╝ 
  
@@ -25,7 +43,11 @@
    END IF; 
  
    -- محاولة الحصول على المعرفات من السجل الجديد أو القديم 
-   _org_id := COALESCE(NEW.organization_id, NEW.org_id, OLD.organization_id, OLD.org_id); 
+   IF TG_TABLE_NAME = 'organizations' THEN
+     _org_id := COALESCE(NEW.id, OLD.id);
+   ELSE
+     _org_id := COALESCE(NEW.organization_id, NEW.org_id, OLD.organization_id, OLD.org_id); 
+   END IF;
    _user_id := auth.uid(); 
  
    -- إدراج في جدول التدقيق 
@@ -124,7 +146,7 @@
  
  -- قيود المبالغ المالية (يجب أن تكون موجبة) 
  DO $$ BEGIN 
-   ALTER TABLE invoices ADD CONSTRAINT check_invoice_amount_positive CHECK (amount >= 0); 
+   ALTER TABLE invoices ADD CONSTRAINT check_invoice_amount_positive CHECK (base_amount >= 0); 
    ALTER TABLE expenses ADD CONSTRAINT check_expense_amount_positive CHECK (amount >= 0); 
  EXCEPTION WHEN OTHERS THEN NULL; END $$; 
  
@@ -139,7 +161,7 @@
  -- ╚═══════════════════════════════════════════════════════════════╝ 
  
  -- فهرس البحث عن الموكلين بالهاتف أو الرقم القومي 
- CREATE INDEX IF NOT EXISTS idx_clients_search ON clients(org_id, phone, national_id); 
+ CREATE INDEX IF NOT EXISTS idx_clients_search ON clients(org_id, phone, national_id_encrypted); 
  
  -- فهرس للبحث عن القضايا برقم القضية 
  CREATE INDEX IF NOT EXISTS idx_cases_number ON cases(org_id, case_number); 

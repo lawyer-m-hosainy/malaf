@@ -612,7 +612,7 @@ export default function Landing() {
                 </li>
                 <li className="flex items-center gap-3">
                   <Mail className="w-5 h-5 text-primary-500 shrink-0" />
-                  <span>info@aladala-law.eg</span>
+                  <span>m.hosainy.law@gmail.com</span>
                 </li>
               </ul>
             </div>

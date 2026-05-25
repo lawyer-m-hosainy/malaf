@@ -38,8 +38,6 @@ services:
         sync: false
       - key: DAILY_API_KEY
         sync: false
-      - key: VITE_DAILY_API_KEY
-        sync: false
       - key: WA_VERIFY_TOKEN
         sync: false
       - key: PAYMOB_API_KEY
@@ -56,3 +54,22 @@ services:
       - key: PRODUCTION_URL
         value: https://malaf.pro
       # ✅ R2-FIX: VITE_ENABLE_DEMO removed from production — كانت تفتح كل الـ API بدون مصادقة
+    headers:
+      - path: /*
+        name: Strict-Transport-Security
+        value: max-age=31536000; includeSubDomains; preload
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /*
+        name: Permissions-Policy
+        value: "geolocation=(), microphone=(), camera=()"
+      - path: /*
+        name: Content-Security-Policy
+        value: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.daily.co; frame-ancestors 'none'"

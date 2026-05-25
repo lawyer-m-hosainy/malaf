@@ -1,16 +1,11 @@
 /**
- * Client-side AES-256 Encryption using Web Crypto API.
- * No server needed — works directly in the browser.
- * R8-FIX: Added client-side LRU cache to avoid redundant decryption calls.
+ * Backend-proxied AES-256 Encryption via Supabase Edge Functions.
+ * This ensures that the ENCRYPTION_KEY is never exposed to the client bundle.
  */
-
-// ─── مفتاح التشفير ───────────────────────────────────────────────
-// في Production: يُقرأ من env variable
-// في Development: يُقرأ من .env.local
-const RAW_KEY = (import.meta as any).env?.VITE_ENCRYPTION_KEY || "malaf-default-enc-key-2024-prod";
+import { supabase } from "./supabase";
 
 // ═══════════════════════════════════════════════════════
-// R8-FIX: Client-side decryption cache (LRU, max 500 entries, TTL 5 min)
+// Client-side decryption cache (LRU, max 500 entries, TTL 5 min)
 // ═══════════════════════════════════════════════════════
 const CACHE_MAX_SIZE = 500;
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
@@ -45,82 +40,77 @@ export function clearDecryptCache(): void {
   decryptCache.clear();
 }
 
-// ─── Web Crypto helpers ──────────────────────────────────────────
+// ─── Public API (Edge Function Proxy) ──────────────────────────
 
-/** Derive a 256-bit AES key from a passphrase */
-async function deriveKey(passphrase: string): Promise<CryptoKey> {
-  const enc = new TextEncoder();
-  const keyMaterial = await crypto.subtle.importKey(
-    "raw", enc.encode(passphrase), "PBKDF2", false, ["deriveKey"]
-  );
-  return crypto.subtle.deriveKey(
-    { name: "PBKDF2", salt: enc.encode("malaf-salt-v1"), iterations: 100000, hash: "SHA-256" },
-    keyMaterial,
-    { name: "AES-GCM", length: 256 },
-    false,
-    ["encrypt", "decrypt"]
-  );
-}
-
-let _cachedKey: CryptoKey | null = null;
-async function getKey(): Promise<CryptoKey> {
-  if (!_cachedKey) _cachedKey = await deriveKey(RAW_KEY);
-  return _cachedKey;
-}
-
-// ─── Public API ──────────────────────────────────────────────────
-
+/** Encrypt a field using Edge Function */
 export async function encryptField(value: string | undefined | null): Promise<string> {
   if (!value) return "";
   try {
-    const key = await getKey();
-    const iv = crypto.getRandomValues(new Uint8Array(12));
-    const enc = new TextEncoder();
-    const ciphertext = await crypto.subtle.encrypt(
-      { name: "AES-GCM", iv }, key, enc.encode(value)
-    );
-    // Combine IV + ciphertext and encode as base64
-    const combined = new Uint8Array(iv.length + new Uint8Array(ciphertext).length);
-    combined.set(iv);
-    combined.set(new Uint8Array(ciphertext), iv.length);
-    return btoa(String.fromCharCode(...combined));
+    const { data, error } = await supabase.functions.invoke("encrypt-decrypt", {
+      body: { action: "encrypt", data: value },
+    });
+
+    if (error) throw error;
+    return data.result || "";
   } catch (error) {
     console.error("Encryption failed:", error);
     return "";
   }
 }
 
+/** Decrypt a field using Edge Function with local caching */
 export async function decryptField(encryptedValue: string | undefined | null): Promise<string> {
   if (!encryptedValue) return "";
   
-  // R8-FIX: Check cache first
   const cached = getCached(encryptedValue);
   if (cached !== null) return cached;
   
   try {
-    const key = await getKey();
-    const combined = Uint8Array.from(atob(encryptedValue), c => c.charCodeAt(0));
-    const iv = combined.slice(0, 12);
-    const ciphertext = combined.slice(12);
-    const decrypted = await crypto.subtle.decrypt(
-      { name: "AES-GCM", iv }, key, ciphertext
-    );
-    const result = new TextDecoder().decode(decrypted);
+    const { data, error } = await supabase.functions.invoke("encrypt-decrypt", {
+      body: { action: "decrypt", data: encryptedValue },
+    });
+
+    if (error) throw error;
+    const result = data.result || encryptedValue;
     setCache(encryptedValue, result);
     return result;
   } catch (error) {
-    // If decryption fails, it might be plain text or old format — return as-is
-    console.warn("Decryption failed (might be unencrypted):", encryptedValue.substring(0, 20) + "...");
+    console.warn("Decryption failed (returning as-is):", error);
     return encryptedValue;
   }
 }
 
+/** Batch decrypt fields using Edge Function for efficiency */
 export async function batchDecryptFields(encryptedValues: (string | undefined | null)[]): Promise<string[]> {
   if (!encryptedValues || encryptedValues.length === 0) return [];
   
-  const results: string[] = [];
-  for (const val of encryptedValues) {
-    results.push(await decryptField(val));
+  // Filter out values already in cache
+  const uncachedValues = encryptedValues.filter(v => v && !getCached(v)) as string[];
+  
+  try {
+    let decryptedMap = new Map<string, string>();
+
+    if (uncachedValues.length > 0) {
+      const { data, error } = await supabase.functions.invoke("encrypt-decrypt", {
+        body: { action: "decrypt", batch: uncachedValues },
+      });
+
+      if (error) throw error;
+
+      if (data.results && Array.isArray(data.results)) {
+        data.results.forEach((res: string, idx: number) => {
+          decryptedMap.set(uncachedValues[idx], res);
+          setCache(uncachedValues[idx], res);
+        });
+      }
+    }
+
+    return encryptedValues.map(v => {
+      if (!v) return "";
+      return getCached(v) || decryptedMap.get(v) || v;
+    });
+  } catch (error) {
+    console.error("Batch decryption failed:", error);
+    return encryptedValues.map(v => v || "");
   }
-  return results;
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import DOMPurify from "dompurify";
 import { 
   Landmark, Building2, Shield, Scale, Calendar, AlertTriangle, 
   Search, X, FileText, Briefcase, Calculator, ChevronLeft, Info, CheckCircle, BookOpen, AlertCircle
@@ -101,7 +102,7 @@ export default function EconomicCourt() {
 
   return (
     <div className="space-y-6 pb-20 font-sans" dir="rtl">
-      <style dangerouslySetInnerHTML={{__html: `
+      <style dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(`
         :root {
           --color-primary: #14532d;
           --color-primary-light: #166534;
@@ -141,7 +142,7 @@ export default function EconomicCourt() {
           direction: ltr;
           display: inline-block;
         }
-      `}} />
+      `)}} />
 
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">

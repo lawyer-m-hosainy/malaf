@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import DOMPurify from "dompurify";
 import { 
   Siren, Shield, Scale, AlertTriangle, Search, Clock, 
   Calendar, FileText, X, CheckCircle, ChevronLeft, Info, BookOpen, AlertCircle
@@ -78,13 +79,13 @@ export default function CriminalCases() {
   return (
     <div className="space-y-6 pb-20 font-sans" dir="rtl">
       
-      <style dangerouslySetInnerHTML={{__html: `
+      <style dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(`
         .badge-danger { background: #fed7d7; color: #c53030; border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: bold; }
         .badge-warning { background: #fefcbf; color: #b7791f; border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: bold; }
         .badge-orange { background: #feebc8; color: #c05621; border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: bold; }
         .badge-blue { background: #bee3f8; color: #2b6cb0; border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: bold; }
         .badge-green { background: #c6f6d5; color: #276749; border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: bold; }
-      `}} />
+      `)}} />
 
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">

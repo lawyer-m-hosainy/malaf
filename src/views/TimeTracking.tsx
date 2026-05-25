@@ -174,14 +174,15 @@ export default function TimeTracking() {
         </div>
   
         <Dialog open={manualOpen} onOpenChange={setManualOpen}>
-          <DialogContent className="sm:max-w-md border-none shadow-2xl dark:bg-navy-900 bg-white dark:bg-navy-900">
+          <DialogContent className="sm:max-w-md border-none shadow-2xl dark:bg-navy-900 bg-white dark:bg-navy-900 overflow-visible">
             <DialogHeader>
               <DialogTitle className="text-navy-900 dark:text-white">
                 {editEntryId ? "تعديل سجل الوقت" : "إضافة وقت يدوياً"}
               </DialogTitle>
             </DialogHeader>
           <form
-            className="space-y-4 py-2"
+            className="space-y-4 py-2 text-start"
+            dir="rtl"
             onSubmit={async (e) => {
               e.preventDefault();
               if (!manualCaseId || !manualLawyerId) {
@@ -254,12 +255,16 @@ export default function TimeTracking() {
                 <SelectTrigger className="dark:bg-white/5 dark:border-white/10">
                   <SelectValue placeholder="اختر قضية" />
                 </SelectTrigger>
-                <SelectContent className="w-full min-w-[300px]" side="bottom" align="start">
-                  {cases.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.id} — {c.plaintiff} ضد {c.defendant}
-                    </SelectItem>
-                  ))}
+                <SelectContent className="dark:bg-navy-800 max-h-[250px] overflow-y-auto" style={{ zIndex: 9999 }}>
+                  {cases.length > 0 ? (
+                    cases.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.plaintiff} ضد {c.defendant}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <div className="p-2 text-center text-xs text-slate-500">لا توجد قضايا متاحة</div>
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -269,12 +274,16 @@ export default function TimeTracking() {
                 <SelectTrigger className="dark:bg-white/5 dark:border-white/10">
                   <SelectValue placeholder="اختر عضو الفريق" />
                 </SelectTrigger>
-                <SelectContent className="w-full min-w-[200px]" side="bottom" align="start">
-                  {teamMembers.map((m) => (
-                    <SelectItem key={m.id} value={m.id}>
-                      {m.name}
-                    </SelectItem>
-                  ))}
+                <SelectContent className="dark:bg-navy-800 max-h-[250px] overflow-y-auto" style={{ zIndex: 9999 }}>
+                  {teamMembers.length > 0 ? (
+                    teamMembers.map((m) => (
+                      <SelectItem key={m.id} value={m.id}>
+                        {m.name}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <div className="p-2 text-center text-xs text-slate-500">لا توجد أعضاء متاحين</div>
+                  )}
                 </SelectContent>
               </Select>
             </div>

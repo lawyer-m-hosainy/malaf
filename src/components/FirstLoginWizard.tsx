@@ -179,7 +179,7 @@ export function FirstLoginWizard() {
                       <Input value={address} onChange={e => setAddress(e.target.value)} placeholder="مثال: شارع التسعين، التجمع الخامس" className="dark:bg-white/5" />
                     </div>
                     <div className="space-y-2">
-                      <Label>رقم القيد في نقابة المحامين</Label>
+                      <Label>رقم القيد المهني (النقابة)</Label>
                       <Input value={barNumber} onChange={e => setBarNumber(e.target.value)} placeholder="مثال: 12345" className="dark:bg-white/5" dir="ltr" />
                     </div>
                   </div>

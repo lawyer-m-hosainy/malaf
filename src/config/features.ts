@@ -56,9 +56,9 @@ const featureFlags: Record<string, FeatureFlag> = {
   },
   BAR_ASSOCIATION: {
     key: 'BAR_ASSOCIATION',
-    label: 'نقابة المحامين المصريين',
+    label: 'اشتراكات النقابة',
     enabled: true,
-    description: 'تفعيل ربط بيانات القيد والاشتراك بنقابة المحامين'
+    description: 'تفعيل ربط بيانات القيد والاشتراكات السنوية للأعضاء'
   }
 };
 

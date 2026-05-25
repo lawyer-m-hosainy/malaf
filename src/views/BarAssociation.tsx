@@ -80,8 +80,8 @@ export default function BarAssociation() {
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-navy-900 dark:text-white">نقابة المحامين المصريين</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">إدارة بيانات القيد والاشتراكات بنقابة المحامين.</p>
+          <h1 className="text-2xl font-bold text-navy-900 dark:text-white">سجل اشتراكات النقابة</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">إدارة بيانات القيد المهني والاشتراكات السنوية للأعضاء.</p>
         </div>
         <Button className="gap-2" onClick={() => setShowAddDialog(true)}><Plus size={16} /> إضافة محامٍ</Button>
       </div>
@@ -109,7 +109,7 @@ export default function BarAssociation() {
           <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
           <div>
             <p className="font-bold text-amber-800 dark:text-amber-300 text-sm">تنبيه تجديد الاشتراكات</p>
-            <p className="text-amber-700 dark:text-amber-400 text-xs mt-1">يوجد {stats.expiring} اشتراك(ات) قريبة الانتهاء. يرجى التجديد في النقابة الفرعية التابع لها المحامي قبل انتهاء المهلة لتجنب الإيقاف.</p>
+            <p className="text-amber-700 dark:text-amber-400 text-xs mt-1">يوجد {stats.expiring} اشتراك(ات) قريبة الانتهاء. يرجى تجديد القيد المهني وسداد الاشتراكات قبل انتهاء المهلة لتجنب الإيقاف.</p>
           </div>
         </div>
       )}
@@ -165,7 +165,7 @@ export default function BarAssociation() {
                       </td>
                       <td className="p-4">
                         <div className="flex gap-1">
-                          <Button variant="outline" size="sm" className="gap-1 text-xs" onClick={() => toast.info('سيتم فتح نافذة رفع بطاقة النقابة')}><Upload size={12} /> البطاقة</Button>
+                          <Button variant="outline" size="sm" className="gap-1 text-xs" onClick={() => toast.info('سيتم فتح نافذة رفع بطاقة القيد المهني')}><Upload size={12} /> البطاقة</Button>
                           <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700" onClick={() => handleDelete(lawyer.id)}><Trash2 size={14} /></Button>
                         </div>
                       </td>
@@ -192,7 +192,7 @@ export default function BarAssociation() {
             <form onSubmit={handleAddLawyer} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div><Label>اسم المحامي</Label><Input name="name" required placeholder="أ. محمد أحمد" /></div>
-                <div><Label>رقم القيد بالنقابة</Label><Input name="regNumber" required placeholder="12345" /></div>
+                <div><Label>رقم القيد المهني</Label><Input name="regNumber" required placeholder="12345" /></div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>

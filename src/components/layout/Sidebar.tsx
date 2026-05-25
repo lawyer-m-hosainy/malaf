@@ -73,7 +73,7 @@ const sidebarStructure: SidebarItem[] = [
     { name: "القضايا الجنائية", href: "/dashboard/criminal-cases", icon: Siren },
     { name: "مجلس الدولة", href: "/dashboard/state-council", icon: Building },
     { name: "محاكم الأسرة", href: "/dashboard/family-courts", icon: Heart },
-    { name: "نقابة المحامين", href: "/dashboard/bar-association", icon: GraduationCap },
+    { name: "اشتراكات النقابة", href: "/dashboard/bar-association", icon: GraduationCap },
     { name: "الشهر العقاري", href: "/dashboard/real-estate-registry", icon: Home },
     { name: "مأموريات الخبراء", href: "/dashboard/experts", icon: Search },
     { name: "المسارات المتخصصة", href: "/dashboard/specialized-tracks", icon: Layers },

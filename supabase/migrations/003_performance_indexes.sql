@@ -21,6 +21,16 @@ CREATE INDEX IF NOT EXISTS idx_whatsapp_contacts_org_id ON whatsapp_contacts(org
 CREATE INDEX IF NOT EXISTS idx_whatsapp_settings_org_id ON whatsapp_settings(org_id);
 CREATE INDEX IF NOT EXISTS idx_whatsapp_scheduled_org_id ON whatsapp_scheduled(org_id);
 
+-- Indexes على organization_id لضمان التوافق (Compatibility with older schemas)
+CREATE INDEX IF NOT EXISTS idx_tasks_org_alt ON tasks(organization_id);
+CREATE INDEX IF NOT EXISTS idx_expenses_org_alt ON expenses(organization_id);
+CREATE INDEX IF NOT EXISTS idx_invoices_org_alt ON invoices(organization_id);
+CREATE INDEX IF NOT EXISTS idx_trust_org_alt ON trust_accounts(organization_id);
+CREATE INDEX IF NOT EXISTS idx_poas_org_alt ON poas(organization_id);
+CREATE INDEX IF NOT EXISTS idx_documents_org_alt ON documents(organization_id);
+CREATE INDEX IF NOT EXISTS idx_enforcement_org_alt ON enforcement_cases(organization_id);
+CREATE INDEX IF NOT EXISTS idx_expert_org_alt ON expert_missions(organization_id);
+
 -- ── 2. Indexes على case_id (جداول مرتبطة بالقضايا) ──
 CREATE INDEX IF NOT EXISTS idx_sessions_case_id ON sessions(case_id);
 CREATE INDEX IF NOT EXISTS idx_documents_case_id ON documents(case_id);

@@ -12,22 +12,28 @@
 -- ║  الخطوة 1: إصلاح دالة الحصول على organization_id بشكل آمن  ║
 -- ╚═══════════════════════════════════════════════════════════════╝
 
-CREATE OR REPLACE FUNCTION get_user_org_id()
-RETURNS UUID AS $$
-DECLARE
-  _org_id UUID;
-BEGIN
-  -- أولاً: محاولة القراءة من app_metadata (آمنة - لا يمكن للعميل تعديلها)
-  _org_id := (current_setting('request.jwt.claims', true)::jsonb -> 'app_metadata' ->> 'org_id')::UUID;
-  
-  -- إذا لم تكن موجودة في app_metadata، نقرأ من جدول profiles (مصدر الحقيقة)
-  IF _org_id IS NULL THEN
-    SELECT organization_id INTO _org_id FROM profiles WHERE id = auth.uid() LIMIT 1;
-  END IF;
-  
-  RETURN _org_id;
-END;
-$$ LANGUAGE plpgsql STABLE SECURITY DEFINER;
+CREATE OR REPLACE FUNCTION public.get_user_org_id() 
+ RETURNS UUID AS $$ 
+ DECLARE 
+   _org_id UUID; 
+ BEGIN 
+   -- 1) محاولة القراءة من user_metadata (Vite/Supabase Auth UI)
+   _org_id := (current_setting('request.jwt.claims', true)::jsonb -> 'user_metadata' ->> 'org_id')::UUID; 
+   
+   -- 2) محاولة القراءة من app_metadata (Security Definer Triggers)
+   IF _org_id IS NULL THEN 
+     _org_id := (current_setting('request.jwt.claims', true)::jsonb -> 'app_metadata' ->> 'org_id')::UUID; 
+   END IF; 
+   
+   -- 3) القراءة من جدول profiles (مصدر الحقيقة النهائي)
+   IF _org_id IS NULL THEN 
+     SELECT COALESCE(organization_id, org_id) INTO _org_id 
+     FROM public.profiles WHERE id = auth.uid() LIMIT 1; 
+   END IF; 
+   
+   RETURN _org_id; 
+ END; 
+ $$ LANGUAGE plpgsql STABLE SECURITY DEFINER; 
 
 -- ╔═══════════════════════════════════════════════════════════════╗
 -- ║  الخطوة 2: تأكيد تفعيل RLS على الجداول المطلوبة            ║

@@ -1,98 +1,71 @@
--- ═══════════════════════════════════════════════════════════════════
--- مَلَف: مزامنة org_id ↔ organization_id (شغّل مرة واحدة في SQL Editor)
--- يحل فشل حفظ الموكلين عندما Trigger يكتب org_id و RLS يقرأ organization_id
--- ═══════════════════════════════════════════════════════════════════
-
--- 1) التأكد من وجود العمودين
-ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS org_id UUID REFERENCES public.organizations(id);
-ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS organization_id UUID REFERENCES public.organizations(id);
-
--- 2) مزامنة البيانات القديمة
-UPDATE public.profiles
-SET organization_id = org_id
-WHERE organization_id IS NULL AND org_id IS NOT NULL;
-
-UPDATE public.profiles
-SET org_id = organization_id
-WHERE org_id IS NULL AND organization_id IS NOT NULL;
-
--- 3) دالة get_user_org_id تقرأ من المصدرين
-CREATE OR REPLACE FUNCTION public.get_user_org_id()
-RETURNS UUID AS $$
-DECLARE
-  _org_id UUID;
-BEGIN
-  _org_id := (current_setting('request.jwt.claims', true)::jsonb -> 'user_metadata' ->> 'org_id')::UUID;
-  IF _org_id IS NULL THEN
-    _org_id := (current_setting('request.jwt.claims', true)::jsonb -> 'app_metadata' ->> 'org_id')::UUID;
-  END IF;
-  IF _org_id IS NULL THEN
-    SELECT COALESCE(organization_id, org_id) INTO _org_id
-    FROM public.profiles WHERE id = auth.uid() LIMIT 1;
-  END IF;
-  RETURN _org_id;
-END;
-$$ LANGUAGE plpgsql STABLE SECURITY DEFINER;
-
--- 4) Trigger التسجيل: يكتب العمودين معاً
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $$
-DECLARE
-  new_org_id UUID;
-BEGIN
-  INSERT INTO public.organizations (name, slug)
-  VALUES (
-    COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1), 'مكتب المحاماة'),
-    'office-' || substr(NEW.id::TEXT, 1, 8)
-  )
-  ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name
-  RETURNING id INTO new_org_id;
-
-  INSERT INTO public.profiles (id, org_id, organization_id, full_name, email, role)
-  VALUES (
-    NEW.id,
-    new_org_id,
-    new_org_id,
-    COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1), 'المستخدم'),
-    NEW.email,
-    'محامي'
-  )
-  ON CONFLICT (id) DO UPDATE SET
-    org_id = COALESCE(public.profiles.org_id, new_org_id),
-    organization_id = COALESCE(public.profiles.organization_id, new_org_id),
-    full_name = COALESCE(NULLIF(public.profiles.full_name, ''), EXCLUDED.full_name),
-    email = COALESCE(NULLIF(public.profiles.email, ''), EXCLUDED.email);
-
-  UPDATE auth.users
-  SET raw_user_meta_data = raw_user_meta_data || jsonb_build_object('org_id', new_org_id, 'role', 'محامي')
-  WHERE id = NEW.id;
-
-  RETURN NEW;
-EXCEPTION WHEN OTHERS THEN
-  RAISE WARNING 'handle_new_user error: % - %', SQLERRM, SQLSTATE;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
-
--- 5) السماح بإنشاء مكتب عند التسجيل (إن لم تكن السياسة موجودة)
-DROP POLICY IF EXISTS "org_insert" ON public.organizations;
-CREATE POLICY "org_insert" ON public.organizations
-  FOR INSERT TO authenticated
-  WITH CHECK (true);
-
--- 6) المستخدم ينشئ ملفه الشخصي
-DROP POLICY IF EXISTS "profiles_insert_own" ON public.profiles;
-CREATE POLICY "profiles_insert_own" ON public.profiles
-  FOR INSERT TO authenticated
-  WITH CHECK (id = auth.uid());
-
-DROP POLICY IF EXISTS "profiles_update_own" ON public.profiles;
-CREATE POLICY "profiles_update_own" ON public.profiles
-  FOR UPDATE TO authenticated
-  USING (id = auth.uid())
-  WITH CHECK (id = auth.uid());
+-- ═══════════════════════════════════════════════════════ 
+ -- R8 v2: Performance Migration — sessions org_id direct column 
+ -- ═══════════════════════════════════════════════════════ 
+ -- Fix: cases table may use office_id instead of org_id 
+ -- This version auto-detects which column exists. 
+ 
+ -- 1. Add org_id to sessions 
+ ALTER TABLE sessions ADD COLUMN IF NOT EXISTS org_id UUID REFERENCES organizations(id); 
+ 
+ -- 2. Backfill: try org_id first, fall back to office_id 
+ DO $$ 
+ BEGIN 
+   -- Check if cases has org_id column 
+   IF EXISTS ( 
+     SELECT 1 FROM information_schema.columns 
+     WHERE table_name = 'cases' AND column_name = 'org_id' 
+   ) THEN 
+     UPDATE sessions s 
+     SET org_id = c.org_id 
+     FROM cases c 
+     WHERE s.case_id = c.id AND s.org_id IS NULL; 
+     RAISE NOTICE 'Backfilled sessions.org_id from cases.org_id'; 
+   -- Check if cases has office_id column  
+   ELSIF EXISTS ( 
+     SELECT 1 FROM information_schema.columns 
+     WHERE table_name = 'cases' AND column_name = 'office_id' 
+   ) THEN 
+     UPDATE sessions s 
+     SET org_id = c.office_id 
+     FROM cases c 
+     WHERE s.case_id = c.id AND s.org_id IS NULL; 
+     RAISE NOTICE 'Backfilled sessions.org_id from cases.office_id'; 
+   ELSE 
+     RAISE NOTICE 'WARNING: cases table has neither org_id nor office_id — skipping backfill'; 
+   END IF; 
+ END $$; 
+ 
+ -- 3. Auto-fill trigger: set org_id from the parent case on INSERT 
+ CREATE OR REPLACE FUNCTION fill_session_org_id() 
+ RETURNS TRIGGER AS $$ 
+ DECLARE 
+   parent_org UUID; 
+ BEGIN 
+   IF NEW.org_id IS NULL AND NEW.case_id IS NOT NULL THEN 
+     -- Try org_id first, then office_id 
+     SELECT COALESCE( 
+       (SELECT org_id FROM cases WHERE id = NEW.case_id), 
+       (SELECT office_id FROM cases WHERE id = NEW.case_id) 
+     ) INTO parent_org; 
+     NEW.org_id := parent_org; 
+   END IF; 
+   RETURN NEW; 
+ END; 
+ $$ LANGUAGE plpgsql; 
+ 
+ DROP TRIGGER IF EXISTS trg_fill_session_org_id ON sessions; 
+ CREATE TRIGGER trg_fill_session_org_id 
+   BEFORE INSERT ON sessions 
+   FOR EACH ROW 
+   EXECUTE FUNCTION fill_session_org_id(); 
+ 
+ -- 4. Performance index 
+ CREATE INDEX IF NOT EXISTS idx_sessions_org_id ON sessions(org_id); 
+ CREATE INDEX IF NOT EXISTS idx_sessions_date_org ON sessions(date, org_id); 
+ 
+ -- 5. Update RLS to use direct org_id (no JOIN) 
+ ALTER TABLE sessions ENABLE ROW LEVEL SECURITY; 
+ DROP POLICY IF EXISTS "sessions_isolation" ON sessions; 
+ CREATE POLICY "sessions_isolation" ON sessions FOR ALL USING ( 
+   org_id = get_user_org_id() 
+ );

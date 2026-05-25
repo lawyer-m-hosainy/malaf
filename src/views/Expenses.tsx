@@ -95,11 +95,11 @@ export default function Expenses() {
             <Plus size={18} />
             تسجيل مصروف جديد
           </Button>
-          <DialogContent className="dark:bg-navy-900 dark:text-white">
+          <DialogContent className="dark:bg-navy-900 dark:text-white overflow-visible">
             <DialogHeader>
               <DialogTitle>تسجيل مصروف جديد</DialogTitle>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
+            <div className="grid gap-4 py-4 text-start" dir="rtl">
               <div className="grid gap-2">
                 <Label htmlFor="case">القضية</Label>
                 <Select
@@ -118,10 +118,14 @@ export default function Expenses() {
                   <SelectTrigger className="dark:bg-navy-800">
                     <SelectValue placeholder="اختر القضية" />
                   </SelectTrigger>
-                  <SelectContent className="dark:bg-navy-800">
-                    {cases.map((c: any) => (
-                      <SelectItem key={c.id} value={c.id}>{c.plaintiff} ضد {c.defendant}</SelectItem>
-                    ))}
+                  <SelectContent className="dark:bg-navy-800 max-h-[250px] overflow-y-auto" style={{ zIndex: 9999 }}>
+                    {cases.length > 0 ? (
+                      cases.map((c: any) => (
+                        <SelectItem key={c.id} value={c.id}>{c.plaintiff} ضد {c.defendant}</SelectItem>
+                      ))
+                    ) : (
+                      <div className="p-2 text-center text-xs text-slate-500">لا توجد قضايا متاحة</div>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -131,17 +135,17 @@ export default function Expenses() {
                   <SelectTrigger className="dark:bg-navy-800">
                     <SelectValue placeholder="اختر التصنيف" />
                   </SelectTrigger>
-                  <SelectContent className="dark:bg-navy-800">
+                  <SelectContent className="dark:bg-navy-800" style={{ zIndex: 9999 }}>
+                    <SelectItem value="رسوم قضائية">رسوم قضائية</SelectItem>
+                    <SelectItem value="أمانة خبير">أمانة خبير</SelectItem>
+                    <SelectItem value="مصروفات انتقال">مصروفات انتقال</SelectItem>
                     <SelectItem value="دمغة محاماة">دمغة محاماة</SelectItem>
                     <SelectItem value="رسوم نقابة">رسوم نقابة</SelectItem>
-                    <SelectItem value="أمانة خبير">رسوم خبراء — على الموكل</SelectItem>
-                    <SelectItem value="رسم إعلان (محضر)">رسوم إعلانات — على الموكل</SelectItem>
-                    <SelectItem value="رسوم قضائية">رسوم قضائية — على الموكل</SelectItem>
-                    <SelectItem value="مصروفات انتقال">مصروفات انتقال</SelectItem>
+                    <SelectItem value="رسم إعلان (محضر)">رسم إعلان (محضر)</SelectItem>
                     <SelectItem value="مصروفات طباعة ونسخ">مصروفات طباعة ونسخ</SelectItem>
                     <SelectItem value="أمانة تنفيذ">أمانة تنفيذ</SelectItem>
                     <SelectItem value="رسوم شهر عقاري">رسوم شهر عقاري</SelectItem>
-                    <SelectItem value="أخرى">أخرى (حر)</SelectItem>
+                    <SelectItem value="أخرى">أخرى</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

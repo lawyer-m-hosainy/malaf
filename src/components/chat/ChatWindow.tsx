@@ -44,6 +44,7 @@ export function ChatWindow() {
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const [channel, setChannel] = useState<any>(null);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<string>("connecting");
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -108,22 +109,36 @@ export function ChatWindow() {
 
     /* ─── Realtime channel ─── */
     const roomChannel = supabase
-      .channel(`room:${activeRoomId}`)
+      .channel(`room:${activeRoomId}`, {
+        config: {
+          broadcast: { self: false },
+          presence: { key: myId },
+        },
+      })
       .on("postgres_changes", {
         event: "INSERT",
         schema: "public",
         table: "chat_messages",
         filter: `room_id=eq.${activeRoomId}`,
       }, async (payload) => {
-        // Enrich with sender name
-        let senderName = "مجهول";
-        if (payload.new.sender_id) {
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("full_name")
-            .eq("id", payload.new.sender_id)
-            .single();
-          senderName = profile?.full_name || "مجهول";
+        console.log("[Chat] New message received via Realtime:", payload.new.id);
+        
+        // Use sender_name from payload to avoid extra DB query
+        let senderName = payload.new.sender_name;
+        
+        if (!senderName) {
+          if (payload.new.sender_id === myId) {
+            senderName = currentUser?.name || "أنا";
+          } else if (payload.new.sender_id) {
+            const { data: profile } = await supabase
+              .from("profiles")
+              .select("full_name")
+              .eq("id", payload.new.sender_id)
+              .single();
+            senderName = profile?.full_name || "مجهول";
+          } else {
+            senderName = "نظام";
+          }
         }
 
         const newMsg: ChatMessage = {
@@ -134,9 +149,11 @@ export function ChatWindow() {
         appendMessage(activeRoomId, newMsg);
         updateRoomLastMessage(activeRoomId, newMsg.content, newMsg.created_at);
 
-        // Browser notification if not from me
-        if (newMsg.sender_id !== myId && document.hidden && "Notification" in window && Notification.permission === "granted") {
-          new Notification("ملف — رسالة جديدة", { body: newMsg.content, icon: "/favicon.ico" });
+        // Browser/Mobile notification
+        if (newMsg.sender_id !== myId && document.hidden) {
+          if ("Notification" in window && Notification.permission === "granted") {
+            new Notification("ملف — رسالة جديدة", { body: newMsg.content, icon: "/favicon.ico" });
+          }
         }
       })
       .on("broadcast", { event: "typing" }, ({ payload }) => {
@@ -146,10 +163,18 @@ export function ChatWindow() {
           setTypingUsers((prev) => prev.filter((n) => n !== (payload.user_name || "يكتب")));
         }, 3000);
       })
-      .subscribe((status) => {
+      .subscribe((status, err) => {
         console.log(`[Chat] Channel room:${activeRoomId} status:`, status);
+        setConnectionStatus(status);
+        if (err) console.error(`[Chat] Channel error:`, err);
+        
         if (status === "SUBSCRIBED" && myId) {
           roomChannel.track({ user_id: myId, user_name: currentUser?.name });
+        }
+        
+        if (status === "CLOSED" || status === "CHANNEL_ERROR") {
+          console.log("[Chat] Connection lost, attempting to reconnect...");
+          setTimeout(() => roomChannel.subscribe(), 3000);
         }
       });
 
@@ -296,15 +321,21 @@ export function ChatWindow() {
     <div className="flex-1 flex flex-col h-full relative" dir="rtl">
       {/* Room header */}
       <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-white/10 px-5 py-3 flex items-center gap-3">
-        <div className={`w-10 h-10 rounded-full ${getAvatarColor(activeRoomId)} flex items-center justify-center text-white font-bold text-sm`}>
+        <div className={`w-10 h-10 rounded-full ${getAvatarColor(activeRoomId || "room")} flex items-center justify-center text-white font-bold text-sm`}>
           {(activeRoom?.name || "غ").substring(0, 2)}
         </div>
         <div>
           <h3 className="font-bold text-slate-800 dark:text-white text-sm">{activeRoom?.name || "محادثة"}</h3>
           <p className="text-[11px] text-slate-400">
-            {activeRoom?.type === "client" ? "موكل" : "فريق داخلي"}
-            {typingUsers.length > 0 && (
-              <span className="text-[#c9a84c] mr-2 animate-pulse">• يكتب الآن...</span>
+            {connectionStatus !== "SUBSCRIBED" ? (
+              <span className="text-amber-500 animate-pulse">جاري الاتصال...</span>
+            ) : (
+              <>
+                {activeRoom?.type === "client" ? "موكل" : "فريق داخلي"}
+                {typingUsers.length > 0 && (
+                  <span className="text-[#c9a84c] mr-2 animate-pulse">• يكتب الآن...</span>
+                )}
+              </>
             )}
           </p>
         </div>

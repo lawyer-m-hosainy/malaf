@@ -40,6 +40,7 @@ export function MessageInput({ channel, roomType, roomName }: MessageInputProps)
         room_id: activeRoomId,
         content,
         sender_id: currentUser?.id || null,
+        sender_name: currentUser?.name || "شخص ما",
         is_system: false,
       });
 
@@ -93,6 +94,7 @@ export function MessageInput({ channel, roomType, roomName }: MessageInputProps)
         attachment_url: urlData.publicUrl,
         attachment_type: attachmentType,
         sender_id: currentUser?.id || null,
+        sender_name: currentUser?.name || "شخص ما",
         is_system: false,
       });
 
@@ -121,31 +123,50 @@ export function MessageInput({ channel, roomType, roomName }: MessageInputProps)
 
   /* ─── Video call ─── */
   const startVideoCall = async () => {
+    if (!activeRoomId) return;
+    
+    const loadingToast = toast.loading("جاري بدء المكالمة...");
     try {
       // Call Edge Function (API key is secure on backend)
       const { data, error } = await supabase.functions.invoke("create-video-room", {
-        body: { roomName: `malaf-${activeRoomId || Date.now()}` },
+        body: { roomName: `malaf-${activeRoomId}` },
       });
 
-      if (error) throw error;
-      if (!data?.url) throw new Error("No URL returned");
+      if (error) {
+        // Detailed error from Edge Function
+        const errorMsg = error.message || (typeof error === 'object' ? JSON.stringify(error) : String(error));
+        console.error("Edge Function error object:", error);
+        throw new Error(errorMsg);
+      }
+      
+      if (!data?.url) throw new Error("لم يتم إرجاع رابط للمكالمة");
 
       setActiveVideoCall(data.url);
+      toast.dismiss(loadingToast);
 
       // Send system message about the call
-      if (activeRoomId) {
-        await supabase.from("chat_messages").insert({
-          room_id: activeRoomId,
-          content: `📹 ${currentUser?.name || "شخص ما"} بدأ مكالمة فيديو — اضغط للانضمام`,
-          is_system: true,
-          attachment_url: data.url,
-        });
-      }
+      await supabase.from("chat_messages").insert({
+        room_id: activeRoomId,
+        content: `📹 ${currentUser?.name || "شخص ما"} بدأ مكالمة فيديو — اضغط للانضمام`,
+        is_system: true,
+        attachment_url: data.url,
+        sender_id: currentUser?.id,
+        sender_name: currentUser?.name || "شخص ما",
+      });
 
-      window.open(data.url, "_blank");
-    } catch (error) {
+      // Browser/Mobile handle: Use a fallback for mobile apps
+      if (window.open(data.url, "_blank") === null) {
+        toast.info("يرجى الضغط على زر 'انضمام' في شريط المكالمة بالأعلى");
+      }
+    } catch (error: any) {
       console.error("Video call error:", error);
-      toast.error("فشل بدء المكالمة — تأكد من إعداد DAILY_API_KEY في Supabase Secrets");
+      toast.dismiss(loadingToast);
+      
+      if (error.message?.includes("DAILY_API_KEY")) {
+        toast.error("خطأ في الإعداد: مفتاح DAILY_API_KEY غير موجود في Supabase Secrets");
+      } else {
+        toast.error(`فشل بدء المكالمة: ${error.message || "حدث خطأ غير متوقع"}`);
+      }
     }
   };
 

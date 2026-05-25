@@ -61,11 +61,11 @@ export default function AddSessionDialog({ caseData, triggerContext = 'case_deta
           <Calendar size={12} /> إضافة جلسة
         </Button>
       )}
-      <DialogContent className="bg-white dark:bg-navy-900">
+      <DialogContent className="bg-white dark:bg-navy-900 overflow-visible">
         <DialogHeader>
           <DialogTitle className="font-bold">إضافة موعد جلسة جديد</DialogTitle>
         </DialogHeader>
-        <form className="space-y-4 pt-4" onSubmit={handleSubmit}>
+        <form className="space-y-4 pt-4 text-start" dir="rtl" onSubmit={handleSubmit}>
           {!caseData && (
             <div className="space-y-2">
               <Label>القضية المرتبطة</Label>
@@ -73,10 +73,14 @@ export default function AddSessionDialog({ caseData, triggerContext = 'case_deta
                 <SelectTrigger className="dark:bg-white/5 dark:border-white/10">
                   <SelectValue placeholder="اختر قضية من القائمة" />
                 </SelectTrigger>
-                <SelectContent className="dark:bg-navy-800 dark:border-white/10">
-                  {cases.map((c) => (
-                     <SelectItem key={c.id} value={c.id}>{c.id} - {c.plaintiff} ضد {c.defendant}</SelectItem>
-                  ))}
+                <SelectContent className="dark:bg-navy-800 dark:border-white/10 max-h-[250px] overflow-y-auto" style={{ zIndex: 9999 }}>
+                  {cases.length > 0 ? (
+                    cases.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>{c.plaintiff} ضد {c.defendant}</SelectItem>
+                    ))
+                  ) : (
+                    <div className="p-2 text-center text-xs text-slate-500">لا توجد قضايا متاحة</div>
+                  )}
                 </SelectContent>
               </Select>
             </div>

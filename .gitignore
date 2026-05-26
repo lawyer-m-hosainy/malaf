@@ -15,3 +15,12 @@ playwright-report/
 test-results/
 supabase/.temp/
 malaf/
+
+# Dependency Management Reports (auto-generated)
+reports/dependency-security-audit.json
+reports/npm-audit-raw.json
+reports/license-compliance-report.json
+reports/sbom.json
+reports/sbom-summary.md
+reports/outdated.json
+reports/outdated-report.md

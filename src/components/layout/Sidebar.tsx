@@ -19,7 +19,6 @@ type SidebarItem =
 const sidebarStructure: SidebarItem[] = [
   // ── أقسام ثابتة ──
   { type: 'link', name: "الرئيسية", href: "/dashboard", icon: LayoutDashboard },
-  { type: 'link', name: "المحادثات", href: "/dashboard/chat", icon: MessageSquare },
   { type: 'link', name: "الموكلين", href: "/dashboard/clients", icon: Users, testId: "nav-clients" },
   { type: 'link', name: "القضايا", href: "/dashboard/cases", icon: Scale, testId: "nav-cases" },
 
@@ -57,6 +56,7 @@ const sidebarStructure: SidebarItem[] = [
   { type: 'group', title: "الخدمات الذكية", icon: Sparkles, items: [
     { name: "أين فريقي؟", href: "/dashboard/field-checkins", icon: MapPin },
     { name: "المحلل الذكي", href: "/dashboard/ai-analyzer", icon: Sparkles, testId: "nav-ai-assistant" },
+    { name: "استيراد البيانات", href: "/dashboard/import", icon: History },
     { name: "إحصائيات الأداء", href: "/dashboard/analytics", icon: BarChart3 },
     { name: "المعرفة القانونية", href: "/dashboard/wiki", icon: BookOpen },
     { name: "مكتبة الأحكام", href: "/dashboard/law-library", icon: Gavel },
@@ -80,6 +80,10 @@ const sidebarStructure: SidebarItem[] = [
   ]},
 ];
 
+/**
+ * المكون الجانبي للموقع (Sidebar) لعرض القوائم والروابط للمحامي.
+ * @returns {React.ReactElement} عنصر واجهة المستخدم للقائمة الجانبية
+ */
 export function Sidebar() {
   const hasPermission = useAuthStore(state => state.hasPermission);
   const isSidebarOpen = useUIStore(state => state.isSidebarOpen);

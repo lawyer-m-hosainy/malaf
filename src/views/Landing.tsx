@@ -151,10 +151,7 @@ export default function Landing() {
                   ) : (
                     <>
                       <div 
-                        className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-                        style={{ 
-                          backgroundImage: "url('https://resource2.heygen.ai/video/8dc83a38ae484418bbac75fd38674fe1/v18ef80c3651f410e90adfb5ba50ad885/gif.gif')" 
-                        }}
+                        className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105 bg-[url('https://resource2.heygen.ai/video/8dc83a38ae484418bbac75fd38674fe1/v18ef80c3651f410e90adfb5ba50ad885/gif.gif')]"
                       ></div>
                       <div className="absolute inset-0 bg-gradient-to-t from-navy-950/90 via-navy-950/60 to-transparent"></div>
                       <div className="absolute inset-0 bg-navy-950/20 backdrop-blur-[1px]"></div>

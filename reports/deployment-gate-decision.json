@@ -1,0 +1,41 @@
+{
+  "timestamp": "2026-05-26T18:40:29.951Z",
+  "allowed": true,
+  "blockers": [],
+  "sloSnapshot": [
+    {
+      "slo_name": "availability",
+      "name": "Availability SLO",
+      "status": "healthy",
+      "budget_consumed_pct": 0,
+      "burn_rate": 0,
+      "legally_required": false
+    },
+    {
+      "slo_name": "latency_p95",
+      "name": "Latency P95 SLO",
+      "status": "healthy",
+      "budget_consumed_pct": 0,
+      "burn_rate": 0,
+      "legally_required": false
+    },
+    {
+      "slo_name": "latency_p99",
+      "name": "Latency P99 SLO",
+      "status": "healthy",
+      "budget_consumed_pct": 0,
+      "burn_rate": 0,
+      "legally_required": false
+    },
+    {
+      "slo_name": "eta_integration",
+      "name": "ETA Invoice Submission",
+      "status": "healthy",
+      "budget_consumed_pct": 0,
+      "burn_rate": 0,
+      "legally_required": true
+    }
+  ],
+  "commitSha": "local",
+  "branch": "local"
+}

@@ -1,0 +1,180 @@
+name: 🛡️ Dependency Security & Compliance
+# Runs on PRs, weekly schedule, and manual trigger
+
+on:
+  pull_request:
+    branches: [main, master, staging]
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+  schedule:
+    # Every Monday at 6:00 AM UTC
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  # ─── Job 1: Security Audit ─────────────────────────────────
+  security-audit:
+    name: 🔒 Security Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: |
+          npm audit --audit-level=high || true
+          echo "---"
+          npm audit --json > reports/npm-audit-raw.json 2>/dev/null || true
+
+      - name: Run Dependency Security Audit
+        run: node scripts/audit-deps.mjs
+        continue-on-error: true
+
+      - name: Upload Security Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-audit-report
+          path: reports/dependency-security-audit.json
+          retention-days: 30
+
+  # ─── Job 2: License Compliance ─────────────────────────────
+  license-check:
+    name: 📜 License Compliance
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Check License Compliance
+        run: node scripts/check-licenses.mjs
+
+      - name: Upload License Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: license-compliance-report
+          path: reports/license-compliance-report.json
+          retention-days: 90
+
+  # ─── Job 3: SBOM Generation ────────────────────────────────
+  sbom:
+    name: 📋 Generate SBOM
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Generate SBOM
+        run: node scripts/generate-sbom.mjs
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: |
+            reports/sbom.json
+            reports/sbom-summary.md
+          retention-days: 365
+
+  # ─── Job 4: Outdated Packages Report ───────────────────────
+  outdated-report:
+    name: 📊 Outdated Packages
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Check Outdated Packages
+        run: |
+          echo "# 📊 Outdated Packages Report" > reports/outdated-report.md
+          echo "" >> reports/outdated-report.md
+          echo "Generated: $(date -u '+%Y-%m-%dT%H:%M:%SZ')" >> reports/outdated-report.md
+          echo "" >> reports/outdated-report.md
+          echo '```' >> reports/outdated-report.md
+          npm outdated || true
+          echo '```' >> reports/outdated-report.md
+          npm outdated --json > reports/outdated.json 2>/dev/null || echo '{}' > reports/outdated.json
+
+      - name: Upload Outdated Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: outdated-packages-report
+          path: |
+            reports/outdated-report.md
+            reports/outdated.json
+          retention-days: 30
+
+  # ─── Job 5: PR Comment with Summary ────────────────────────
+  summary-comment:
+    name: 💬 PR Summary
+    runs-on: ubuntu-latest
+    needs: [security-audit, license-check]
+    if: github.event_name == 'pull_request'
+    permissions:
+      pull-requests: write
+
+    steps:
+      - name: Post PR Comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = `## 🛡️ Dependency Security Report
+
+            | Check | Status |
+            |-------|--------|
+            | Security Audit | ✅ Completed |
+            | License Compliance | ✅ Completed |
+
+            > 📄 Full reports available in workflow artifacts.
+            > 🤖 Powered by Malaf Dependency Management System`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body
+            });

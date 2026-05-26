@@ -1,0 +1,116 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base",
+    ":semanticCommits",
+    ":automergeMinor",
+    "schedule:weekends"
+  ],
+  "labels": ["dependencies", "automated"],
+  "prHourlyLimit": 3,
+  "prConcurrentLimit": 5,
+  "rangeStrategy": "pin",
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 5am on monday"]
+  },
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": ["security", "priority-high"],
+    "automerge": true
+  },
+  "packageRules": [
+    {
+      "description": "Auto-merge devDependencies (patch + minor)",
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["patch", "minor"],
+      "automerge": true,
+      "automergeType": "branch"
+    },
+    {
+      "description": "Auto-merge production patches only",
+      "matchDepTypes": ["dependencies"],
+      "matchUpdateTypes": ["patch"],
+      "automerge": true,
+      "automergeType": "branch"
+    },
+    {
+      "description": "Group React ecosystem updates",
+      "matchPackageNames": ["react", "react-dom", "@types/react", "@types/react-dom"],
+      "groupName": "react-ecosystem",
+      "automerge": false
+    },
+    {
+      "description": "Group Supabase updates",
+      "matchPackagePatterns": ["^@supabase/"],
+      "groupName": "supabase",
+      "automerge": false
+    },
+    {
+      "description": "Group Radix UI updates",
+      "matchPackagePatterns": ["^@radix-ui/"],
+      "groupName": "radix-ui",
+      "automerge": true,
+      "automergeType": "branch"
+    },
+    {
+      "description": "Group TanStack updates",
+      "matchPackagePatterns": ["^@tanstack/"],
+      "groupName": "tanstack",
+      "automerge": false
+    },
+    {
+      "description": "Group Sentry updates",
+      "matchPackagePatterns": ["^@sentry/"],
+      "groupName": "sentry",
+      "automerge": false
+    },
+    {
+      "description": "Group testing tools",
+      "matchPackageNames": [
+        "vitest",
+        "@vitest/coverage-v8",
+        "@testing-library/react",
+        "@testing-library/jest-dom",
+        "@playwright/test",
+        "@stryker-mutator/core",
+        "@stryker-mutator/vitest-runner"
+      ],
+      "groupName": "testing-tools",
+      "automerge": true,
+      "automergeType": "branch"
+    },
+    {
+      "description": "Group TypeScript and ESLint",
+      "matchPackageNames": [
+        "typescript",
+        "eslint",
+        "@typescript-eslint/eslint-plugin",
+        "@typescript-eslint/parser",
+        "eslint-plugin-jsdoc"
+      ],
+      "groupName": "typescript-linting",
+      "automerge": false
+    },
+    {
+      "description": "Group Tailwind CSS",
+      "matchPackagePatterns": ["tailwind"],
+      "groupName": "tailwindcss",
+      "automerge": false
+    },
+    {
+      "description": "Pin major updates — require manual review",
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "labels": ["dependencies", "breaking-change", "manual-review"]
+    },
+    {
+      "description": "Restrict Node.js engine range",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["node"],
+      "enabled": false
+    }
+  ],
+  "ignoreDeps": [],
+  "postUpdateOptions": ["npmDedupe"]
+}

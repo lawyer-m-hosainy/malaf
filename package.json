@@ -28,7 +28,14 @@
     "test:ai:mutation": "stryker run",
     "test:health": "curl http://localhost:3005/api/health",
     "test:e2e": "playwright test --config=malaf-e2e/playwright.config.ts",
-    "prepare": "node -e \"try { if (process.env.NODE_ENV !== 'production' && !process.env.CI) { require('child_process').execSync('husky', { stdio: 'inherit' }) } } catch (e) {}\""
+    "prepare": "node -e \"try { if (process.env.NODE_ENV !== 'production' && !process.env.CI) { require('child_process').execSync('husky', { stdio: 'inherit' }) } } catch (e) {}\"",
+    "deps:audit": "node scripts/audit-deps.mjs",
+    "deps:licenses": "node scripts/check-licenses.mjs",
+    "deps:sbom": "node scripts/generate-sbom.mjs",
+    "deps:check": "npm run deps:audit && npm run deps:licenses",
+    "deps:full": "npm run deps:audit && npm run deps:licenses && npm run deps:sbom",
+    "slo:test": "vitest run src/monitoring/__tests__/",
+    "deploy:gate": "node scripts/deployment-gate.mjs"
   },
   "lint-staged": {
     "src/**/*.{ts,tsx}": [

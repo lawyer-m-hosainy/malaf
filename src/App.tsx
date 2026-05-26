@@ -40,6 +40,7 @@ const Tasks = lazy(() => import("./views/Tasks"));
 const SessionsRoll = lazy(() => import("./views/SessionsRoll"));
 const Analytics = lazy(() => import("./views/Analytics"));
 const Settings = lazy(() => import("./views/Settings"));
+const ImportData = lazy(() => import("./views/ImportData"));
 const LegalLibrary = lazy(() => import("./views/LegalLibrary"));
 const LawLibrary = lazy(() => import("./views/LawLibrary"));
 const Contracts = lazy(() => import("./views/Contracts"));
@@ -59,7 +60,6 @@ const AuditLogs = lazy(() => import("./views/AuditLogs"));
 const InternalWiki = lazy(() => import("./views/InternalWiki"));
 const NotFound = lazy(() => import("./views/NotFound"));
 const Billing = lazy(() => import("./views/Billing"));
-const Chat = lazy(() => import("./components/chat/ChatLayout"));
 
 // Enterprise Modules
 const OnboardingFlow = lazy(() => import("./modules/onboarding/OnboardingFlow"));
@@ -87,6 +87,7 @@ function PermissionGate({ children, permission, fallback = <Navigate to="/dashbo
 /**
  * المكون الرئيسي لمنصة ملف (App).
  * يقوم بتهيئة الموجه وموفرات السياق والتحقق من الصلاحيات والوصول للمسارات المختلفة.
+ * @returns {React.ReactElement} عنصر واجهة المستخدم للتطبيق
  */
 export default function App() {
   return (
@@ -143,7 +144,6 @@ export default function App() {
                   <Route path="audit-logs" element={<PermissionGate permission="org_admin"><AuditLogs /></PermissionGate>} />
                   <Route path="ai-analyzer" element={<PermissionGate permission="documents"><AIDocumentAnalyzer /></PermissionGate>} />
                   <Route path="wiki" element={<PermissionGate permission="view_wiki"><InternalWiki /></PermissionGate>} />
-                  <Route path="chat" element={<Chat />} />
                   <Route path="field-checkins" element={<PermissionGate permission="org_admin"><FieldCheckins /></PermissionGate>} />
                   <Route path="platform-admin" element={<PermissionGate permission="platform_admin"><GlobalAdmin /></PermissionGate>} />
                   {/* Egyptian Modules */}
@@ -156,6 +156,7 @@ export default function App() {
                   <Route path="criminal-cases" element={<PermissionGate permission="view_cases"><CriminalCases /></PermissionGate>} />
                   <Route path="invoices/eta" element={<PermissionGate permission="finance_basic"><ETAInvoicing /></PermissionGate>} />
                   <Route path="e-litigation" element={<PermissionGate permission="view_cases"><ELitigation /></PermissionGate>} />
+                  <Route path="import" element={<PermissionGate permission="org_admin"><ImportData /></PermissionGate>} />
                   <Route path="settings" element={<PermissionGate permission="org_admin"><Settings /></PermissionGate>} />
                   <Route path="billing" element={<PermissionGate permission="org_admin"><Billing /></PermissionGate>} />
                   <Route path="global-admin" element={<GlobalAdmin />} />

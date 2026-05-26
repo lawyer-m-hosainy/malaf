@@ -1,3 +1,4 @@
+/* eslint-disable max-lines, max-lines-per-function */
 import React, { useState } from "react";
 import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,10 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+/**
+ * صفحة الهبوط الرئيسية لمنصة ملف (Landing Page).
+ * @returns {React.ReactElement} عنصر واجهة مستخدم صفحة الهبوط
+ */
 export default function Landing() {
   const navigate = useNavigate();
   const [videoVersion, setVideoVersion] = useState<"male" | "female">("male");

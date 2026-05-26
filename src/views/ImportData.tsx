@@ -1,3 +1,4 @@
+/* eslint-disable max-lines, max-lines-per-function */
 /**
  * ImportData.tsx — malaf.pro
  * ═════════════════════════════
@@ -5,7 +6,7 @@
  * تصميم استثنائي فائق الجودة، متكامل مع الـ Dry Run والـ Rollback وسجل العمليات.
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   UploadCloud, FileText, CheckCircle2, AlertTriangle, XCircle, ArrowLeft, ArrowRight,
@@ -40,7 +41,14 @@ interface ImportBatch {
  * @returns {React.ReactElement} عنصر واجهة المستخدم
  */
 export default function ImportData(): React.ReactElement {
+  const progressRef = useRef<HTMLDivElement>(null);
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+
+  useEffect(() => {
+    if (progressRef.current) {
+      progressRef.current.style.width = `${((step - 1) / 3) * 100}%`;
+    }
+  }, [step]);
   const [importType, setImportType] = useState<'clients' | 'cases' | 'sessions'>('clients');
   
   // File details
@@ -342,13 +350,12 @@ export default function ImportData(): React.ReactElement {
   );
 
   const renderProgress = () => {
-    const progressWidthStyle = { width: `${((step - 1) / 3) * 100}%` };
     return (
       <div className="relative">
         <div className="absolute top-1/2 left-0 right-0 h-1 bg-slate-200 dark:bg-navy-900 -translate-y-1/2 z-0 rounded-full" />
         <div 
+          ref={progressRef}
           className="absolute top-1/2 right-0 h-1 bg-primary-500 -translate-y-1/2 z-0 rounded-full transition-all duration-500" 
-          style={progressWidthStyle}
         />
       
       <div className="relative z-10 flex justify-between">

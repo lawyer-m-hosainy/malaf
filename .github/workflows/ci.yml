@@ -2,9 +2,9 @@ name: CI — malaf.pro Quality Gate
 
 on:
   pull_request:
-    branches: [master, staging]
+    branches: [main, master, staging]
   push:
-    branches: [master]
+    branches: [main, master]
 
 jobs:
   quality-gate:

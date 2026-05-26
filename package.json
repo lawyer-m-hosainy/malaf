@@ -23,7 +23,9 @@
     "test:mutation:ci": "stryker run --reporters clear-text,json",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:ai": "vitest run src/services/ai/prompt-sanitizer.test.ts",
+    "test:ai": "vitest run src/services/ai/__tests__/",
+    "test:ai:coverage": "vitest run src/services/ai/__tests__/ --coverage",
+    "test:ai:mutation": "stryker run",
     "test:health": "curl http://localhost:3005/api/health",
     "test:e2e": "playwright test --config=malaf-e2e/playwright.config.ts",
     "prepare": "husky"

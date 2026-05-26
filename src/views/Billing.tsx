@@ -52,7 +52,7 @@ export default function Billing() {
   const [upgrading, setUpgrading] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<{
-    plan: "basic" | "advanced" | "enterprise";
+    plan: "basic" | "enterprise";
     amount: number;
     billingCycle: "monthly" | "yearly";
   } | null>(null);
@@ -237,7 +237,7 @@ export default function Billing() {
           <Button onClick={() => {
             const planToRenew = currentPlan === 'free' ? 'basic' : currentPlan;
             const planConfig = Object.values(PLANS).find(p => p.tier === planToRenew) || PLANS.basic;
-            setSelectedPlan({ plan: planToRenew as "basic"|"advanced"|"enterprise", amount: planConfig.priceMonthly, billingCycle: "monthly" });
+            setSelectedPlan({ plan: planToRenew as "basic"|"enterprise", amount: planConfig.priceMonthly, billingCycle: "monthly" });
             setCheckoutOpen(true);
           }} className="bg-red-600 hover:bg-red-700 text-white shrink-0">
             جدّد الآن
@@ -330,14 +330,14 @@ export default function Billing() {
           </CardHeader>
           <CardContent className="space-y-3">
             {Object.values(PLANS).filter(p => {
-              const tierOrder = { basic: 1, advanced: 2, enterprise: 3 };
+              const tierOrder = { basic: 1, enterprise: 2 };
               const currentOrder = tierOrder[currentPlan as keyof typeof tierOrder] || 0;
               return (tierOrder[p.tier as keyof typeof tierOrder] || 0) > currentOrder;
             }).map(plan => (
               <button
                 key={plan.tier}
                 onClick={() => {
-                  setSelectedPlan({ plan: plan.tier as "basic"|"advanced"|"enterprise", amount: plan.priceMonthly, billingCycle: "monthly" });
+                  setSelectedPlan({ plan: plan.tier as "basic"|"enterprise", amount: plan.priceMonthly, billingCycle: "monthly" });
                   setCheckoutOpen(true);
                 }}
                 className="w-full p-4 rounded-xl border border-slate-100 dark:border-white/5 hover:border-primary-200 dark:hover:border-primary-800/30 transition-all text-start group"
@@ -352,7 +352,7 @@ export default function Billing() {
               </button>
             ))}
             {Object.values(PLANS).filter(p => {
-              const tierOrder = { basic: 1, advanced: 2, enterprise: 3 };
+              const tierOrder = { basic: 1, enterprise: 2 };
               const currentOrder = tierOrder[currentPlan as keyof typeof tierOrder] || 0;
               return (tierOrder[p.tier as keyof typeof tierOrder] || 0) > currentOrder;
             }).length === 0 && (

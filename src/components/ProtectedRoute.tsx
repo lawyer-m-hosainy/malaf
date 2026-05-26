@@ -29,7 +29,7 @@ export function ProtectedRoute({
   const [checkingSubscription, setCheckingSubscription] = useState(true);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<{
-    plan: "basic" | "advanced" | "enterprise";
+    plan: "basic" | "enterprise";
     amount: number;
     billingCycle: "monthly" | "yearly";
   } | null>(null);
@@ -175,7 +175,7 @@ export function ProtectedRoute({
             const plan = PLANS[planKey as keyof typeof PLANS];
             if (plan) {
               setSelectedPlan({
-                plan: planKey as "basic" | "advanced" | "enterprise",
+                plan: planKey as "basic" | "enterprise",
                 amount: plan.priceMonthly,
                 billingCycle: "monthly",
               });

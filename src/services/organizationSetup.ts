@@ -115,7 +115,7 @@ async function upsertProfile(
   return true;
 }
 
-async function initTrialSubscription(orgId: string, plan: PlanTier = "advanced") {
+async function initTrialSubscription(orgId: string, plan: PlanTier = "basic") {
   const trialEnd = new Date();
   trialEnd.setDate(trialEnd.getDate() + 14);
 
@@ -189,7 +189,7 @@ export async function ensureUserOrganization(
   lastSetupError = "";
 
   const officeName = options?.officeName;
-  const plan = options?.plan ?? "advanced";
+  const plan = options?.plan ?? "basic";
   const role = options?.role ?? OFFICE_FOUNDER_ROLE;
 
   // انتظار trigger قاعدة البيانات (حتى 6 محاولات)

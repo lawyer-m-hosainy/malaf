@@ -84,7 +84,7 @@ export default function GlobalAdmin() {
                   <p className="font-semibold">{req.organizations?.name}</p>
                   <p className="text-sm text-muted-foreground">
                     {req.transfer_method === 'instapay' ? '🏦 InstaPay' : '📱 محفظة إلكترونية'}
-                    {' — '}باقة {req.plan === 'basic' ? 'الأساسية' : req.plan === 'advanced' ? 'المتقدمة' : 'المؤسسات'}
+                    {' — '}باقة {req.plan === 'basic' ? 'Standard (الأساسية)' : 'White Label (المؤسسات)'}
                   </p>
                 </div>
                 <div className="text-left">

@@ -20,7 +20,6 @@ const PAYMENT_CONFIG = {
 
 const PLAN_NAMES: Record<string, string> = {
   basic: "الأساسية",
-  advanced: "المتقدمة", 
   enterprise: "المؤسسات",
 };
 
@@ -36,7 +35,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 interface Props {
-  plan: "basic" | "advanced" | "enterprise";
+  plan: "basic" | "enterprise";
   amount: number;
   billingCycle: "monthly" | "yearly";
   onSuccess: () => void;

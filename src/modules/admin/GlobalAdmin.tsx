@@ -11,10 +11,10 @@ import { PLANS } from "@/modules/subscriptions/subscriptionService";
 
 // ── Mock data for Super Admin view ──────────────────────────────────
 const mockTenants = [
-  { id: 'T-001', name: 'مكتب المحامي القحطاني', plan: 'advanced' as const, users: 8, cases: 145, revenue: 48650, status: 'active' },
+  { id: 'T-001', name: 'مكتب المحامي القحطاني', plan: 'basic' as const, users: 8, cases: 145, revenue: 48650, status: 'active' },
   { id: 'T-002', name: 'شركة الرواد للمحاماة', plan: 'enterprise' as const, users: 25, cases: 520, revenue: 156000, status: 'active' },
   { id: 'T-003', name: 'مكتب العدالة القانوني', plan: 'basic' as const, users: 3, cases: 32, revenue: 8970, status: 'active' },
-  { id: 'T-004', name: 'مؤسسة البيان القانونية', plan: 'advanced' as const, users: 12, cases: 210, revenue: 72300, status: 'trial' },
+  { id: 'T-004', name: 'مؤسسة البيان القانونية', plan: 'basic' as const, users: 12, cases: 210, revenue: 72300, status: 'trial' },
 ];
 
 const mockAuditLogs = [
@@ -114,7 +114,6 @@ export default function GlobalAdmin() {
                       <Badge className={cn(
                         "font-bold",
                         t.plan === 'enterprise' ? "bg-accent-100 text-accent-700 dark:bg-accent-900/20 dark:text-accent-400" :
-                        t.plan === 'advanced' ? "bg-primary-100 text-primary-700 dark:bg-primary-900/20 dark:text-primary-400" :
                         "bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-slate-300"
                       )}>{PLANS[t.plan].nameAr}</Badge>
                     </TableCell>

@@ -254,7 +254,7 @@ describe('Malaf Critical Functions', () => {
     it('should BLOCK access if subscription is expired regardless of plan (Critical)', () => {
       const sub: TenantSubscription = {
         tenantId: 'tenant-expired',
-        plan: 'advanced', // باقة متقدمة لكن منتهية!
+        plan: 'enterprise', // باقة متقدمة لكن منتهية!
         status: 'expired',
         startDate: '2023-01-01',
         endDate: '2024-01-01', // انتهت

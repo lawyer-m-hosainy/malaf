@@ -1,0 +1,7 @@
+{
+  "timestamp": "2026-05-26T02:14:23.276Z",
+  "url": "https://malaf.pro",
+  "cold_start_ttfb_ms": 455.55049999999994,
+  "warm_ttfb_ms": 226.0840000000003,
+  "render_plan": "Starter"
+}

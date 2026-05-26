@@ -1,0 +1,17 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+# R11-FIX: Explicit entries for sensitive files (defense in depth)
+.env.local
+.env.production.local
+
+# Test Reports and Temp Files
+playwright-report/
+test-results/
+supabase/.temp/
+malaf/

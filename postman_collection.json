@@ -1,0 +1,187 @@
+{
+	"info": {
+		"_postman_id": "malaf-api-collection",
+		"name": "Malaf Egypt API",
+		"description": "Postman collection for Malaf Platform - PDPL & ETA Compliant",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Auth & Profile",
+			"item": [
+				{
+					"name": "Get My Profile",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/profiles/me",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "profiles", "me"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Cases",
+			"item": [
+				{
+					"name": "List Cases",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Response is an array\", function () {",
+									"    pm.expect(pm.response.json()).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/cases",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "cases"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Case",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"قضية تعويض جديدة\",\n    \"clientId\": \"{{test_client_id}}\",\n    \"type\": \"مدني\",\n    \"court\": \"محكمة شمال القاهرة\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/cases",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "cases"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "ETA Invoices",
+			"item": [
+				{
+					"name": "Create ETA Invoice",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Idempotency-Key",
+								"value": "{{$guid}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"clientId\": \"{{test_client_id}}\",\n    \"amount\": 1000,\n    \"description\": \"أتعاب استشارة قانونية\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/invoices",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "invoices"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Data Privacy (PDPL)",
+			"item": [
+				{
+					"name": "Export My Data",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/me/export",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "users", "me", "export"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete My Account",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/me",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "users", "me"]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{auth_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"exec": [
+					"// Example pre-request script to refresh token if needed",
+					"// console.log(\"Auto-injecting Bearer Token from environment\");"
+				],
+				"type": "text/javascript"
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "https://api.malaf.pro",
+			"type": "string"
+		},
+		{
+			"key": "auth_token",
+			"value": "your_jwt_here",
+			"type": "string"
+		},
+		{
+			"key": "test_client_id",
+			"value": "uuid-here",
+			"type": "string"
+		}
+	]
+}

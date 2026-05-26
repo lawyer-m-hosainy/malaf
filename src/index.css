@@ -1,0 +1,134 @@
+@font-face {
+  font-family: 'Cairo';
+  src: url('/assets/cairo-arabic.woff2') format('woff2');
+  font-weight: 300 800;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0600-06FF;
+}
+@font-face {
+  font-family: 'Cairo';
+  src: url('/assets/cairo-latin.woff2') format('woff2');
+  font-weight: 300 800;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF;
+}
+
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Cairo", ui-sans-serif, system-ui, sans-serif;
+  
+  --color-primary-50: #e6f0eb;
+  --color-primary-100: #cce2d6;
+  --color-primary-200: #99c5ad;
+  --color-primary-300: #66a884;
+  --color-primary-400: #338b5b;
+  --color-primary-500: #006c35; /* Deep Emerald / Egyptian Identity */
+  --color-primary-600: #00562a;
+  --color-primary-700: #004120;
+  --color-primary-800: #002b15;
+  --color-primary-900: #00160b;
+
+  --color-accent-500: #d4af37; /* Subtle Gold */
+  --color-accent-600: #b5952f;
+
+  --color-navy-200: #a3c4e8;
+  --color-navy-300: #7aaed4;
+  --color-navy-700: #134a82;
+  --color-navy-800: #0f3d6e;
+  --color-navy-900: #0b2e59; /* Premium Navy */
+
+  --color-background: #f8fafc; /* Crisp off-white */
+}
+
+@layer base {
+  :root {
+    --background: 210 40% 98%; /* #f8fafc */
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 149 100% 21%; /* #006c35 */
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 46 65% 52%; /* #d4af37 */
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 149 100% 21%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 149 100% 21%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 46 65% 52%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 149 100% 21%;
+  }
+}
+
+@layer base {
+  * {
+    -webkit-tap-highlight-color: transparent;
+    border-color: var(--border);
+  }
+  a, button, input, select, textarea {
+    touch-action: manipulation;
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    @apply font-sans;
+  }
+}
+
+@layer utilities {
+  .rtl-flip {
+    @apply rtl:-scale-x-100;
+  }
+  
+  [dir="rtl"] .lucide-chevron-left,
+  [dir="rtl"] .lucide-chevron-right {
+    transform: rotate(180deg);
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-slate-200 dark:bg-white/10 rounded-full;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-300 dark:bg-white/20;
+  }
+}

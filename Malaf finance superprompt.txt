@@ -1,0 +1,373 @@
+Malaf finance superprompt · MDCopy🏛️ سوبر برومبت — إعادة هيكلة قسم المالية في منصة مَلَف
+
+المشروع: malaf.pro — منصة SaaS لإدارة مكاتب المحاماة المصرية
+Stack: React 19 + Vite + Tailwind CSS 4 + shadcn/ui + Zustand + Supabase (PostgreSQL + RLS) + Crypto-JS AES-256
+النمط: RTL، عربي كامل، Dark sidebar (navy) + White content area + Green accent (#16a34a)
+
+
+📋 نظرة عامة على المراحل
+المرحلةالعنوانالهدف1إصلاح التكرارحذف الـ modal المكرر وتوحيد مسار الفواتير2ربط تتبع الوقت بالفواتيرتحويل الساعات المسجلة إلى فاتورة بضغطة3إضافة صفحة الأماناتفصل مبالغ الموكلين عن حسابات المكتب4إضافة الرسوم القضائيةتتبع المصاريف المدفوعة نيابةً عن الموكلين5إضافة خطط الدفعنظام أقساط وجداول سداد للموكلين6لوحة التحكم الماليةDashboard مالي شامل بالرسوم البيانية7تقرير مالي قابل للتصديرP&L + ملخص الفترة PDF
+
+🔴 المرحلة 1 — إصلاح التكرار وتوحيد مسار الفواتير
+السياق
+يوجد حالياً فاتورتان بنفس الغرض:
+
+Modal بسيط في صفحة "المالية والفواتير": (اسم عميل + مبلغ فقط) — زر "حفظ وحساب الضريبة آلياً"
+Modal مفصل في صفحة "الفاتورة الإلكترونية ETA": (رقم ضريبي + كود نشاط + ضريبة جدول 10%)
+
+المطلوب
+1. احذف الـ modal البسيط "إصدار فاتورة ضريبية جديدة" من صفحة FinancialPage بالكامل.
+2. في صفحة FinancialPage، غيّر زر "إنشاء فاتورة ضريبية" ليعمل كـ Link يوجه المستخدم مباشرة إلى /invoices/eta:
+jsx// قبل
+<Button onClick={() => setShowTaxModal(true)}>إنشاء فاتورة ضريبية</Button>
+
+// بعد
+<Button asChild>
+  <Link to="/invoices/eta">إنشاء فاتورة ضريبية</Link>
+</Button>
+3. في صفحة FinancialPage، الـ cards العلوية تبقى كما هي لكن أضف Quick Stats تجلب من Supabase:
+sql-- إجمالي الفواتير الصادرة هذا الشهر
+SELECT COUNT(*), SUM(total_amount) 
+FROM invoices 
+WHERE tenant_id = auth.uid() 
+  AND created_at >= date_trunc('month', now());
+4. تأكد أن تبويب "الفاتورة الإلكترونية" في الـ sidebar يأخذ لـ /invoices/eta وليس لصفحة منفصلة مشتركة.
+
+🟡 المرحلة 2 — ربط تتبع الوقت بالفواتير
+السياق
+صفحة TimeTrackingPage تسجل الساعات لكن لا يوجد مسار مباشر من "الوقت المسجل" إلى "فاتورة".
+المطلوب
+1. في جدول "سجل الوقت"، أضف زر إجراء جديد في عمود إجراءات:
+[تعديل] [حذف] [→ إنشاء فاتورة]
+2. عند الضغط على "إنشاء فاتورة"، افتح ETAInvoiceModal مع pre-fill البيانات:
+jsxconst prefillData = {
+  clientName: timeEntry.case?.client?.name,
+  serviceDescription: `أتعاب قانونية — ${timeEntry.case?.title} — ${timeEntry.hours} ساعة`,
+  baseAmount: timeEntry.hours * officeHourlyRate, // hourlyRate من إعدادات المكتب
+  caseId: timeEntry.case_id,
+  timeEntryId: timeEntry.id // لربط الفاتورة بسجل الوقت
+};
+3. في Supabase، أضف column في جدول invoices:
+sqlALTER TABLE invoices 
+ADD COLUMN time_entry_id UUID REFERENCES time_entries(id) ON DELETE SET NULL;
+4. بعد إنشاء الفاتورة بنجاح، حدّث سجل الوقت:
+sqlUPDATE time_entries 
+SET is_billed = true, invoice_id = $1 
+WHERE id = $2 AND tenant_id = auth.uid();
+5. في صفحة TimeTrackingPage، أضف badge على السجلات:
+
+🟢 مُفوتَر — إذا is_billed = true
+🟡 قابل للفوترة — إذا is_billable = true AND is_billed = false
+⚪ غير قابل للفوترة — default
+
+
+🟠 المرحلة 3 — إضافة صفحة الأمانات (Escrow / Trust Accounts)
+السياق
+المنصة تذكر "إدارة حسابات الأمانات" كميزة لكنها غير موجودة كصفحة. الأمانات هي مبالغ يودعها الموكل لدى المحامي لإنفاقها على القضية (رسوم قضائية، إعلانات، خبراء).
+المطلوب
+1. أنشئ صفحة جديدة TrustAccountsPage.jsx في مسار /finance/trust
+2. هيكل الصفحة:
+┌─────────────────────────────────────────────────┐
+│  حسابات الأمانات                    [إضافة إيداع]│
+│  إدارة مبالغ الموكلين المودعة لدى المكتب         │
+├────────────────┬────────────────┬────────────────┤
+│ إجمالي الأمانات│ إجمالي الصرف  │ الرصيد المتاح  │
+│   0 ج.م        │   0 ج.م        │   0 ج.م        │
+├─────────────────────────────────────────────────┤
+│ [فلتر بالموكل ▼] [فلتر بالقضية ▼] [بحث...]      │
+├─────────────────────────────────────────────────┤
+│ سجل الأمانات                                     │
+│ التاريخ | القضية | الموكل | نوع العملية | المبلغ │
+│          |        |        | إيداع/صرف   | +/-   │
+└─────────────────────────────────────────────────┘
+3. أنشئ جدول Supabase:
+sqlCREATE TABLE trust_transactions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id UUID NOT NULL REFERENCES auth.users(id),
+  case_id UUID REFERENCES cases(id) ON DELETE SET NULL,
+  client_id UUID REFERENCES clients(id),
+  transaction_type TEXT CHECK (transaction_type IN ('deposit', 'withdrawal')),
+  amount DECIMAL(12,2) NOT NULL,
+  description TEXT,
+  receipt_number TEXT,
+  transaction_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  created_by UUID REFERENCES auth.users(id),
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- RLS
+ALTER TABLE trust_transactions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "tenant_isolation" ON trust_transactions
+  USING (tenant_id = auth.uid());
+4. Modal "إضافة إيداع/صرف":
+- نوع العملية: [إيداع ●] [صرف ○]
+- القضية: [dropdown]
+- الموكل: [auto-fill من القضية]
+- المبلغ: [input]
+- الوصف: [textarea]
+- رقم الإيصال: [input — اختياري]
+- التاريخ: [date picker — default اليوم]
+5. تحقق من أن الصرف لا يتجاوز الرصيد المتاح للموكل:
+javascriptconst availableBalance = deposits.sum - withdrawals.sum;
+if (amount > availableBalance) {
+  toast.error(`الرصيد المتاح ${availableBalance} ج.م فقط`);
+  return;
+}
+6. أضف في الـ sidebar تحت "المالية":
+المالية والفواتير
+المصروفات
+الأمانات  ← جديد
+الفاتورة الإلكترونية
+تتبع الوقت
+التحصيل
+
+🔵 المرحلة 4 — إضافة الرسوم القضائية
+السياق
+الرسوم القضائية هي مبالغ يدفعها المحامي من جيبه أو من أمانة الموكل لتسيير القضية (رسوم تسجيل، رسوم خبير، رسوم إعلان). يجب تتبعها منفصلة عن مصاريف المكتب.
+المطلوب
+1. في صفحة ExpensesPage، أضف type جديد في dropdown التصنيف:
+javascriptconst expenseCategories = [
+  { value: 'office', label: 'مصاريف إدارية' },
+  { value: 'court_fees', label: 'رسوم قضائية — على الموكل' }, // جديد
+  { value: 'expert_fees', label: 'رسوم خبراء — على الموكل' }, // جديد
+  { value: 'notification_fees', label: 'رسوم إعلانات — على الموكل' }, // جديد
+  { value: 'transport', label: 'مواصلات' },
+  // ...
+];
+2. للمصروفات من نوع "على الموكل"، أضف حقلين إضافيين تظهر بشكل شرطي:
+jsx{isClientExpense && (
+  <>
+    <Select label="الموكل المستحق عليه" ... />
+    <Select label="مصدر التمويل" options={[
+      { value: 'trust', label: 'من حساب الأمانة' },
+      { value: 'office', label: 'من المكتب (سيُسترد لاحقاً)' }
+    ]} />
+  </>
+)}
+3. في صفحة "التحصيل والذمم"، أضف تبويب جديد:
+[المطالبات بالأتعاب] [الرسوم القضائية المستحقة] ← جديد
+يعرض كل المصروفات "على الموكل" غير المستردة مع زر "أضف لفاتورة".
+
+🟣 المرحلة 5 — نظام خطط الدفع والأقساط
+السياق
+بعض الموكلين يدفعون الأتعاب على دفعات متفق عليها. حالياً لا يوجد نظام لتتبع ذلك.
+المطلوب
+1. أنشئ جدول Supabase:
+sqlCREATE TABLE payment_plans (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id UUID NOT NULL REFERENCES auth.users(id),
+  case_id UUID REFERENCES cases(id),
+  client_id UUID REFERENCES clients(id),
+  total_amount DECIMAL(12,2) NOT NULL,
+  paid_amount DECIMAL(12,2) DEFAULT 0,
+  plan_description TEXT,
+  status TEXT DEFAULT 'active' CHECK (status IN ('active', 'completed', 'defaulted')),
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE payment_installments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  plan_id UUID REFERENCES payment_plans(id) ON DELETE CASCADE,
+  tenant_id UUID NOT NULL REFERENCES auth.users(id),
+  due_date DATE NOT NULL,
+  amount DECIMAL(12,2) NOT NULL,
+  paid_date DATE,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'overdue')),
+  notes TEXT
+);
+2. أنشئ Modal "إنشاء خطة دفع" يُفتح من صفحة التحصيل أو من داخل ملف القضية:
+- الموكل: [dropdown]
+- القضية: [dropdown]
+- إجمالي الأتعاب: [input]
+- عدد الأقساط: [1-24 number input]
+- تاريخ أول قسط: [date picker]
+- الفترة بين الأقساط: [شهري / أسبوعي / مخصص]
+
+[حساب الأقساط تلقائياً]
+
+-- يظهر preview:
+القسط 1: 1000 ج.م — 1 يونيو 2026
+القسط 2: 1000 ج.م — 1 يوليو 2026
+...
+3. في صفحة "التحصيل" أضف تبويب "خطط الدفع":
+خطة | الموكل | القضية | المدفوع | المتبقي | الحالة | إجراء
+───────────────────────────────────────────────────────
+001  | أحمد   | قضية X | 2000   | 1000   | نشطة  | [تسجيل دفع] [عرض]
+4. Cron Job تلقائي (Supabase Edge Function):
+javascript// تشغيل يومياً للتحديث التلقائي لحالة الأقساط
+UPDATE payment_installments
+SET status = 'overdue'
+WHERE due_date < CURRENT_DATE 
+  AND status = 'pending'
+  AND tenant_id = $tenant_id;
+
+🟢 المرحلة 6 — لوحة التحكم المالية (Financial Dashboard)
+السياق
+لا يوجد حالياً صفحة تجمع الصورة المالية الكاملة للمكتب في مكان واحد.
+المطلوب
+1. أنشئ صفحة FinancialDashboardPage.jsx في مسار /finance/dashboard
+2. هيكل الصفحة:
+┌──────────────────────────────────────────────────────┐
+│  لوحة التحكم المالية          [هذا الشهر ▼] [تصدير]  │
+├──────────┬──────────┬──────────┬─────────────────────┤
+│ الإيرادات│المصروفات │ صافي الربح│ نسبة التحصيل        │
+│ 15,000   │ 3,200    │ 11,800   │ 78%                 │
+│ ▲ 12%    │ ▼ 5%     │ ▲ 18%   │                     │
+├──────────┴──────────┴──────────┴─────────────────────┤
+│                                                       │
+│  📊 الإيرادات vs المصروفات (آخر 6 أشهر)              │
+│  [Bar Chart — recharts]                               │
+│                                                       │
+├─────────────────────┬────────────────────────────────┤
+│  توزيع المصروفات    │  أعمار الذمم                   │
+│  [Pie Chart]        │  [Bar Chart أفقي]              │
+│  إدارية 40%         │  Current: 5000                 │
+│  قضائية 35%         │  1-30:    2000                 │
+│  مواصلات 25%        │  31-60:   800                  │
+│                     │  +90:     300                  │
+├─────────────────────┴────────────────────────────────┤
+│  🏆 أعلى القضايا إيراداً (Top 5)                     │
+│  [Table: القضية | الموكل | الإيرادات | الحالة]        │
+└──────────────────────────────────────────────────────┘
+3. استخدم recharts (متوفر في المشروع) للرسوم البيانية:
+jsximport { BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+4. البيانات تُجلب من Supabase بـ single query محسّنة:
+sql-- Dashboard summary query
+WITH monthly_revenue AS (
+  SELECT DATE_TRUNC('month', created_at) as month,
+         SUM(total_amount) as revenue
+  FROM invoices
+  WHERE tenant_id = auth.uid()
+    AND status = 'paid'
+    AND created_at >= NOW() - INTERVAL '6 months'
+  GROUP BY 1
+),
+monthly_expenses AS (
+  SELECT DATE_TRUNC('month', created_at) as month,
+         SUM(amount) as expenses
+  FROM expenses
+  WHERE tenant_id = auth.uid()
+    AND created_at >= NOW() - INTERVAL '6 months'
+  GROUP BY 1
+)
+SELECT r.month, r.revenue, COALESCE(e.expenses, 0) as expenses
+FROM monthly_revenue r
+LEFT JOIN monthly_expenses e USING (month)
+ORDER BY 1;
+5. أضف في الـ sidebar تحت "المالية" كأول عنصر:
+لوحة المالية  ← جديد (أول عنصر)
+المالية والفواتير
+...
+
+⚫ المرحلة 7 — التقرير المالي القابل للتصدير
+السياق
+المحامون يحتاجون تقريراً مالياً شهرياً/سنوياً لمراجعة الحسابات أو تقديمه للمحاسب.
+المطلوب
+1. في صفحة FinancialDashboardPage، زر "تصدير" يفتح Modal:
+اختر نوع التقرير:
+○ ملخص مالي (P&L)
+○ كشف الفواتير
+○ كشف المصروفات
+○ كشف الأمانات
+○ تقرير الذمم المتأخرة
+
+الفترة الزمنية:
+من: [date] إلى: [date]
+
+تنسيق التصدير: [PDF] [Excel]
+
+[تصدير التقرير]
+2. لـ PDF، استخدم jsPDF + autoTable:
+javascriptimport jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
+// مهم: استخدم خط عربي مدمج (Amiri أو Cairo)
+// حمّل الخط base64 وأضفه بـ doc.addFileToVFS
+3. هيكل تقرير P&L:
+═══════════════════════════════════════
+         مكتب المحاماة — اسم المكتب
+      التقرير المالي الشهري — مايو 2026
+═══════════════════════════════════════
+
+الإيرادات
+─────────────────────────────────────
+إجمالي الأتعاب المحصلة          15,000 ج.م
+ضريبة القيمة المضافة (14%)       2,100 ج.م
+─────────────────────────────────────
+إجمالي الإيرادات                17,100 ج.م
+
+المصروفات
+─────────────────────────────────────
+مصاريف إدارية                    1,200 ج.م
+رسوم قضائية                      1,500 ج.م
+مواصلات                            500 ج.م
+─────────────────────────────────────
+إجمالي المصروفات                  3,200 ج.م
+
+═══════════════════════════════════════
+صافي الربح                       13,900 ج.م
+═══════════════════════════════════════
+
+🔧 تفاصيل تقنية عامة لجميع المراحل
+أنماط Zustand المطلوبة
+javascript// أضف للـ store الحالي
+const useFinanceStore = create((set, get) => ({
+  // ... existing state
+  trustTransactions: [],
+  paymentPlans: [],
+  dashboardData: null,
+  
+  fetchTrustTransactions: async (filters) => { ... },
+  fetchPaymentPlans: async () => { ... },
+  fetchDashboardData: async (period) => { ... },
+  addTrustTransaction: async (data) => { ... },
+  createPaymentPlan: async (data) => { ... },
+}));
+التشفير (AES-256)
+كل الحقول الحساسة في الجداول الجديدة تمر بنفس نمط التشفير الحالي:
+javascriptimport { encryptData, decryptData } from '@/lib/encryption';
+
+// قبل الإرسال لـ Supabase
+const encryptedAmount = encryptData(amount.toString(), ENCRYPTION_KEY);
+
+// بعد الجلب من Supabase  
+const decryptedAmount = parseFloat(decryptData(row.amount, ENCRYPTION_KEY));
+RLS Policies (نمط موحد لجميع الجداول الجديدة)
+sql-- تطبيق على: trust_transactions, payment_plans, payment_installments
+ALTER TABLE {table_name} ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "select_own" ON {table_name} FOR SELECT
+  USING (tenant_id = auth.uid());
+
+CREATE POLICY "insert_own" ON {table_name} FOR INSERT
+  WITH CHECK (tenant_id = auth.uid());
+
+CREATE POLICY "update_own" ON {table_name} FOR UPDATE
+  USING (tenant_id = auth.uid());
+
+CREATE POLICY "delete_own" ON {table_name} FOR DELETE
+  USING (tenant_id = auth.uid());
+إضافة Sidebar Items
+في ملف Sidebar.jsx أو AppLayout.jsx، أضف تحت section "المالية":
+javascriptconst financeSubItems = [
+  { path: '/finance/dashboard', label: 'لوحة المالية', icon: LayoutDashboard }, // جديد
+  { path: '/finance/invoices', label: 'المالية والفواتير', icon: DollarSign },
+  { path: '/finance/expenses', label: 'المصروفات', icon: CreditCard },
+  { path: '/finance/trust', label: 'الأمانات', icon: Shield }, // جديد
+  { path: '/invoices/eta', label: 'الفاتورة الإلكترونية', icon: FileCheck },
+  { path: '/finance/time', label: 'تتبع الوقت', icon: Clock },
+  { path: '/finance/collections', label: 'التحصيل', icon: TrendingUp },
+  { path: '/finance/payment-plans', label: 'خطط الدفع', icon: Calendar }, // جديد
+];
+
+✅ ترتيب التنفيذ الموصى به
+المرحلة 1 (30 دقيقة)  → إصلاح فوري، لا كود جديد
+المرحلة 2 (1 ساعة)    → ربط الوقت بالفواتير
+المرحلة 3 (2 ساعة)    → صفحة الأمانات (DB + UI)
+المرحلة 4 (45 دقيقة)  → تحديث تصنيف المصروفات
+المرحلة 5 (2 ساعة)    → نظام الأقساط
+المرحلة 6 (2 ساعة)    → Dashboard بالرسوم
+المرحلة 7 (1.5 ساعة)  → تصدير PDF
+إجمالي التقدير: ~10 ساعات عمل
+
+هذا السوبر برومبت مصمم لاستخدامه مع Claude أو Cursor لتنفيذ كل مرحلة بشكل منفصل ومستقل.

@@ -1,0 +1,59 @@
+name: Malaf CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    name: Build & Validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Upgrade npm
+        run: npm install -g npm@latest
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Type Checking (Lint)
+        run: npm run lint
+
+      - name: Build Project
+        run: npm run build
+        env:
+          # متغيرات البيئة الأساسية المطلوبة لإتمام البناء بنجاح
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_VAPID_PUBLIC_KEY: ${{ secrets.VITE_VAPID_PUBLIC_KEY }}
+
+      - name: Send Discord Notification on Success
+        if: success() && github.ref == 'refs/heads/main'
+        continue-on-error: true
+        uses: Ilshidur/action-discord@master
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        with:
+          args: '✅ تم بناء منصة مَلَف بنجاح وجاهزة للنشر التلقائي! الفرع: {{ EVENT_PAYLOAD.pull_request.head.ref || github.ref }}'
+
+      - name: Send Discord Notification on Failure
+        if: failure() && github.ref == 'refs/heads/main'
+        continue-on-error: true
+        uses: Ilshidur/action-discord@master
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        with:
+          args: '❌ فشل في بناء منصة مَلَف! يرجى مراجعة الأخطاء في GitHub Actions.'

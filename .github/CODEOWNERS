@@ -1,0 +1,38 @@
+# CODEOWNERS — malaf.pro
+# ═══════════════════════════════════════════════════════
+# هذا الملف يحدد مالكي الكود المسؤولين عن مراجعة وقبول 
+# التعديلات في كل جزء من أجزاء المنصة.
+# ═══════════════════════════════════════════════════════
+
+# مالك الكود الافتراضي لكافة الملفات
+*                           @team-lead
+
+# أمن المعلومات وتشفير البيانات (حساس جداً)
+/src/lib/encryption.ts      @security-lead @team-lead
+/src/lib/validation.ts      @security-lead
+/src/security/              @security-lead
+/.github/workflows/         @devops-lead @team-lead
+
+# قاعدة البيانات والـ Migrations
+/supabase/migrations/       @db-lead @security-lead
+/supabase/                  @db-lead
+
+# إدارة الخدمات وقشرة البيانات (Services Layer)
+/src/services/              @backend-lead
+/src/repositories/          @backend-lead
+
+# الواجهة الأمامية والمكونات (Frontend)
+/src/components/            @frontend-lead
+/src/views/                 @frontend-lead
+/src/features/              @frontend-lead
+/src/hooks/                 @frontend-lead
+
+# الذكاء الاصطناعي (AI)
+/src/services/ai/           @ai-lead @team-lead
+/src/ai/                    @ai-lead @team-lead
+
+# الإعدادات العامة للبناء والاستضافة
+/render.yaml                @devops-lead @team-lead
+/package.json               @devops-lead @team-lead
+/tsconfig.json              @devops-lead
+/vite.config.ts             @devops-lead

@@ -1,0 +1,66 @@
+name: Review Quality Metrics
+
+on:
+  schedule:
+    - cron: '0 9 * * 1' # تشغيل كل يوم اثنين الساعة 9 صباحاً
+  workflow_dispatch:   # تشغيل يدوي عند الحاجة
+
+jobs:
+  metrics:
+    name: Calculate Review Quality Metrics
+    runs-on: ubuntu-latest
+    steps:
+      - name: Calculate Review Metrics
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prs = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'closed',
+              per_page: 50,
+            });
+
+            console.log(`📊 تحليل أداء جودة مراجعات الكود لآخر ${prs.data.length} طلب سحب مغلق:`);
+            console.log('--------------------------------------------------');
+
+            let totalReviewTimeMs = 0;
+            let reviewedPRsCount = 0;
+            let singleReviewPRsCount = 0;
+
+            for (const pr of prs.data) {
+              if (!pr.merged_at) continue; // تخطي الـ PRs غير المدمجة
+
+              const reviews = await github.rest.pulls.listReviews({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+              });
+
+              if (reviews.data.length === 0) continue;
+
+              reviewedPRsCount++;
+              if (reviews.data.length === 1) {
+                singleReviewPRsCount++;
+              }
+
+              // حساب الوقت من تاريخ الفتح إلى المراجعة الأولى
+              const prOpened = new Date(pr.created_at);
+              const firstReview = new Date(reviews.data[0].submitted_at);
+              const diffMs = firstReview - prOpened;
+              
+              if (diffMs > 0) {
+                totalReviewTimeMs += diffMs;
+              }
+            }
+
+            if (reviewedPRsCount > 0) {
+              const avgReviewTimeHours = (totalReviewTimeMs / reviewedPRsCount) / (1000 * 60 * 60);
+              const singleReviewRatio = (singleReviewPRsCount / reviewedPRsCount) * 100;
+
+              console.log(`⏱️ متوسط وقت المراجعة الأولى: ${avgReviewTimeHours.toFixed(2)} ساعة`);
+              console.log(`⚠️ نسبة طلبات السحب بمراجعة واحدة فقط (مخاطرة عالية): ${singleReviewRatio.toFixed(1)}%`);
+              console.log(`✅ إجمالي طلبات السحب المدمجة والمراجعة: ${reviewedPRsCount}`);
+            } else {
+              console.log('ℹ️ لا توجد طلبات سحب مراجعة ومدمجة كافية لإجراء التحليل حالياً.');
+            }

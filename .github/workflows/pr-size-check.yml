@@ -1,0 +1,50 @@
+name: PR Size Check
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  size-check:
+    name: Check Pull Request Size
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR Size Limits
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const additions = pr.additions;
+            const deletions = pr.deletions;
+            const totalChanges = additions + deletions;
+
+            console.log(`ℹ️ إجمالي التعديلات في طلب السحب: ${totalChanges} سطر (${additions} إضافة، ${deletions} حذف)`);
+
+            // الحد الأقصى الموصى به: 500 سطر
+            if (totalChanges > 500) {
+              const warningComment = `⚠️ **تنبيه حجم طلب السحب (PR Size Warning)**
+              
+              حجم طلب السحب هذا كبير جداً ويحتوي على **${totalChanges} سطر** معدل.
+              
+              * **الإضافات**: ${additions} سطر
+              * **الحذوفات**: ${deletions} سطر
+              
+              طلبات السحب الكبيرة تكون صعبة المراجعة وتزيد من احتمالية تسلل الأخطاء البرمجية إلى بيئة التشغيل.
+              
+              💡 **توصية**: هل يمكنك تجزئة هذا التغيير إلى طلبات سحب أصغر وأكثر تركيزاً؟ (الحد الأقصى الموصى به للمراجعة الفعالة هو **300-500 سطر**).`;
+
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                body: warningComment
+              });
+              
+              console.log('⚠️ تم إرسال تعليق تحذيري للمطور بخصوص حجم طلب السحب.');
+            } else {
+              console.log('✅ حجم طلب السحب متوافق مع الحدود الموصى بها.');
+            }

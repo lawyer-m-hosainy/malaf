@@ -26,6 +26,7 @@ import { onCLS, onINP, onLCP, onTTFB, onFCP } from 'web-vitals';
 import App from './App.tsx';
 import './index.css';
 import { logEvent } from './observability/logger';
+import { initPerformanceObserver } from './monitoring/performance-observer';
 
 // ─── Sentry Initialization ─────────────────────────────────────
 Sentry.init({
@@ -70,6 +71,9 @@ onINP(sendToAnalytics);
 onLCP(sendToAnalytics);
 onTTFB(sendToAnalytics);
 onFCP(sendToAnalytics);
+
+// بدء مراقبة المهام الطويلة (Long Tasks) تلقائياً
+initPerformanceObserver();
 
 window.addEventListener("error", (event) => {
   console.error('>>> Window error:', event.message, event.filename, event.lineno);

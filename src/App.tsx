@@ -13,7 +13,6 @@ import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "./components/AuthProvider";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { useAuthStore } from "@/store/useAuthStore";
-import { useClientsStore } from "@/store/useClientsStore";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { Toaster } from "@/components/ui/sonner";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
@@ -87,17 +86,6 @@ function PermissionGate({ children, permission, fallback = <Navigate to="/dashbo
 }
 
 export default function App() {
-  useEffect(() => {
-    // R8-FIX: Only seed demo data in explicit demo mode, not on every load
-    const isDemoMode = useAuthStore.getState().isDemoMode;
-    const isDemoEnv = (import.meta as any).env?.VITE_ENABLE_DEMO === 'true';
-    const clients = useClientsStore.getState().clients;
-    
-    if (isDemoEnv && clients.length === 0 && isDemoMode) {
-      seedDemoData();
-    }
-  }, []);
-
   return (
     // @ts-ignore - next-themes version mismatch with React 19 types
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem>

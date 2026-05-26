@@ -260,16 +260,12 @@ export async function fetchReceivables(): Promise<ReceivableData[]> {
       .order("created_at", { ascending: false });
     if (error) throw error;
     
-    return (data || []).map((row: any) => {
-      const amount = parseFloat(row.amount) || 0;
-      const collected = parseFloat(row.collected_amount) || 0;
-      return {
-        ...row,
-        total_amount: amount,
-        collected_amount: collected,
-        outstanding_amount: amount - collected,
-      };
-    }) as ReceivableData[];
+    return (data || []).map((row: any) => ({
+      ...row,
+      total_amount: parseFloat(row.amount),
+      collected_amount: parseFloat(row.collected_amount || 0),
+      outstanding_amount: parseFloat(row.amount) - parseFloat(row.collected_amount || 0),
+    }));
   } catch (error) {
     console.error("خطأ في جلب المطالبات:", error);
     return [];

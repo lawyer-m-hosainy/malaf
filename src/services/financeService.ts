@@ -177,11 +177,17 @@ export async function fetchReceivables(): Promise<any[]> {
   try {
     const { data, error } = await supabase
       .from("receivables")
-      .select("id, client_id, client_name, amount, status, due_date, description, created_at")
+      .select("id, client_id, client_name, amount, collected_amount, status, due_date, description, created_at, case_id")
       .eq("organization_id", orgId)
       .order("created_at", { ascending: false });
     if (error) throw error;
-    return data || [];
+    
+    return (data || []).map((row: any) => ({
+      ...row,
+      total_amount: parseFloat(row.amount),
+      collected_amount: parseFloat(row.collected_amount || 0),
+      outstanding_amount: parseFloat(row.amount) - parseFloat(row.collected_amount || 0),
+    }));
   } catch (error) {
     console.error("خطأ في جلب المطالبات:", error);
     return [];

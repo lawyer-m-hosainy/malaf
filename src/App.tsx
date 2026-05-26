@@ -12,18 +12,8 @@ import { RootLayout } from "./components/layout/RootLayout";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "./components/AuthProvider";
 import { ProtectedRoute } from "./components/ProtectedRoute";
-import { fetchCases, fetchClients, fetchEnforcement, fetchInvoices, fetchTasks, fetchTeam, fetchTrustAccounts } from "@/services/legalDataService";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useClientsStore } from "@/store/useClientsStore";
-import { useCasesStore } from "@/store/useCasesStore";
-import { useTeamStore } from "@/store/useTeamStore";
-import { useInvoicesStore } from "@/store/useInvoicesStore";
-import { useFinanceStore } from "@/store/useFinanceStore";
-import { useEnforcementStore } from "@/store/useEnforcementStore";
-
-import { getCurrentTenantId } from "@/lib/tenant";
-import { checkAppHealth } from "@/observability/health";
-import { logEvent } from "@/observability/logger";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { Toaster } from "@/components/ui/sonner";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
@@ -97,14 +87,6 @@ function PermissionGate({ children, permission, fallback = <Navigate to="/dashbo
 import { seedDemoData } from "@/services/seedData";
 
 export default function App() {
-  const setClients = useClientsStore(state => state.setClients);
-  const setCases = useCasesStore(state => state.setCases);
-  const setTeamMembers = useTeamStore(state => state.setTeamMembers);
-  const setTasks = useTeamStore(state => state.setTasks);
-  const loadInvoices = useInvoicesStore(state => state.loadInvoices);
-  const setTrustAccounts = useFinanceStore(state => state.setTrustAccounts);
-  const setEnforcementCases = useEnforcementStore(state => state.setEnforcementCases);
-
   useEffect(() => {
     // R8-FIX: Only seed demo data in explicit demo mode, not on every load
     const isDemoMode = useAuthStore.getState().isDemoMode;

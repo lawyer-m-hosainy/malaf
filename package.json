@@ -28,7 +28,7 @@
     "test:ai:mutation": "stryker run",
     "test:health": "curl http://localhost:3005/api/health",
     "test:e2e": "playwright test --config=malaf-e2e/playwright.config.ts",
-    "prepare": "husky"
+    "prepare": "node -e \"try { if (process.env.NODE_ENV !== 'production' && !process.env.CI) { require('child_process').execSync('husky', { stdio: 'inherit' }) } } catch (e) {}\""
   },
   "lint-staged": {
     "src/**/*.{ts,tsx}": [

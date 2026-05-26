@@ -110,6 +110,15 @@
 }
 
 @layer utilities {
+  .rtl-flip {
+    @apply rtl:-scale-x-100;
+  }
+  
+  [dir="rtl"] .lucide-chevron-left,
+  [dir="rtl"] .lucide-chevron-right {
+    transform: rotate(180deg);
+  }
+
   .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
   }

@@ -120,7 +120,7 @@ export default function App() {
         <AuthProvider>
 
           <OfflineIndicator />
-          <Toaster richColors position="top-left" />
+          <Toaster richColors position="top-right" />
           <BrowserRouter>
             <Suspense fallback={<RouteLoadingFallback />}>
               <AppDataLoader>

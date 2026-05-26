@@ -36,10 +36,15 @@ const INJECTION_PATTERNS: RegExp[] = [
   // --- Human/Assistant turn injection ---
   /\n\n(human|assistant|user|system)\s*:/i,
   /\\n\\n(human|assistant)\s*:/i,
+  /<\|system\|>/i,
+  /\[system\]/i,
 ];
 
 /**
- * يتحقق مما إذا كان الـ prompt آمناً للاستخدام (يقرر المنع من عدمه)
+ * يتحقق مما إذا كان الـ prompt آمناً للاستخدام (يقرر المنع من عدمه).
+ * 
+ * @param {string} input - النص المدخل من المستخدم للفحص
+ * @returns {boolean} هل النص آمن للاستخدام
  */
 export function isSafePrompt(input: string): boolean {
   if (!input || typeof input !== 'string') return false;
@@ -56,14 +61,27 @@ export function isSafePrompt(input: string): boolean {
 }
 
 /**
- * تطهير الـ prompt من البيانات الحساسة ومحاولات الحقن غير المباشرة
+ * تطهير الـ prompt من البيانات الحساسة ومحاولات الحقن غير المباشرة.
+ * 
+ * @param {string} input - النص المراد تطهيره
+ * @returns {string} النص بعد التطهير وإزالة البيانات الحساسة والحقن
  */
 export function sanitizePrompt(input: string): string {
   if (!input || typeof input !== 'string') return '';
 
+  let cleaned = input;
+
+  // فحص حقن المطالبات واستبداله برسالة حماية
+  for (const pattern of INJECTION_PATTERNS) {
+    if (pattern.test(cleaned)) {
+      cleaned = cleaned.replace(pattern, '[محتوى محذوف لأسباب أمنية]');
+      pattern.lastIndex = 0;
+    }
+  }
+
   // الإصلاح: بيانات DB مثل أسماء الموكلين يجب أن تكون سطراً واحداً
   // أي شيء بعد السطر الأول يعتبر محاولة حقن مشبوهة ويتم حذفه
-  let cleaned = input.split('\n')[0];
+  cleaned = cleaned.split('\n')[0];
 
   // نظّف الـ PII
   cleaned = cleaned
@@ -79,14 +97,20 @@ export function sanitizePrompt(input: string): string {
 }
 
 /**
- * الوظيفة القديمة للتوافق مع الكود الحالي
+ * الوظيفة القديمة للتوافق مع الكود الحالي.
+ * 
+ * @param {string} input - النص المراد تطهيره
+ * @returns {string} النص المطهر
  */
 export function sanitizeUserInput(input: string): string {
   return sanitizePrompt(input);
 }
 
 /**
- * تطهير كافة الحقول في كائن البيانات قبل إرسالها للذكاء الاصطناعي
+ * تطهير كافة الحقول في كائن البيانات قبل إرسالها للذكاء الاصطناعي.
+ * 
+ * @param {Record<string, any>} data - كائن البيانات المراد تطهيره
+ * @returns {Record<string, any>} كائن البيانات بعد تطهير حقوله النصية
  */
 export function sanitizeData(data: Record<string, any>): Record<string, any> {
   const sanitized: Record<string, any> = {};

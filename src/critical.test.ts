@@ -1,9 +1,65 @@
+/* eslint-disable max-lines-per-function, max-lines */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { encryptField, decryptField, clearDecryptCache } from '@/lib/encryption';
 import { caseSchema } from '@/lib/schemas';
 import { checkQuota, PLANS, TenantSubscription } from '@/modules/subscriptions/subscriptionService';
 import { calculateVAT, calculateTotalWithVAT } from '@/lib/finance';
 import { TrustAccount } from '@/types/finance';
+
+// Cryptographic mock for Supabase Edge Functions in vitest
+vi.mock('@/lib/supabase', () => {
+  const crypto = require('crypto');
+  const KEY = crypto.randomBytes(32);
+  
+  function encryptData(text: string): string {
+    const iv = crypto.randomBytes(12);
+    const cipher = crypto.createCipheriv('aes-256-gcm', KEY, iv);
+    let encrypted = cipher.update(text, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    const authTag = cipher.getAuthTag().toString('hex');
+    return `${iv.toString('hex')}:${encrypted}:${authTag}`;
+  }
+  
+  function decryptData(ciphertext: string): string {
+    try {
+      const [ivHex, encryptedHex, authTagHex] = ciphertext.split(':');
+      if (!ivHex || !encryptedHex || !authTagHex) return ciphertext;
+      if (authTagHex.length !== 32 || /[^0-9a-fA-F]/.test(authTagHex)) {
+        throw new Error('Invalid auth tag');
+      }
+      const decipher = crypto.createDecipheriv('aes-256-gcm', KEY, Buffer.from(ivHex, 'hex'));
+      decipher.setAuthTag(Buffer.from(authTagHex, 'hex'));
+      let decrypted = decipher.update(encryptedHex, 'hex', 'utf8');
+      decrypted += decipher.final('utf8');
+      return decrypted;
+    } catch {
+      return ciphertext;
+    }
+  }
+  
+  return {
+    supabase: {
+      functions: {
+        invoke: vi.fn(async (name, options) => {
+          if (name !== 'encrypt-decrypt') {
+            return { data: null, error: new Error('Unknown function') };
+          }
+          const { action, data, batch } = options.body;
+          if (action === 'encrypt') {
+            return { data: { result: encryptData(data) }, error: null };
+          }
+          if (action === 'decrypt') {
+            if (batch) {
+              return { data: { results: batch.map(decryptData) }, error: null };
+            }
+            return { data: { result: decryptData(data) }, error: null };
+          }
+          return { data: null, error: new Error('Invalid action') };
+        })
+      }
+    }
+  };
+});
 
 // Trust Account Balance Calculator Helper (Simulated based on Domain logic)
 const calculateTrustBalance = (accounts: TrustAccount[], clientId: string) => {

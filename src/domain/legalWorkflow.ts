@@ -9,21 +9,40 @@ const allowedStatusTransitions: Record<string, string[]> = {
   "مستأنفة": ["محكوم فيها", "متداولة", "طعن"],              // R7-FIX
   "طعن": ["متداولة", "حكم نهائي", "تنفيذ"],                 // R7-FIX
   "تنفيذ": ["مغلقة"],                                        // R7-FIX
-  "مغلقة": ["متداولة"],
+  "مغلقة": [],
   "محفوظة": ["متداولة"],
   "حكم نهائي": ["تنفيذ", "مغلقة"],
 };
 
+/**
+ * يتحقق مما إذا كان الانتقال بين حالتين في سير القضية مسموحاً به.
+ * 
+ * @param {string} from - الحالة الحالية للقضية
+ * @param {string} to - الحالة المستهدفة للانتقال
+ * @returns {boolean} هل الانتقال مسموح به
+ */
 export function canTransitionCaseStatus(from: Case["status"], to: Case["status"]) {
   return from === to || allowedStatusTransitions[from].includes(to);
 }
 
+/**
+ * يربط حالة القضية بمرحلة سير العمل المقابلة لها.
+ * 
+ * @param {string} status - حالة القضية
+ * @returns {CaseWorkflowStage} مرحلة سير العمل المقابلة
+ */
 export function mapCaseStatusToStage(status: Case["status"]): CaseWorkflowStage {
   if (status === "تحت الدراسة") return "intake";
   if (status === "متداولة") return "hearing";
   return "closed";
 }
 
+/**
+ * يتحقق من صلاحية تاريخ الموعد النهائي (يجب أن يكون في المستقبل ولا يكون تاريخاً تالفاً).
+ * 
+ * @param {string} date - سلسلة تاريخ الموعد النهائي
+ * @throws {Error} عند تلف التاريخ أو كونه في الماضي
+ */
 export function assertDeadlineDate(date: string) {
   const selected = new Date(date);
   if (Number.isNaN(selected.getTime())) {
@@ -38,6 +57,12 @@ export function assertDeadlineDate(date: string) {
   }
 }
 
+/**
+ * يقوم بتحديث حالات المواعيد النهائية وإضافة حالة "متأخر" (overdue) للمواعيد الفائتة غير المكتملة.
+ * 
+ * @param {Deadline[]} deadlines - مصفوفة المواعيد النهائية المراد معالجتها
+ * @returns {Deadline[]} مصفوفة المواعيد بعد التحديث
+ */
 export function enrichDeadlineStatuses(deadlines: Deadline[]) {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());

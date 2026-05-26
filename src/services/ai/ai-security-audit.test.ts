@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function */
 import { describe, it, expect } from 'vitest';
 import { sanitizeUserInput, sanitizeData } from './prompt-sanitizer';
 import { checkDocumentQuality } from './quality-checker';
@@ -40,8 +41,8 @@ describe('AI Security Audit - malaf.pro', () => {
       const payload = "رقمي القومي هو 29001011234567";
       // في نظامنا، التطهير يركز على الحقن، ولكن يجب التأكد من عدم إرسال هذا للـ Logs
       const sanitized = sanitizeUserInput(payload);
-      // التحقق من أن المنطق لا يتأثر بالبيانات العادية ولكن يحمي الهيكل
-      expect(sanitized).toBe(payload); 
+      // التحقق من أن المنطق لا يتأثر بالبيانات العادية ولكن يحمي الهيكل ويحجب الرقم القومي
+      expect(sanitized).toContain('[REDACTED_NID]'); 
     });
 
     it('Should verify PII filtering in Sentry beforeSend (Logic Check)', () => {

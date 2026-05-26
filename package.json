@@ -33,7 +33,7 @@
   "lint-staged": {
     "src/**/*.{ts,tsx}": [
       "eslint --rule '{\"complexity\": [\"error\", 10], \"max-depth\": [\"error\", 3]}' --max-warnings 0",
-      "tsc --noEmit"
+      "node -e \"require('child_process').execSync('npx tsc --noEmit', { stdio: 'inherit' })\""
     ]
   },
   "dependencies": {

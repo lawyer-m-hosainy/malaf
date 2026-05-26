@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function */
 import { describe, it, expect } from 'vitest';
 import { ClientSchema, CaseSchema } from '../schemas';
 
@@ -19,7 +20,7 @@ describe('Domain Schemas', () => {
         id: 'cl-1',
         type: 'فرد' as const,
         name: 'أحمد محمد',
-        phone: '01012345678' // Should fail because regex expects +201...
+        phone: '+966512345678' // Should fail because regex expects Egyptian format (+201... or 01...)
       };
       const result = ClientSchema.safeParse(invalidData);
       expect(result.success).toBe(false);

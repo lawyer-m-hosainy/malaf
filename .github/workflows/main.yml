@@ -3,10 +3,10 @@ name: Malaf CI/CD Pipeline
 on:
   push:
     branches:
-      - main
+      - master
   pull_request:
     branches:
-      - main
+      - master
 
 jobs:
   build-and-test:
@@ -41,7 +41,7 @@ jobs:
           VITE_VAPID_PUBLIC_KEY: ${{ secrets.VITE_VAPID_PUBLIC_KEY }}
 
       - name: Send Discord Notification on Success
-        if: success() && github.ref == 'refs/heads/main'
+        if: success() && github.ref == 'refs/heads/master'
         continue-on-error: true
         uses: Ilshidur/action-discord@master
         env:
@@ -50,7 +50,7 @@ jobs:
           args: '✅ تم بناء منصة مَلَف بنجاح وجاهزة للنشر التلقائي! الفرع: {{ EVENT_PAYLOAD.pull_request.head.ref || github.ref }}'
 
       - name: Send Discord Notification on Failure
-        if: failure() && github.ref == 'refs/heads/main'
+        if: failure() && github.ref == 'refs/heads/master'
         continue-on-error: true
         uses: Ilshidur/action-discord@master
         env:

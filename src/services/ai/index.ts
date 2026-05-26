@@ -25,6 +25,8 @@ import {
 } from "./mockResponses";
 import { EGYPTIAN_LEGAL_TEMPLATES, AI_DISCLAIMER } from "./templates";
 import { useUIStore } from "../../store/useUIStore";
+import { sanitizeUserInput, sanitizeData } from "./prompt-sanitizer";
+import { checkDocumentQuality } from "./quality-checker";
 
 export interface DocumentContext {
   clientName?: string;
@@ -39,23 +41,75 @@ export interface DocumentContext {
   opponentRole?: string;
 }
 
+/**
+ * دالة ذكية لإدارة توليد المستندات مع نظام Fallback متعدد الطبقات وفحص الجودة
+ */
+async function smartGenerate(
+  type: string,
+  prompt: string,
+  context: Record<string, any> = {}
+): Promise<{ text: string; provider: string; quality?: any }> {
+  const FALLBACK_CHAIN = [
+    { name: 'primary_api', path: '/api/ai/generate', timeout: 15000 },
+    { name: 'secondary_api', path: '/api/ai/draft', timeout: 10000 },
+    { name: 'mock_fallback', path: null, timeout: 0 }
+  ];
+
+  const sanitizedPrompt = sanitizeUserInput(prompt);
+  const sanitizedContext = sanitizeData(context);
+
+  for (const provider of FALLBACK_CHAIN) {
+    try {
+      if (!provider.path) break; // الانتقال للمحاكاة (Mock)
+
+      const result = await Promise.race([
+        callAiApi(provider.path, { type, prompt: sanitizedPrompt, context: sanitizedContext }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), provider.timeout))
+      ]) as any;
+
+      if (result && result.text) {
+        // فحص الجودة (اختياري حسب نوع المستند)
+        if (type !== 'chat') {
+          const quality = await checkDocumentQuality({
+            documentType: type,
+            generatedText: result.text,
+            sourceData: sanitizedContext
+          });
+          
+          if (quality.safe_to_use || quality.overall_score > 70) {
+            return { text: result.text, provider: provider.name, quality };
+          }
+          console.warn(`Quality too low for ${provider.name}, trying next...`);
+        } else {
+          return { text: result.text, provider: provider.name };
+        }
+      }
+    } catch (error) {
+      console.warn(`Provider ${provider.name} failed:`, error);
+    }
+  }
+
+  // الملاذ الأخير: المحاكاة الذكية
+  return { text: "", provider: 'mock' };
+}
 
 export async function getLegalAssistantResponse(
   userMessage: string,
   history: any[] = []
 ): Promise<string> {
+  const sanitizedMessage = sanitizeUserInput(userMessage);
   try {
-    const result = await callAiApi("/api/ai/legal-assistant", { userMessage, history });
+    const result = await callAiApi("/api/ai/legal-assistant", { userMessage: sanitizedMessage, history });
     if (result.isFallback) {
       useUIStore.getState().setAiFallback(true);
     } else {
       useUIStore.getState().setAiFallback(false);
     }
-    return result.text || getMockAssistantResponse(userMessage);
+    return result.text || getMockAssistantResponse(sanitizedMessage);
   } catch (error) {
     console.warn("AI Backend unavailable → using local response", error);
     useUIStore.getState().setAiFallback(true);
-    return getMockAssistantResponse(userMessage);
+    return getMockAssistantResponse(sanitizedMessage);
   }
 }
 
@@ -68,21 +122,16 @@ export async function draftLegalDocument(
   if (!template) throw new Error("Template not found");
 
   try {
-    let aiContent = "";
+    // استخدام المنطق الذكي للتوليد مع نظام Fallback وفحص الجودة
+    const result = await smartGenerate(template.name, facts, context as any);
     
-    try {
-      const result = await callAiApi("/api/ai/draft", { type: template.name, facts });
-      if (result.isFallback) {
-        useUIStore.getState().setAiFallback(true);
-      } else {
-        useUIStore.getState().setAiFallback(false);
-      }
-      aiContent = result.text || facts;
-    } catch (error) {
-      console.warn("Backend drafting failed, using raw facts:", error);
+    if (result.provider === 'mock') {
       useUIStore.getState().setAiFallback(true);
-      aiContent = facts;
+      return getMockDraftResponse(template.name, facts);
     }
+
+    useUIStore.getState().setAiFallback(false);
+    const aiContent = result.text || facts;
 
     // 2. Auto-fill template
     let filledTemplate = template.structure;

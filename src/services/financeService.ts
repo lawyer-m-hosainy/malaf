@@ -44,21 +44,43 @@ function mapExpenseToDB(exp: any, orgId: string) {
 // ─── الفواتير (Invoices) ─────────────────────────────────────────
 
 /**
- * جلب قائمة الفواتير الخاصة بالمكتب
- * @returns {Promise<Invoice[]>} قائمة الفواتير
+ * جلب قائمة بكافة الفواتير الصادرة عن المكتب.
+ * 
+ * [Supabase] الجدول: `invoices` | RLS: معزول حسب المستأجر
+ * 
+ * @returns {Promise<Invoice[]>} قائمة الفواتير مرتبة من الأحدث إلى الأقدم
+ * @throws {PostgrestError} عند حدوث خطأ في استعلام قاعدة البيانات
+ * 
+ * @example
+ * const invoices = await fetchInvoices();
  */
 export async function fetchInvoices(): Promise<Invoice[]> {
   const orgId = requireOrgId();
   try {
     const { data, error } = await supabase
       .from("invoices")
-      .select("id, client_id, amount, total, status, date, created_at")
+      .select(`
+        id, 
+        client_id, 
+        amount, 
+        total, 
+        status, 
+        date, 
+        created_at,
+        client:clients(name)
+      `)
       .eq("organization_id", orgId)
       .order("created_at", { ascending: false })
       .limit(20);
 
     if (error) throw error;
-    return (data || []) as any;
+    
+    return (data || []).map((row: any) => ({
+      ...row,
+      clientName: row.client?.name || 'غير محدد',
+      base: row.amount, // mapping amount to base as per Invoice interface
+      vat: row.total - row.amount // calculating vat
+    })) as Invoice[];
   } catch (error) {
     console.error("خطأ في جلب الفواتير:", error);
     return [];
@@ -66,9 +88,16 @@ export async function fetchInvoices(): Promise<Invoice[]> {
 }
 
 /**
- * حفظ بيانات فاتورة (Create or Update)
- * @param invoice - بيانات الفاتورة
- * @param isUpdate - هل هي عملية تحديث؟
+ * حفظ أو تحديث بيانات فاتورة في قاعدة البيانات مع تسجيل الحركة في سجل التدقيق.
+ * 
+ * @param {Invoice} invoice - كائن بيانات الفاتورة المراد حفظه
+ * @param {boolean} [isUpdate=false] - هل العملية تعديل لفاتورة موجودة أم إنشاء جديدة
+ * 
+ * @returns {Promise<void>} دالة مستقبلية تنتهي عند نجاح العملية
+ * @throws {PostgrestError} إذا فشلت عملية الـ Upsert في قاعدة البيانات
+ * 
+ * @example
+ * await saveInvoice(newInvoiceData, false);
  */
 export async function saveInvoice(
   invoice: Invoice,
@@ -94,8 +123,13 @@ export async function saveInvoice(
 }
 
 /**
- * حذف فاتورة نهائياً من قاعدة البيانات
- * @param invoiceId - معرف الفاتورة
+ * حذف فاتورة بشكل نهائي من قاعدة البيانات.
+ * 
+ * [تحذير] هذه العملية لا يمكن التراجع عنها وتؤثر على التقارير المالية.
+ * 
+ * @param {string} invoiceId - المعرف الفريد للفاتورة
+ * @returns {Promise<void>} دالة مستقبلية تنتهي عند نجاح الحذف
+ * @throws {PostgrestError} إذا فشل الحذف أو خرق سياسة الـ RLS
  */
 export async function deleteInvoice(invoiceId: string): Promise<void> {
   const orgId = requireOrgId();
@@ -111,23 +145,43 @@ export async function deleteInvoice(invoiceId: string): Promise<void> {
 // ─── المصروفات (Expenses) ────────────────────────────────────────
 
 /**
- * جلب قائمة المصروفات الخاصة بالمكتب
- * @returns {Promise<any[]>} قائمة المصروفات
+ * جلب قائمة المصروفات الإدارية والقضائية المسجلة للمكتب.
+ * 
+ * @returns {Promise<any[]>} قائمة المصروفات مع بيانات الحالة والموافقة
+ * @throws {PostgrestError} عند حدوث خطأ في قاعدة البيانات
  */
 export async function fetchExpenses(): Promise<any[]> {
   const orgId = requireOrgId();
   try {
     const { data, error } = await supabase
       .from("expenses")
-      .select("id, case_id, client_id, category, amount, date, status, description, requires_partner_approval, created_at")
+      .select(`
+        id, 
+        case_id, 
+        client_id, 
+        category, 
+        amount, 
+        date, 
+        status, 
+        description, 
+        requires_partner_approval, 
+        created_at,
+        client:clients(name),
+        case:cases(title)
+      `)
       .eq("organization_id", orgId)
       .order("date", { ascending: false })
       .limit(100);
+
     if (error) throw error;
-    return (data || []).map(e => ({
-      ...e,
-      caseId: e.case_id,
-      createdAt: e.created_at,
+
+    return (data || []).map((row: any) => ({
+      ...row,
+      clientId: row.client_id,
+      clientName: row.client?.name || 'غير محدد',
+      caseId: row.case_id,
+      caseName: row.case?.title || '—',
+      createdAt: row.created_at,
     }));
   } catch (error) {
     console.error("خطأ في جلب المصروفات:", error);
@@ -136,8 +190,11 @@ export async function fetchExpenses(): Promise<any[]> {
 }
 
 /**
- * حفظ بيانات مصروف (Create or Update)
- * @param expense - بيانات المصروف
+ * حفظ أو تحديث سجل مصروف مالي.
+ * 
+ * @param {any} expense - بيانات المصروف (المبلغ، التصنيف، الوصف)
+ * @returns {Promise<void>} دالة مستقبلية تنتهي عند نجاح العملية
+ * @throws {PostgrestError} عند فشل الـ Upsert
  */
 export async function saveExpense(expense: any): Promise<void> {
   const orgId = requireOrgId();
@@ -152,8 +209,11 @@ export async function saveExpense(expense: any): Promise<void> {
 }
 
 /**
- * حذف سجل مصروف
- * @param id - معرف المصروف
+ * حذف سجل مصروف مالي بشكل نهائي.
+ * 
+ * @param {string} id - معرف سجل المصروف
+ * @returns {Promise<void>} دالة مستقبلية تنتهي عند نجاح الحذف
+ * @throws {PostgrestError} عند فشل الحذف
  */
 export async function deleteExpense(id: string): Promise<void> {
   const orgId = requireOrgId();
@@ -169,10 +229,31 @@ export async function deleteExpense(id: string): Promise<void> {
 // ─── التحصيل والمطالبات (Receivables & Collections) ──────────────
 
 /**
- * جلب قائمة المطالبات المالية (الذمم المدينة)
- * @returns {Promise<any[]>} قائمة المطالبات
+ * واجهة تمثيل بيانات المطالبة المالية (الذمم المدينة) المستحقة للمكتب.
  */
-export async function fetchReceivables(): Promise<any[]> {
+export interface ReceivableData {
+  id: string;
+  client_id: string;
+  client_name: string;
+  total_amount: number;
+  collected_amount: number;
+  outstanding_amount: number;
+  status: string;
+  due_date: string;
+  description: string;
+  created_at: string;
+  case_id: string;
+}
+
+/**
+ * جلب قائمة المطالبات المالية (الذمم المدينة) المستحقة للمكتب على الموكلين.
+ * 
+ * تقوم هذه الدالة بحساب المبالغ المتبقية (Outstanding) آلياً لكل مطالبة.
+ * 
+ * @returns {Promise<ReceivableData[]>} قائمة المطالبات مع تفاصيل التحصيل والحسابات المتبقية
+ * @throws {PostgrestError} عند حدوث خطأ في قاعدة البيانات
+ */
+export async function fetchReceivables(): Promise<ReceivableData[]> {
   const orgId = requireOrgId();
   try {
     const { data, error } = await supabase
@@ -195,8 +276,11 @@ export async function fetchReceivables(): Promise<any[]> {
 }
 
 /**
- * حفظ بيانات مطالبة مالية
- * @param rec - بيانات المطالبة
+ * حفظ بيانات مطالبة مالية جديدة أو تحديث مطالبة قائمة.
+ * 
+ * @param {any} rec - كائن بيانات المطالبة (المبلغ الكلي، الموكل، التاريخ)
+ * @returns {Promise<void>} دالة مستقبلية تنتهي عند نجاح العملية
+ * @throws {PostgrestError} عند فشل الـ Upsert
  */
 export async function saveReceivable(rec: any): Promise<void> {
   const orgId = requireOrgId();
@@ -212,8 +296,11 @@ export async function saveReceivable(rec: any): Promise<void> {
 }
 
 /**
- * حذف سجل مطالبة مالية
- * @param id - معرف المطالبة
+ * حذف سجل مطالبة مالية بشكل نهائي.
+ * 
+ * @param {string} id - معرف سجل المطالبة
+ * @returns {Promise<void>} دالة مستقبلية تنتهي عند نجاح الحذف
+ * @throws {PostgrestError} عند فشل الحذف
  */
 export async function deleteReceivableRecord(id: string): Promise<void> {
   const orgId = requireOrgId();
@@ -226,9 +313,11 @@ export async function deleteReceivableRecord(id: string): Promise<void> {
 }
 
 /**
- * جلب إجراءات التحصيل المتخذة لمطالبة معينة
- * @param receivableId - معرف المطالبة
- * @returns {Promise<any[]>} قائمة الإجراءات
+ * جلب كافة إجراءات التحصيل (اتصالات، خطابات، ملاحقات) المتخذة لمطالبة معينة.
+ * 
+ * @param {string} receivableId - المعرف الفريد للمطالبة المالية
+ * @returns {Promise<any[]>} قائمة الإجراءات المسجلة
+ * @throws {PostgrestError} عند فشل الاستعلام
  */
 export async function fetchCollectionActions(receivableId: string): Promise<any[]> {
   const orgId = requireOrgId();
@@ -248,8 +337,11 @@ export async function fetchCollectionActions(receivableId: string): Promise<any[
 }
 
 /**
- * حفظ إجراء تحصيل جديد
- * @param action - بيانات الإجراء
+ * تسجيل إجراء تحصيل جديد لمطالبة مالية.
+ * 
+ * @param {any} action - بيانات الإجراء المتخذ (نوع الإجراء، ملاحظات، تاريخ)
+ * @returns {Promise<void>} دالة مستقبلية تنتهي عند نجاح الحفظ
+ * @throws {PostgrestError} عند فشل عملية الإدراج
  */
 export async function saveCollectionAction(action: any): Promise<void> {
   const orgId = requireOrgId();

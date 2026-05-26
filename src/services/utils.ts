@@ -2,9 +2,15 @@ import { supabase } from "@/lib/supabase";
 import { getCurrentTenantId } from "@/lib/tenant";
 
 /**
- * الحصول على معرف المكتب (org_id) الحالي مع التحقق من وجوده
- * @returns {string} معرّف المكتب
- * @throws {Error} إذا لم يتم العثور على المعرف
+ * الحصول على معرف المكتب (org_id) الحالي من جلسة المستخدم الحالية.
+ * 
+ * [القيد] تتطلب هذه الدالة أن يكون المستخدم قد سجل دخوله بالفعل وأن يكون المستأجر (Tenant) محملاً في الذاكرة.
+ * 
+ * @returns {string} معرّف المكتب (UUID) المستخرج من JWT أو التخزين المحلي
+ * @throws {Error} إذا لم يتم العثور على المعرف أو لم يسجل المستخدم دخوله
+ * 
+ * @example
+ * const orgId = requireOrgId();
  */
 export function requireOrgId(): string {
   const orgId = getCurrentTenantId();
@@ -13,11 +19,18 @@ export function requireOrgId(): string {
 }
 
 /**
- * تسجيل حركة في سجل التدقيق (Audit Logs)
- * @param action - نوع الحركة (CREATE, UPDATE, DELETE, etc.)
- * @param entityType - نوع الكيان المتأثر (cases, clients, etc.)
- * @param entityId - معرف الكيان
- * @param details - تفاصيل إضافية
+ * تسجيل حركة تقنية في سجل التدقيق (Audit Logs) لضمان الشفافية والامتثال القانوني.
+ * 
+ * [Supabase] الجدول: `audit_logs` | الصلاحيات: تتم عبر دالة SECURITY DEFINER في قاعدة البيانات
+ * 
+ * @param {string} action - نوع العملية البرمجية (مثل: CREATE, UPDATE, DELETE)
+ * @param {string} entityType - نوع المورد المتأثر (مثل: cases, clients, invoices)
+ * @param {string} entityId - المعرف الفريد (UUID) للمورد المتأثر
+ * @param {string} [details] - وصف نصي إضافي للعملية باللغة العربية أو الإنجليزية
+ * 
+ * @returns {Promise<void>} دالة مستقبلية تنتهي عند اكتمال عملية التسجيل (أو تجاهلها بصمت)
+ * 
+ * @throws {PostgrestError} يتم تجاهل أخطاء قاعدة البيانات بصمت لضمان استمرارية تجربة المستخدم
  */
 export async function logAuditAction(
   action: string,

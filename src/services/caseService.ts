@@ -10,22 +10,25 @@ const CASES_TABLE = "cases";
  * @param orgId - معرف المكتب
  */
 function mapCaseToDB(c: any, orgId: string) {
+  const getVal = (val: any, fallback = "") => val || fallback;
+  
   const mapped: any = {
     organization_id: orgId,
-    client_id: c.clientId || c.client_id,
-    court: c.court || c.court_location || "",
-    type: c.type || c.court_category || "",
-    status: c.status || "متداولة",
-    plaintiff: c.plaintiff || "",
-    defendant: c.defendant || "",
-    first_instance_number: c.firstInstanceNumber || c.first_instance_number || "",
-    appeal_number: c.appealNumber || c.appeal_number || "",
-    cassation_number: c.cassationNumber || c.cassation_number || "",
+    client_id: getVal(c.clientId, c.client_id),
+    court: getVal(c.court, getVal(c.court_location)),
+    type: getVal(c.type, getVal(c.court_category)),
+    status: getVal(c.status, "متداولة"),
+    plaintiff: getVal(c.plaintiff),
+    defendant: getVal(c.defendant),
+    first_instance_number: getVal(c.firstInstanceNumber, c.first_instance_number),
+    appeal_number: getVal(c.appealNumber, c.appeal_number),
+    cassation_number: getVal(c.cassationNumber, c.cassation_number),
   };
-  // عند التعديل نحدد الـ id — عند الإضافة ندع DB يولّد UUID تلقائياً
+
   if (c.id && typeof c.id === 'string' && c.id.length > 10) {
     mapped.id = c.id;
   }
+  
   return mapped;
 }
 
@@ -48,8 +51,16 @@ function mapDBToCase(d: any): Case {
 }
 
 /**
- * جلب قائمة القضايا الخاصة بالمكتب
- * @returns {Promise<Case[]>} قائمة القضايا
+ * يجلب قائمة بكافة القضايا النشطة التابعة للمكتب الحالي.
+ * 
+ * [Supabase] الجدول: `cases` | RLS: مفعل (عزل حسب organization_id)
+ * [Supabase] الفلترة: يتم استبعاد السجلات التي تم حذفها ناعماً (deleted_at IS NULL)
+ * 
+ * @returns {Promise<Case[]>} قائمة منسقة بكائنات القضايا مع بيانات المحامي والوثائق المرتبطة
+ * @throws {PostgrestError} إذا فشل الاتصال بقاعدة البيانات أو تم انتهاك سياسات الوصول
+ * 
+ * @example
+ * const activeCases = await fetchCases();
  */
 export async function fetchCases(): Promise<Case[]> {
   const orgId = requireOrgId();
@@ -71,8 +82,14 @@ export async function fetchCases(): Promise<Case[]> {
 }
 
 /**
- * حفظ مجموعة من القضايا (Bulk Upsert)
- * @param cases - قائمة القضايا المطلوب حفظها
+ * يقوم بحفظ أو تحديث مجموعة من القضايا دفعة واحدة (Bulk Operations).
+ * 
+ * [قانوني] يتم تسجيل عملية الحفظ لكل قضية في سجل التدقيق لضمان الامتثال.
+ * 
+ * @param {Case[]} cases - مصفوفة من كائنات القضايا المراد حفظها
+ * @returns {Promise<void>} دالة مستقبلية تنتهي عند اكتمال عملية الحفظ والتسجيل
+ * @throws {PostgrestError} إذا فشلت عملية الإدراج أو التحديث الجماعي
+ * @throws {Error} إذا لم يتم العثور على معرف المكتب الحالي
  */
 export async function saveCases(cases: Case[]): Promise<void> {
   const orgId = requireOrgId();
@@ -91,8 +108,11 @@ export async function saveCases(cases: Case[]): Promise<void> {
 }
 
 /**
- * حفظ بيانات قضية واحدة (Create or Update)
- * @param caseData - بيانات القضية
+ * حفظ أو تحديث بيانات قضية واحدة بشكل مستقل.
+ * 
+ * @param {Partial<Case>} caseData - كائن يحتوي على بيانات القضية (أو جزء منها في حالة التحديث)
+ * @returns {Promise<void>} دالة مستقبلية تنتهي عند نجاح العملية
+ * @throws {PostgrestError} عند فشل الـ Upsert في قاعدة البيانات
  */
 export async function saveCase(caseData: Partial<Case>): Promise<void> {
   const orgId = requireOrgId();
@@ -109,8 +129,11 @@ export async function saveCase(caseData: Partial<Case>): Promise<void> {
 }
 
 /**
- * حذف قضية (حذف ناعم - Soft Delete)
- * @param caseId - معرف القضية
+ * تنفيذ عملية حذف ناعم (Soft Delete) للقضية عبر وسمها بطابع زمني للحذف.
+ * 
+ * @param {string} caseId - المعرف الفريد (UUID) للقضية المراد حذفها
+ * @returns {Promise<void>} دالة مستقبلية تنتهي عند نجاح التحديث
+ * @throws {PostgrestError} إذا فشل التحديث أو لم يمتلك المستخدم صلاحية الحذف
  */
 export async function deleteCase(caseId: string): Promise<void> {
   const orgId = requireOrgId();
@@ -124,8 +147,10 @@ export async function deleteCase(caseId: string): Promise<void> {
 }
 
 /**
- * جلب ملفات التنفيذ القضائي
- * @returns {Promise<any[]>} قائمة ملفات التنفيذ
+ * جلب سجلات التنفيذ القضائي المرتبطة بالمكتب الحالي.
+ * 
+ * @returns {Promise<any[]>} قائمة بسجلات التنفيذ تشمل المبالغ المطلوبة والمحصلة
+ * @throws {PostgrestError} عند حدوث خطأ في الاستعلام
  */
 export async function fetchEnforcement(): Promise<any[]> {
   const orgId = requireOrgId();
@@ -144,8 +169,11 @@ export async function fetchEnforcement(): Promise<any[]> {
 }
 
 /**
- * حذف ملف تنفيذ قضائي
- * @param id - معرف ملف التنفيذ
+ * حذف سجل تنفيذ قضائي بشكل نهائي من قاعدة البيانات.
+ * 
+ * @param {string} id - معرف سجل التنفيذ
+ * @returns {Promise<void>} دالة مستقبلية تنتهي عند نجاح الحذف
+ * @throws {PostgrestError} إذا فشلت عملية الحذف أو خرق سياسة الـ RLS
  */
 export async function deleteEnforcement(id: string): Promise<void> {
   const orgId = requireOrgId();
@@ -159,9 +187,12 @@ export async function deleteEnforcement(id: string): Promise<void> {
 }
 
 /**
- * حفظ سجل في المحاكم المتخصصة
- * @param table - اسم الجدول المستهدف
- * @param record - بيانات السجل
+ * حفظ أو تحديث سجل في أحد جداول المحاكم المتخصصة (مثل الجنايات، الأسرة، إلخ).
+ * 
+ * @param {string} table - اسم الجدول المستهدف في قاعدة البيانات
+ * @param {any} record - كائن البيانات المراد حفظه
+ * @returns {Promise<void>} دالة مستقبلية تنتهي عند نجاح العملية
+ * @throws {PostgrestError} عند فشل عملية الـ Upsert
  */
 export async function saveSpecializedCase(table: string, record: any): Promise<void> {
   const orgId = requireOrgId();
@@ -177,9 +208,11 @@ export async function saveSpecializedCase(table: string, record: any): Promise<v
 }
 
 /**
- * جلب سجلات من المحاكم المتخصصة
- * @param table - اسم الجدول
- * @returns {Promise<any[]>} قائمة السجلات
+ * جلب السجلات من جداول المحاكم المتخصصة مرتبة تنازلياً حسب تاريخ الإنشاء.
+ * 
+ * @param {string} table - اسم الجدول المطلوب الاستعلام منه
+ * @returns {Promise<any[]>} قائمة السجلات المسترجعة
+ * @throws {PostgrestError} عند حدوث خطأ في قاعدة البيانات
  */
 export async function fetchSpecializedCases(table: string): Promise<any[]> {
   const orgId = requireOrgId();

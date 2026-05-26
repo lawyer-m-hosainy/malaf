@@ -4,6 +4,24 @@ import { poaSchema } from "@/lib/schemas";
 import { ZodError } from "zod";
 import { toast } from "sonner";
 
+/**
+ * Hook لإدارة منطق التوكيلات القانونية (Powers of Attorney) وربطها بالموكلين.
+ * 
+ * يتولى هذا الـ Hook:
+ * - تصفية التوكيلات بناءً على اسم الموكل أو رقم التوكيل
+ * - إدارة بيانات نموذج التوكيل (رقم، سنة، مكتب الشهر العقاري، إلخ)
+ * - التحقق من صحة البيانات باستخدام `poaSchema`
+ * - معالجة عمليات الإضافة والتحديث في مخزن الحالة (Store)
+ * 
+ * @returns {object} كائن يحتوي على:
+ *   - `clients`: قائمة الموكلين (للاختيار منها في النموذج)
+ *   - `filteredPOAs`: قائمة التوكيلات المفلترة مع اسم الموكل المدمج
+ *   - `searchTerm`: نص البحث الحالي
+ *   - `isOpen`: حالة نافذة النموذج
+ *   - `formData`: بيانات التوكيل الحالية
+ *   - `handleSubmit`: معالج حفظ التوكيل (إضافة أو تعديل)
+ *   - `handleEditClick`: تعبئة النموذج ببيانات توكيل موجود لتعديله
+ */
 export function usePOALogic() {
   const clients = useClientsStore(state => state.clients);
   const poas = useClientsStore(state => state.poas);

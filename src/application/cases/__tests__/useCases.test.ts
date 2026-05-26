@@ -50,7 +50,7 @@ describe('linkCaseToELitigation', () => {
     linkCaseToELitigation(repo, 'C-1');
     
     const updated = repo.getCases().find(c => c.id === 'C-1');
-    // expect(updated?.eLitigationStatus).toBe('مربوط ببوابة التقاضي'); // removed from schema
+    expect(updated?.eLitigationStatus).toBe('مربوط ببوابة التقاضي');
   });
 });
 
@@ -95,8 +95,11 @@ describe('createDeadline', () => {
     });
     
     expect(deadline.id).toBeDefined();
+    expect(deadline.id.length).toBeGreaterThan(10); // Ensure it's a real UUID-like ID
     expect(deadline.status).toBe('pending');
     expect(deadline.title).toBe('موعد إيداع');
+    expect(deadline.caseId).toBe('C-1');
+    expect(deadline.priority).toBe('high');
   });
 });
 

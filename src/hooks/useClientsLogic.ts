@@ -7,6 +7,30 @@ import { useEffect } from "react";
 import { fetchClients, fetchClientsPaginated, saveClient } from "@/services/legalDataService";
 
 
+/**
+ * Hook لإدارة حالة ومنطق صفحة الموكلين (Clients) مع دعم التصفح المرقم والبحث والتصفية.
+ * 
+ * يوفر هذا الـ Hook واجهة متكاملة للتعامل مع الموكلين تشمل:
+ * - جلب البيانات بشكل مرقم (Paginated Fetching)
+ * - البحث والفلترة المحلية
+ * - إدارة نموذج الإضافة والتعديل (Form Management)
+ * - التحقق من صحة البيانات باستخدام Zod
+ * - منع تكرار الموكلين بناءً على الرقم القومي أو السجل التجاري
+ * 
+ * @returns {object} كائن يحتوي على الحالات (States) والعمليات (Actions) التالية:
+ *   - `clients`: قائمة كافة الموكلين المحملة في الذاكرة
+ *   - `filteredClients`: قائمة الموكلين بعد تطبيق البحث والفلترة
+ *   - `currentClients`: قائمة الموكلين للصفحة الحالية فقط
+ *   - `searchQuery`: نص البحث الحالي
+ *   - `filterType`: نوع الفلترة المطبق (فرد/منشأة)
+ *   - `currentPage`: رقم الصفحة الحالية
+ *   - `totalPages`: إجمالي عدد الصفحات المتاحة
+ *   - `isOpen`: حالة ظهور نافذة الإضافة/التعديل
+ *   - `formData`: بيانات النموذج الحالي
+ *   - `handleSubmit`: معالج إرسال النموذج مع التشفير والتحقق
+ *   - `handleEditClick`: دالة لتجهيز النموذج لتعديل موكل معين
+ *   - `handleDeleteClick`: دالة لحذف موكل ناعماً مع تأكيد
+ */
 export function useClientsLogic() {
   const clients = useClientsStore(state => state.clients);
   const addClient = useClientsStore(state => state.addClient);
@@ -99,22 +123,30 @@ export function useClientsLogic() {
     }
   }, [deleteClient]);
 
+  const formatClientData = useCallback((data: typeof formData) => {
+    const cleanPhone = data.phone.trim().replace(/\s+/g, '');
+    return {
+      ...data,
+      name: data.name.trim(),
+      phone: cleanPhone.startsWith('01') ? `+20${cleanPhone.substring(1)}` : cleanPhone,
+      nationalId: data.nationalId.trim(),
+      commercialRegistration: data.commercialRegistration.trim(),
+      vatNumber: data.vatNumber.trim(),
+    };
+  }, []);
+
+  const checkDuplicate = useCallback((validated: any) => {
+    return clients.some(c => 
+      (validated.nationalId && c.nationalId === validated.nationalId) || 
+      (validated.commercialRegistration && c.commercialRegistration === validated.commercialRegistration)
+    );
+  }, [clients]);
+
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
-      // تنظيف البيانات وتحويل الهاتف للصيغة الدولية
-      const cleanPhone = formData.phone.trim().replace(/\s+/g, '');
-      const formattedData = {
-        ...formData,
-        name: formData.name.trim(),
-        phone: cleanPhone.startsWith('01') ? `+20${cleanPhone.substring(1)}` : cleanPhone,
-        nationalId: formData.nationalId.trim(),
-        commercialRegistration: formData.commercialRegistration.trim(),
-        vatNumber: formData.vatNumber.trim(),
-      };
-
-      // التحقق من البيانات
+      const formattedData = formatClientData(formData);
       const validated = clientSchema.parse(formattedData);
       
       if (editingClientId) {
@@ -122,24 +154,14 @@ export function useClientsLogic() {
         updateClient(editingClientId, validated);
         toast.success("تم تحديث بيانات العميل بنجاح");
       } else {
-        // === منع التكرار (Duplicate Detection) ===
-        const isDuplicate = clients.some(c => 
-          (validated.nationalId && c.nationalId === validated.nationalId) || 
-          (validated.commercialRegistration && c.commercialRegistration === validated.commercialRegistration)
-        );
-
-        if (isDuplicate) {
+        if (checkDuplicate(validated)) {
           toast.error("هذا العميل مسجل بالفعل (يوجد تطابق في الرقم القومي أو السجل التجاري)", {
             description: "يرجى التأكد من البيانات أو البحث عن العميل في القائمة."
           });
           return;
         }
 
-        const newId = `C-${Date.now()}`;
-        const newClient = {
-          id: newId,
-          ...validated,
-        };
+        const newClient = { id: `C-${Date.now()}`, ...validated };
         await saveClient(newClient as any);
         addClient(newClient as any);
         toast.success("تم إضافة العميل بنجاح");
@@ -149,15 +171,10 @@ export function useClientsLogic() {
       resetForm();
     } catch (error) {
       console.error("Validation/Save Error:", error);
-      if (error instanceof ZodError) {
-        // إظهار أول خطأ موجود في الـ Schema
-        const firstError = error.issues[0];
-        toast.error(firstError.message || "خطأ في البيانات المدخلة");
-      } else {
-        toast.error("حدث خطأ أثناء حفظ البيانات، يرجى المحاولة مرة أخرى");
-      }
+      const message = error instanceof ZodError ? error.issues[0].message : "حدث خطأ أثناء حفظ البيانات";
+      toast.error(message);
     }
-  }, [formData, editingClientId, updateClient, addClient, resetForm]);
+  }, [formData, editingClientId, updateClient, addClient, resetForm, formatClientData, checkDuplicate]);
 
   const openNewClientDialog = useCallback(() => {
     resetForm();

@@ -26,8 +26,17 @@ function mapPOAToDB(poa: any, orgId: string) {
 }
 
 /**
- * جلب قائمة الموكلين مع فك تشفير البيانات الحساسة
- * @returns {Promise<Client[]>} قائمة الموكلين
+ * جلب قائمة الموكلين التابعين للمكتب مع فك تشفير البيانات الحساسة (الرقم القومي والسجل التجاري).
+ * 
+ * [أمني] يتم فك التشفير برمجياً في طبقة الخدمة لضمان بقاء المفاتيح بعيدة عن قاعدة البيانات.
+ * [Supabase] الجدول: `clients` | RLS: معزول حسب المستأجر
+ * 
+ * @returns {Promise<Client[]>} قائمة الموكلين مع البيانات الحساسة مفكوكة التشفير
+ * @throws {PostgrestError} عند حدوث خطأ في استعلام قاعدة البيانات
+ * @throws {Error} عند فشل عملية فك التشفير
+ * 
+ * @example
+ * const clients = await fetchClients();
  */
 export async function fetchClients(): Promise<Client[]> {
   const orgId = requireOrgId();
@@ -65,9 +74,13 @@ export async function fetchClients(): Promise<Client[]> {
 }
 
 /**
- * جلب قائمة الموكلين بشكل مرقم (Paginated)
- * @param pageSize - عدد السجلات في الصفحة
- * @param page - رقم الصفحة
+ * جلب قائمة الموكلين بشكل مرقم (Paginated) لدعم التصفح السريع في الواجهات الكبيرة.
+ * 
+ * @param {number} [pageSize=20] - عدد السجلات في كل صفحة
+ * @param {number} [page=0] - رقم الصفحة المطلوبة (يبدأ من 0)
+ * 
+ * @returns {Promise<{ data: Client[]; hasMore: boolean }>} كائن يحتوي على البيانات وهل توجد صفحات إضافية
+ * @throws {PostgrestError} عند فشل الاستعلام أو الحساب الإجمالي
  */
 export async function fetchClientsPaginated(
   pageSize: number = 20,
@@ -110,8 +123,15 @@ export async function fetchClientsPaginated(
 }
 
 /**
- * حفظ بيانات موكل (Create or Update) مع تشفير البيانات الحساسة
- * @param client - بيانات الموكل
+ * حفظ بيانات موكل جديد أو تحديث بيانات موكل موجود، مع تشفير آلي للبيانات الحساسة.
+ * 
+ * [أمني] يتم تشفير الرقم القومي والسجل التجاري قبل الإرسال لقاعدة البيانات.
+ * [التدقيق] يتم تسجيل الحركة في سجلات النظام للامتثال لقانون 151/2020.
+ * 
+ * @param {Client} client - كائن بيانات الموكل
+ * @returns {Promise<void>} دالة مستقبلية تنتهي عند نجاح الحفظ والتشفير
+ * @throws {PostgrestError} عند فشل عملية الـ Upsert
+ * @throws {Error} عند فشل عملية التشفير
  */
 export async function saveClient(client: Client): Promise<void> {
   const orgId = requireOrgId();
@@ -142,8 +162,11 @@ export async function saveClient(client: Client): Promise<void> {
 }
 
 /**
- * حذف موكل (Soft Delete)
- * @param clientId - معرف الموكل
+ * حذف موكل ناعماً (Soft Delete) عبر تحديث حقل `deleted_at`.
+ * 
+ * @param {string} clientId - المعرف الفريد للموكل
+ * @returns {Promise<void>} دالة مستقبلية تنتهي عند نجاح التحديث
+ * @throws {PostgrestError} عند فشل التحديث في قاعدة البيانات
  */
 export async function deleteClient(clientId: string): Promise<void> {
   const orgId = requireOrgId();
@@ -157,8 +180,10 @@ export async function deleteClient(clientId: string): Promise<void> {
 }
 
 /**
- * جلب قائمة التوكيلات
- * @returns {Promise<any[]>} قائمة التوكيلات
+ * جلب قائمة التوكيلات المرتبطة بموكلين المكتب الحالي.
+ * 
+ * @returns {Promise<any[]>} قائمة التوكيلات مع بيانات الموكلين المرتبطة
+ * @throws {PostgrestError} عند فشل الاستعلام المعقد (Join)
  */
 export async function fetchPOAs(): Promise<any[]> {
   const orgId = requireOrgId();
@@ -182,8 +207,11 @@ export async function fetchPOAs(): Promise<any[]> {
 }
 
 /**
- * حفظ بيانات توكيل
- * @param poa - بيانات التوكيل
+ * حفظ أو تحديث بيانات توكيل قانوني.
+ * 
+ * @param {any} poa - بيانات التوكيل (رقم، سنة، مكتب، إلخ)
+ * @returns {Promise<void>} دالة مستقبلية تنتهي عند نجاح العملية
+ * @throws {PostgrestError} عند فشل عملية الحفظ
  */
 export async function savePOA(poa: any): Promise<void> {
   const orgId = requireOrgId();

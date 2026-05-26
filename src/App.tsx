@@ -6,26 +6,26 @@
  * @copyright (c) 2026. All rights reserved.
  */
 
-import React, { lazy, Suspense, useEffect } from "react";
+import React, { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { RootLayout } from "./components/layout/RootLayout";
+const RootLayout = lazy(() => import("./components/layout/RootLayout").then(m => ({ default: m.RootLayout })));
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "./components/AuthProvider";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { useAuthStore } from "@/store/useAuthStore";
-import { useClientsStore } from "@/store/useClientsStore";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { Toaster } from "@/components/ui/sonner";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { AppDataLoader } from "@/components/AppDataLoader";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { FullPageLoader } from "@/components/LoadingSpinner";
 
 const queryClient = new QueryClient();
 
 const Login = lazy(() => import("./views/Login"));
 const AIDocumentAnalyzer = lazy(() => import('@/views/AIDocumentAnalyzer'));
 const Terms = lazy(() => import('@/views/Terms'));
-const Privacy = lazy(() => import('@/views/Privacy'));
+const Privacy = lazy(() => import("./views/Privacy"));
 const GlobalAdmin = lazy(() => import('@/views/GlobalAdmin'));
 const Landing = lazy(() => import("./views/Landing"));
 const Dashboard = lazy(() => import("./views/Dashboard"));
@@ -77,27 +77,18 @@ const ELitigation = lazy(() => import("./views/ELitigation"));
 const ExpertMissions = lazy(() => import("./views/ExpertMissions"));
 const TrustAccountsPage = lazy(() => import("./views/TrustAccountsPage"));
 const PaymentPlans = lazy(() => import("./views/PaymentPlans"));
-const FinancialDashboard = lazy(() => import("./views/FinancialDashboard"));
+const FinancialDashboard = lazy(() => import("@/views/FinancialDashboard"));
 
 function PermissionGate({ children, permission, fallback = <Navigate to="/dashboard" replace /> }: { children: React.ReactNode; permission: string; fallback?: React.ReactNode }) {
   const hasPermission = useAuthStore(state => state.hasPermission);
   return hasPermission(permission) ? <>{children}</> : <>{fallback}</>;
 }
 
-import { seedDemoData } from "@/services/seedData";
-
+/**
+ * المكون الرئيسي لمنصة ملف (App).
+ * يقوم بتهيئة الموجه وموفرات السياق والتحقق من الصلاحيات والوصول للمسارات المختلفة.
+ */
 export default function App() {
-  useEffect(() => {
-    // R8-FIX: Only seed demo data in explicit demo mode, not on every load
-    const isDemoMode = useAuthStore.getState().isDemoMode;
-    const isDemoEnv = (import.meta as any).env?.VITE_ENABLE_DEMO === 'true';
-    const clients = useClientsStore.getState().clients;
-    
-    if (isDemoEnv && clients.length === 0 && isDemoMode) {
-      seedDemoData();
-    }
-  }, []);
-
   return (
     // @ts-ignore - next-themes version mismatch with React 19 types
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
@@ -186,8 +177,6 @@ export default function App() {
 function RouteLayoutWrapper() {
   return <RootLayout />;
 }
-
-import { FullPageLoader } from "@/components/LoadingSpinner";
 
 function RouteLoadingFallback() {
   return <FullPageLoader text="جاري تحميل الصفحة..." />;

@@ -35,14 +35,26 @@ function setCache(key: string, value: string): void {
   decryptCache.set(key, { value, timestamp: Date.now() });
 }
 
-/** Clear decryption cache (call on logout) */
+/** 
+ * مسح ذاكرة التخزين المؤقت لفك التشفير (يُستدعى عند تسجيل الخروج).
+ * 
+ * لضمان عدم بقاء البيانات الحساسة مفكوكة التشفير في الذاكرة بعد انتهاء الجلسة.
+ */
 export function clearDecryptCache(): void {
   decryptCache.clear();
 }
 
 // ─── Public API (Edge Function Proxy) ──────────────────────────
 
-/** Encrypt a field using Edge Function */
+/** 
+ * تشفير حقل نصي باستخدام Supabase Edge Function (AES-256).
+ * 
+ * [أمني] يتم التشفير في السيرفر لضمان عدم تعرض مفتاح التشفير للعميل.
+ * 
+ * @param {string | undefined | null} value - النص المراد تشفيره
+ * @returns {Promise<string>} النص المشفر (Ciphertext)
+ * @throws {Error} عند فشل الاتصال بالدالة السحابية
+ */
 export async function encryptField(value: string | undefined | null): Promise<string> {
   if (!value) return "";
   try {
@@ -58,7 +70,12 @@ export async function encryptField(value: string | undefined | null): Promise<st
   }
 }
 
-/** Decrypt a field using Edge Function with local caching */
+/** 
+ * فك تشفير حقل نصي مع استخدام ذاكرة تخزين مؤقت (Cache) محلية لتحسين الأداء.
+ * 
+ * @param {string | undefined | null} encryptedValue - النص المشفر
+ * @returns {Promise<string>} النص الأصلي مفكوك التشفير
+ */
 export async function decryptField(encryptedValue: string | undefined | null): Promise<string> {
   if (!encryptedValue) return "";
   
@@ -80,7 +97,12 @@ export async function decryptField(encryptedValue: string | undefined | null): P
   }
 }
 
-/** Batch decrypt fields using Edge Function for efficiency */
+/** 
+ * فك تشفير مجموعة من الحقول دفعة واحدة (Batch Operation) لتقليل عدد طلبات الشبكة.
+ * 
+ * @param {(string | undefined | null)[]} encryptedValues - مصفوفة النصوص المشفرة
+ * @returns {Promise<string[]>} مصفوفة النصوص مفكوكة التشفير بنفس الترتيب
+ */
 export async function batchDecryptFields(encryptedValues: (string | undefined | null)[]): Promise<string[]> {
   if (!encryptedValues || encryptedValues.length === 0) return [];
   

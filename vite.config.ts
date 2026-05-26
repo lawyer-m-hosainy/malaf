@@ -4,6 +4,7 @@ import path from 'path';
 import {defineConfig, loadEnv} from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import { visualizer } from 'rollup-plugin-visualizer';
+import { sentryVitePlugin } from "@sentry/vite-plugin";
 
 export default defineConfig(({mode}) => {
   loadEnv(mode, '.', '');
@@ -71,19 +72,20 @@ export default defineConfig(({mode}) => {
         }
       }),
       visualizer({ 
-        open: false, 
         filename: 'bundle-stats.html', 
         gzipSize: true, 
         brotliSize: true 
-      })
+      }),
+      isProd && sentryVitePlugin({
+        org: "malaf-pro",
+        project: "malaf-frontend",
+        authToken: process.env.SENTRY_AUTH_TOKEN,
+      }),
     ],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
       },
-    },
-    server: {
-      hmr: process.env.DISABLE_HMR !== 'true',
     },
     build: {
       rollupOptions: {
@@ -112,7 +114,6 @@ export default defineConfig(({mode}) => {
       minify: isProd ? 'esbuild' : false,
       target: 'es2020',
       chunkSizeWarningLimit: 800,
-      sourcemap: false,
       // R8-FIX: CSS code splitting for better caching
       cssCodeSplit: true,
       // R8-FIX: Reduce console noise in production
@@ -122,6 +123,7 @@ export default defineConfig(({mode}) => {
           legalComments: 'none',        // Remove legal comments
         },
       }),
+      sourcemap: true,
     },
     // R8-FIX: Dependency pre-bundling optimization
     optimizeDeps: {

@@ -1,0 +1,68 @@
+openapi: 3.0.0
+info:
+  title: Malaf Egypt API
+  version: 1.0.0
+  description: API for Legal Firm Management Platform (Law 151/2020 & ETA Compliant)
+servers:
+  - url: https://api.malaf.pro/api/v1
+paths:
+  /cases:
+    get:
+      summary: Get all cases
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of cases
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      summary: Create a new case
+      security:
+        - BearerAuth: []
+      responses:
+        '201':
+          description: Case created
+  /cases/{id}/sessions:
+    get:
+      summary: Get sessions for a case
+    post:
+      summary: Add a new session
+  /invoices:
+    get:
+      summary: List invoices
+    post:
+      summary: Create ETA invoice
+      responses:
+        '202':
+          description: Accepted for processing by ETA
+        '422':
+          description: Validation error
+  /users/me/export:
+    get:
+      summary: Export all personal data (JSON)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User data export
+  /users/me:
+    delete:
+      summary: Permanently delete account and all data
+      security:
+        - BearerAuth: []
+      responses:
+        '204':
+          description: Deleted successfully
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    Unauthorized:
+      description: Authentication token is missing or invalid
+    Forbidden:
+      description: Insufficient permissions

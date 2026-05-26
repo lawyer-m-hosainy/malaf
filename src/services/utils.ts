@@ -33,7 +33,11 @@ export async function logAuditAction(
       action,
       entity_type: entityType,
       entity_id: entityId,
-      details: { info: details || `${action} on ${entityId}` },
+      details: { 
+        info: details || `${action} on ${entityId}`,
+        ip_address: typeof window !== 'undefined' ? 'client-side' : 'server-side', // Placeholder for actual IP
+        user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown'
+      },
     });
     // Silently ignore if table doesn't exist
     if (error && error.code !== "PGRST205" && error.code !== "42P01") {

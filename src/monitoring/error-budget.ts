@@ -77,6 +77,7 @@ export interface MonthlyReport {
  * @param totalRequests - إجمالي الطلبات في النافذة
  * @param failedRequests - الطلبات الفاشلة
  * @param elapsedDays - الأيام المنقضية من بداية النافذة (لحساب burn rate)
+ * @returns {ErrorBudgetStatus} حالة الـ Error Budget المحسوبة
  */
 export function calculateErrorBudget(
   slo: SLO,
@@ -135,6 +136,10 @@ export function calculateErrorBudget(
 
 /**
  * حساب Error Budget لجميع SLOs دفعة واحدة.
+ *
+ * @param metrics - المقاييس الحالية لكل SLO مفهرسة بالمفتاح
+ * @param elapsedDays - الأيام المنقضية من النافذة
+ * @returns {ErrorBudgetStatus[]} قائمة حالات الـ Error Budget المحسوبة لجميع الأهداف
  */
 export function calculateAllBudgets(
   metrics: Record<string, { total: number; failed: number }>,
@@ -150,6 +155,9 @@ export function calculateAllBudgets(
 
 /**
  * فحص Burn Rate وإنتاج التنبيهات المطلوبة.
+ *
+ * @param budgets - قائمة حالات الـ Error Budget للتحقق منها
+ * @returns {BurnRateAlert[]} قائمة التنبيهات الناتجة عن فحص معدل الاستهلاك
  */
 export function checkBurnRateAlerts(budgets: ErrorBudgetStatus[]): BurnRateAlert[] {
   const alerts: BurnRateAlert[] = [];
@@ -198,6 +206,10 @@ export function checkBurnRateAlerts(budgets: ErrorBudgetStatus[]): BurnRateAlert
 
 /**
  * إنتاج تقرير شهري شامل لجميع SLOs.
+ *
+ * @param metrics - المقاييس الحالية لجميع الأهداف
+ * @param elapsedDays - عدد الأيام المنقضية في الشهر
+ * @returns {MonthlyReport} التقرير الشهري الشامل المحسوب
  */
 export function generateMonthlyReport(
   metrics: Record<string, { total: number; failed: number }>,
@@ -236,6 +248,9 @@ export function generateMonthlyReport(
 /**
  * هل يُسمح بالنشر؟ — يفحص كل SLO ويقرر.
  * يُستخدم في CI/CD pipeline لمنع النشر عند استنفاد Budget.
+ *
+ * @param budgets - قائمة حالات الـ Error Budget للتحقق منها
+ * @returns قرار النشر متضمناً حالة السماح والسبب والمعوقات إن وُجدت
  */
 export function canDeploy(budgets: ErrorBudgetStatus[]): {
   allowed: boolean;

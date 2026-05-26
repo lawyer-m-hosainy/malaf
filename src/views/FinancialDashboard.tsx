@@ -88,7 +88,7 @@ export default function FinancialDashboard() {
 
   const { data: receivablesData = [], isLoading: receivablesLoading } = useQuery<Receivable[]>({
     queryKey: [FINANCES_KEY, "receivables"],
-    queryFn: () => fetchReceivables() as Promise<Receivable[]>,
+    queryFn: () => fetchReceivables() as unknown as Promise<Receivable[]>,
     staleTime: queryConfig.finances.staleTime,
   });
 
@@ -104,7 +104,7 @@ export default function FinancialDashboard() {
 
   const expenses = useMemo(() => expensesData || [], [expensesData]);
   const receivables = useMemo(() => {
-    return (receivablesData || []).map((d: any) => ({
+    return (receivablesData || []).map((d: Receivable) => ({
       id: d.id,
       clientId: d.client_id,
       clientName: d.client_name,
@@ -121,10 +121,13 @@ export default function FinancialDashboard() {
   }, [receivablesData]);
 
   // Filter items based on selected period
-  const filterByPeriod = <T extends { date: string }>(items: T[]) => {
+  const filterByPeriod = <T extends { date?: string; transactionDate?: string; created_at?: string }>(items: T[]) => {
     const now = new Date();
     return items.filter(item => {
-      const itemDate = new Date(item.date);
+      const dateStr = item.date || item.transactionDate || item.created_at;
+      if (!dateStr) return false;
+      
+      const itemDate = new Date(dateStr);
       if (isNaN(itemDate.getTime())) return false;
       
       if (timePeriod === "month") {
@@ -273,12 +276,14 @@ export default function FinancialDashboard() {
     const endStr = end.toISOString().split('T')[0];
 
     const invoicesFiltered = invoices.filter(i => {
-      const d = i.date;
+      if (!i.date) return false;
+      const d = i.date.split('T')[0];
       return d >= startStr && d <= endStr;
     });
 
     const expensesFiltered = expenses.filter(e => {
-      const d = e.date;
+      if (!e.date) return false;
+      const d = e.date.split('T')[0];
       return d >= startStr && d <= endStr;
     });
 

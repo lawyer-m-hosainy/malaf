@@ -59,13 +59,28 @@ export async function fetchInvoices(): Promise<Invoice[]> {
   try {
     const { data, error } = await supabase
       .from("invoices")
-      .select("id, client_id, amount, total, status, date, created_at")
+      .select(`
+        id, 
+        client_id, 
+        amount, 
+        total, 
+        status, 
+        date, 
+        created_at,
+        client:clients(name)
+      `)
       .eq("organization_id", orgId)
       .order("created_at", { ascending: false })
       .limit(20);
 
     if (error) throw error;
-    return (data || []) as any;
+    
+    return (data || []).map((row: any) => ({
+      ...row,
+      clientName: row.client?.name || 'غير محدد',
+      base: row.amount, // mapping amount to base as per Invoice interface
+      vat: row.total - row.amount // calculating vat
+    })) as Invoice[];
   } catch (error) {
     console.error("خطأ في جلب الفواتير:", error);
     return [];
@@ -140,15 +155,33 @@ export async function fetchExpenses(): Promise<any[]> {
   try {
     const { data, error } = await supabase
       .from("expenses")
-      .select("id, case_id, client_id, category, amount, date, status, description, requires_partner_approval, created_at")
+      .select(`
+        id, 
+        case_id, 
+        client_id, 
+        category, 
+        amount, 
+        date, 
+        status, 
+        description, 
+        requires_partner_approval, 
+        created_at,
+        client:clients(name),
+        case:cases(title)
+      `)
       .eq("organization_id", orgId)
       .order("date", { ascending: false })
       .limit(100);
+
     if (error) throw error;
-    return (data || []).map(e => ({
-      ...e,
-      caseId: e.case_id,
-      createdAt: e.created_at,
+
+    return (data || []).map((row: any) => ({
+      ...row,
+      clientId: row.client_id,
+      clientName: row.client?.name || 'غير محدد',
+      caseId: row.case_id,
+      caseName: row.case?.title || '—',
+      createdAt: row.created_at,
     }));
   } catch (error) {
     console.error("خطأ في جلب المصروفات:", error);

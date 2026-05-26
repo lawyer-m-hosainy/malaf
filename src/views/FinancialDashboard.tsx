@@ -1,27 +1,30 @@
 import { motion } from "motion/react";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, lazy, Suspense } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { 
-  TrendingUp, TrendingDown, DollarSign, Wallet, Scale, ArrowUpRight, 
-  ArrowDownRight, Loader2, Calendar, FileText, AlertTriangle, RefreshCw, Download
+  TrendingUp, TrendingDown, DollarSign, Wallet, Scale, 
+  Loader2, Calendar, FileText, AlertTriangle, Download
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useFinanceStore } from "@/store/useFinanceStore";
-import { useInvoicesStore } from "@/store/useInvoicesStore";
-import { fetchExpenses, fetchReceivables } from "@/services/legalDataService";
-import { formatEGP, formatDateEG } from "@/lib/formatEG";
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, 
-  ResponsiveContainer, PieChart, Pie, Cell 
-} from "recharts";
+import { fetchExpenses, fetchReceivables, fetchInvoices, fetchTrustTransactions } from "@/services/legalDataService";
+import { formatEGP } from "@/lib/formatEG";
 import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
+import { FINANCES_KEY, queryConfig } from "@/lib/queryConfig";
+
+// Lazy load heavy components
+const CashFlowChart = lazy(() => import("./finance-components/FinancialCharts").then(m => ({ default: m.CashFlowChart })));
+const ExpensePieChart = lazy(() => import("./finance-components/FinancialCharts").then(m => ({ default: m.ExpensePieChart })));
+const AgingBarChart = lazy(() => import("./finance-components/FinancialCharts").then(m => ({ default: m.AgingBarChart })));
+const ReportPrintArea = lazy(() => import("./finance-components/ReportPrintArea"));
 
 // Harmonic colors for Pie Chart
 const COLORS = [
@@ -57,53 +60,51 @@ function agingBucket(days: number) {
 }
 
 export default function FinancialDashboard() {
-  const invoices = useInvoicesStore((state) => state.invoices) || [];
-  const loadInvoices = useInvoicesStore((state) => state.loadInvoices);
-  const expenses = useFinanceStore((state) => state.expenses) || [];
-  const setExpenses = useFinanceStore((state) => state.setExpenses);
-  const receivables = useFinanceStore((state) => state.receivables) || [];
-  const setReceivables = useFinanceStore((state) => state.setReceivables);
-  const trustTransactions = useFinanceStore((state) => state.trustTransactions) || [];
-  const loadTrustTransactions = useFinanceStore((state) => state.loadTrustTransactions);
+  const { data: invoices = [], isLoading: invoicesLoading } = useQuery({
+    queryKey: [FINANCES_KEY, "invoices"],
+    queryFn: () => fetchInvoices(),
+    staleTime: queryConfig.finances.staleTime,
+  });
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [timePeriod, setTimePeriod] = useState<string>("6_months"); // 6_months, month, year
+  const { data: expensesData = [], isLoading: expensesLoading } = useQuery({
+    queryKey: [FINANCES_KEY, "expenses"],
+    queryFn: () => fetchExpenses(),
+    staleTime: queryConfig.finances.staleTime,
+  });
 
-  useEffect(() => {
-    const loadAllData = async () => {
-      setIsLoading(true);
-      try {
-        await Promise.all([
-          loadInvoices(),
-          loadTrustTransactions()
-        ]);
-        const [expData, recData] = await Promise.all([
-          fetchExpenses(),
-          fetchReceivables()
-        ]);
-        setExpenses(expData);
-        setReceivables(recData.map((d: any) => ({
-          id: d.id,
-          clientId: d.client_id,
-          clientName: d.client_name,
-          caseId: d.case_id,
-          totalAmount: d.total_amount,
-          collectedAmount: d.collected_amount,
-          outstandingAmount: d.outstanding_amount,
-          dueDate: d.due_date,
-          status: d.status,
-          isReconciled: d.is_reconciled,
-          createdAt: d.created_at,
-          actions: []
-        })));
-      } catch (e) {
-        console.error("Failed to load dashboard data:", e);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadAllData();
-  }, []);
+  const { data: receivablesData = [], isLoading: receivablesLoading } = useQuery({
+    queryKey: [FINANCES_KEY, "receivables"],
+    queryFn: () => fetchReceivables(),
+    staleTime: queryConfig.finances.staleTime,
+  });
+
+  const { data: trustTransactions = [], isLoading: trustLoading } = useQuery({
+    queryKey: [FINANCES_KEY, "trust"],
+    queryFn: () => fetchTrustTransactions(),
+    staleTime: queryConfig.finances.staleTime,
+  });
+
+  const [timePeriod, setTimePeriod] = useState<string>("6_months");
+
+  const isLoading = invoicesLoading || expensesLoading || receivablesLoading || trustLoading;
+
+  const expenses = useMemo(() => expensesData || [], [expensesData]);
+  const receivables = useMemo(() => {
+    return (receivablesData || []).map((d: any) => ({
+      id: d.id,
+      clientId: d.client_id,
+      clientName: d.client_name,
+      caseId: d.case_id,
+      totalAmount: d.total_amount,
+      collectedAmount: d.collected_amount,
+      outstandingAmount: d.outstanding_amount,
+      dueDate: d.due_date,
+      status: d.status,
+      isReconciled: d.is_reconciled,
+      createdAt: d.created_at,
+      actions: []
+    }));
+  }, [receivablesData]);
 
   // Filter items based on selected period
   const filterByPeriod = <T extends { date: string }>(items: T[]) => {
@@ -438,566 +439,226 @@ export default function FinancialDashboard() {
     }
   };
 
-  const renderPrintArea = () => {
-    if (!printData) return null;
-
-    const expenseGroups: Record<string, number> = {};
-    if (printData.type === 'pnl') {
-      printData.expenses.forEach((e: any) => {
-        expenseGroups[e.category] = (expenseGroups[e.category] || 0) + e.amount;
-      });
-    }
-
-    return (
-      <div 
-        id="pdf-report-print-area" 
-        dir="rtl"
-        className="bg-white text-slate-900 p-10 w-[800px] border shadow-md"
-        style={{
-          position: 'absolute',
-          left: '-9999px',
-          top: '-9999px',
-          fontFamily: 'Cairo, system-ui, -apple-system, sans-serif',
-          lineHeight: '1.6'
-        }}
-      >
-        <div className="border-b-4 border-emerald-600 pb-4 mb-6 flex justify-between items-end">
-          <div>
-            <h2 className="text-xl font-extrabold text-navy-900">مكتب المحاماة والخدمات القانونية</h2>
-            <p className="text-xs text-slate-500 mt-1">نظام إدارة مكاتب المحاماة الذكي — مَلَف</p>
-          </div>
-          <div className="text-left font-bold text-xs text-slate-500 space-y-1">
-            <p>تاريخ الاستخراج: {new Date().toLocaleDateString('ar-EG')}</p>
-            <p>الفترة: من {new Date(printData.startDate).toLocaleDateString('ar-EG')} إلى {new Date(printData.endDate).toLocaleDateString('ar-EG')}</p>
-          </div>
-        </div>
-
-        <h1 className="text-lg font-bold text-center text-navy-950 mb-8 bg-slate-100 py-3 rounded-lg border">
-          {printData.title}
-        </h1>
-
-        {printData.type === 'pnl' && (
-          <div className="space-y-8">
-            <div>
-              <h3 className="text-sm font-bold text-emerald-800 border-b-2 border-emerald-100 pb-1.5 mb-3 flex justify-between">
-                <span>أولاً: المقبوضات والإيرادات</span>
-                <span className="font-mono">{formatEGP(printData.revenue * 1.14)}</span>
-              </h3>
-              <table className="w-full text-xs">
-                <tbody>
-                  <tr className="border-b">
-                    <td className="py-2.5 text-slate-700">إجمالي الأتعاب المحصلة الفعلية من الفواتير</td>
-                    <td className="py-2.5 text-left font-mono font-bold">{formatEGP(printData.revenue)}</td>
-                  </tr>
-                  <tr className="border-b">
-                    <td className="py-2.5 text-slate-500">ضريبة القيمة المضافة (14% تقديرية)</td>
-                    <td className="py-2.5 text-left font-mono text-slate-500">{formatEGP(printData.revenue * 0.14)}</td>
-                  </tr>
-                  <tr className="font-bold bg-emerald-50 text-emerald-950">
-                    <td className="py-2.5 px-2">إجمالي التدفقات الواردة (بالضريبة)</td>
-                    <td className="py-2.5 px-2 text-left font-mono">{formatEGP(printData.revenue * 1.14)}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <div>
-              <h3 className="text-sm font-bold text-red-800 border-b-2 border-red-100 pb-1.5 mb-3 flex justify-between">
-                <span>ثانياً: المصروفات والمدفوعات</span>
-                <span className="font-mono">{formatEGP(printData.totalExpenses)}</span>
-              </h3>
-              <table className="w-full text-xs">
-                <tbody>
-                  {Object.entries(expenseGroups).length > 0 ? (
-                    Object.entries(expenseGroups).map(([cat, val]) => (
-                      <tr key={cat} className="border-b">
-                        <td className="py-2.5 text-slate-700">{cat}</td>
-                        <td className="py-2.5 text-left font-mono font-bold">{formatEGP(val)}</td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr className="border-b">
-                      <td className="py-2.5 text-slate-500 italic">لا توجد مصروفات مسجلة للفترة المحددة.</td>
-                      <td className="py-2.5 text-left font-mono font-bold">{formatEGP(0)}</td>
-                    </tr>
-                  )}
-                  <tr className="font-bold bg-red-50 text-red-950">
-                    <td className="py-2.5 px-2">إجمالي المصروفات والمدفوعات التشغيلية</td>
-                    <td className="py-2.5 px-2 text-left font-mono">{formatEGP(printData.totalExpenses)}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <div className="border-2 border-navy-950 bg-navy-50/50 p-4 rounded-xl flex justify-between items-center mt-8">
-              <span className="text-base font-extrabold text-navy-950">صافي الربح التشغيلي (P&L)</span>
-              <span className={cn(
-                "text-xl font-black font-mono px-4 py-2 rounded-lg bg-white border shadow-sm",
-                (printData.revenue - printData.totalExpenses) >= 0 ? "text-emerald-700 border-emerald-200" : "text-red-700 border-red-200"
-              )}>
-                {formatEGP(printData.revenue - printData.totalExpenses)}
-              </span>
-            </div>
-          </div>
-        )}
-
-        {printData.type === 'invoices' && (
-          <div>
-            <table className="w-full text-[11px] text-slate-700 border-collapse border">
-              <thead>
-                <tr className="bg-slate-100 border text-navy-950 font-bold">
-                  <th className="p-2 border text-right">رقم الفاتورة</th>
-                  <th className="p-2 border text-right">تاريخ الإصدار</th>
-                  <th className="p-2 border text-right">الموكل</th>
-                  <th className="p-2 border text-right">المبلغ الإجمالي</th>
-                  <th className="p-2 border text-right">الحالة</th>
-                </tr>
-              </thead>
-              <tbody>
-                {printData.invoices.length > 0 ? (
-                  printData.invoices.map((inv: any) => (
-                    <tr key={inv.id} className="border hover:bg-slate-50">
-                      <td className="p-2 border font-mono font-bold text-navy-900">{inv.id}</td>
-                      <td className="p-2 border font-mono">{inv.date}</td>
-                      <td className="p-2 border font-bold">{inv.clientName || 'غير محدد'}</td>
-                      <td className="p-2 border font-mono font-bold text-left">{formatEGP(inv.total)}</td>
-                      <td className="p-2 border font-bold text-center">
-                        <span className={cn(
-                          "px-2 py-0.5 rounded text-[9px] font-bold",
-                          inv.status === 'مدفوعة' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'
-                        )}>{inv.status}</span>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={5} className="p-6 text-center text-slate-400 italic">لا توجد فواتير صادرة في الفترة المحددة.</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {printData.type === 'expenses' && (
-          <div>
-            <table className="w-full text-[11px] text-slate-700 border-collapse border">
-              <thead>
-                <tr className="bg-slate-100 border text-navy-950 font-bold">
-                  <th className="p-2 border text-right">التاريخ</th>
-                  <th className="p-2 border text-right">الوصف / البند</th>
-                  <th className="p-2 border text-right">التصنيف</th>
-                  <th className="p-2 border text-right">حالة السداد</th>
-                  <th className="p-2 border text-right">المبلغ</th>
-                </tr>
-              </thead>
-              <tbody>
-                {printData.expenses.length > 0 ? (
-                  printData.expenses.map((exp: any) => (
-                    <tr key={exp.id} className="border hover:bg-slate-50">
-                      <td className="p-2 border font-mono">{exp.date}</td>
-                      <td className="p-2 border font-bold">{exp.description || '—'}</td>
-                      <td className="p-2 border">{exp.category}</td>
-                      <td className="p-2 border font-bold">{exp.status}</td>
-                      <td className="p-2 border font-mono font-bold text-left">{formatEGP(exp.amount)}</td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={5} className="p-6 text-center text-slate-400 italic">لا توجد مصروفات مسجلة في الفترة المحددة.</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {printData.type === 'trust' && (
-          <div>
-            <table className="w-full text-[11px] text-slate-700 border-collapse border">
-              <thead>
-                <tr className="bg-slate-100 border text-navy-950 font-bold">
-                  <th className="p-2 border text-right">التاريخ</th>
-                  <th className="p-2 border text-right">الموكل</th>
-                  <th className="p-2 border text-right">النوع</th>
-                  <th className="p-2 border text-right">الوصف / البند</th>
-                  <th className="p-2 border text-right">رقم الإيصال</th>
-                  <th className="p-2 border text-right">المبلغ</th>
-                </tr>
-              </thead>
-              <tbody>
-                {printData.trust.length > 0 ? (
-                  printData.trust.map((t: any) => (
-                    <tr key={t.id} className="border hover:bg-slate-50">
-                      <td className="p-2 border font-mono">{t.transactionDate ? t.transactionDate.split('T')[0] : ''}</td>
-                      <td className="p-2 border font-bold">{t.clientName || '—'}</td>
-                      <td className="p-2 border font-bold text-center">
-                        <span className={cn(
-                          "px-2 py-0.5 rounded text-[9px] font-bold",
-                          t.transactionType === 'deposit' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-orange-50 text-orange-700 border border-orange-200'
-                        )}>{t.transactionType === 'deposit' ? 'إيداع' : 'سحب'}</span>
-                      </td>
-                      <td className="p-2 border">{t.description || '—'}</td>
-                      <td className="p-2 border font-mono font-bold">{t.receiptNumber || '—'}</td>
-                      <td className="p-2 border font-mono font-bold text-left">{formatEGP(t.amount)}</td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={6} className="p-6 text-center text-slate-400 italic">لا توجد حركات أمانات مسجلة في الفترة المحددة.</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {printData.type === 'receivables' && (
-          <div>
-            <table className="w-full text-[11px] text-slate-700 border-collapse border">
-              <thead>
-                <tr className="bg-slate-100 border text-navy-950 font-bold">
-                  <th className="p-2 border text-right">الموكل</th>
-                  <th className="p-2 border text-right">رقم القضية</th>
-                  <th className="p-2 border text-right">المبلغ الإجمالي</th>
-                  <th className="p-2 border text-right">المحصل الفعلي</th>
-                  <th className="p-2 border text-right">الذمم المعلقة</th>
-                  <th className="p-2 border text-right">تاريخ الاستحقاق</th>
-                </tr>
-              </thead>
-              <tbody>
-                {printData.receivables.length > 0 ? (
-                  printData.receivables.map((r: any) => (
-                    <tr key={r.id} className="border hover:bg-slate-50">
-                      <td className="p-2 border font-bold">{r.clientName || '—'}</td>
-                      <td className="p-2 border text-slate-500 font-mono">{r.caseId || '—'}</td>
-                      <td className="p-2 border font-mono font-bold text-left">{formatEGP(r.totalAmount)}</td>
-                      <td className="p-2 border font-mono font-bold text-emerald-600 text-left">{formatEGP(r.collectedAmount)}</td>
-                      <td className="p-2 border font-mono font-bold text-red-600 text-left">{formatEGP(r.outstandingAmount)}</td>
-                      <td className="p-2 border font-mono">{r.dueDate || '—'}</td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={6} className="p-6 text-center text-slate-400 italic">لا توجد مطالبات أو ذمم مالية متأخرة في الفترة المحددة.</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        <div className="border-t border-slate-200 mt-12 pt-4 text-center text-[10px] text-slate-400 font-bold">
-          <p>هذا المستند تم استخراجه وحسابه آلياً وصالح لأغراض التدقيق والمراجعة الداخلية للمكتب.</p>
-        </div>
-      </div>
-    );
-  };
-
-  if (isLoading) {
-    return (
-      <div className="h-[75vh] w-full flex flex-col items-center justify-center gap-3">
-        <Loader2 className="animate-spin text-green-600 w-10 h-10" />
-        <p className="text-sm text-slate-500 font-bold">جاري تحميل لوحة التحكم المالية وتوليد التحليلات...</p>
-      </div>
-    );
-  }
+  // Removed global isLoading spinner to improve FCP/LCP
+  // Each card and section now handles its own loading state with Skeletons
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
       className="space-y-6"
     >
-      {/* Header and Filter */}
+      {/* Heavy Print Component (Only rendered when printData is set) */}
+      {printData && (
+        <Suspense fallback={null}>
+          <ReportPrintArea printData={printData} />
+        </Suspense>
+      )}
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-navy-900 dark:text-white">لوحة التحكم المالية</h1>
-          <p className="text-slate-500 mt-1">الرؤية المالية الشاملة والتدفقات النقدية والأداء العام للمكتب.</p>
+          <h1 className="text-2xl font-bold text-navy-900 dark:text-white">التحليل المالي المتقدم</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">مراقبة الأداء المالي، التدفقات النقدية، وتحليل المصروفات والربحية.</p>
         </div>
         <div className="flex items-center gap-3">
-          {/* Export Report Trigger & Modal */}
-          <Dialog open={exportModalOpen} onOpenChange={setExportModalOpen}>
-            <DialogTrigger render={
-              <Button 
-                variant="outline" 
-                className="gap-2 bg-white dark:bg-navy-800 dark:border-white/10 font-bold border hover:bg-slate-50 dark:hover:bg-navy-700 text-slate-700 dark:text-white"
-              >
-                <Download className="w-4 h-4 text-emerald-600" />
-                تصدير التقرير
-              </Button>
-            } />
-            <DialogContent className="sm:max-w-[480px] dark:bg-navy-900 border-none shadow-2xl p-6 font-sans text-right" dir="rtl">
-              <DialogHeader>
-                <DialogTitle className="text-lg font-extrabold text-navy-950 dark:text-white flex items-center gap-2 pb-2 border-b dark:border-white/10">
-                  <FileText className="w-5 h-5 text-emerald-600" />
-                  تصدير التقرير المالي المخصص
-                </DialogTitle>
-              </DialogHeader>
-
-              <div className="space-y-5 py-4">
-                {/* Report Type Select */}
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-bold text-slate-500 dark:text-slate-400">نوع التقرير المالي</Label>
-                  <Select value={reportType} onValueChange={(val) => { if (val) setReportType(val); }}>
-                    <SelectTrigger className="w-full text-right dark:bg-navy-800 dark:border-white/10">
-                      <SelectValue placeholder="اختر نوع التقرير" />
-                    </SelectTrigger>
-                    <SelectContent className="dark:bg-navy-800">
-                      <SelectItem value="pnl">📊 ملخص الأرباح والخسائر (P&L)</SelectItem>
-                      <SelectItem value="invoices">🧾 كشف الفواتير الصادرة والمسددة</SelectItem>
-                      <SelectItem value="expenses">💸 كشف المصروفات التشغيلية والقضائية</SelectItem>
-                      <SelectItem value="trust">🏛️ كشف حركة حسابات الأمانات (Trust Accounts)</SelectItem>
-                      <SelectItem value="receivables">⚖️ تقرير الذمم المالية والمطالبات المتأخرة</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Date Inputs Range */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-bold text-slate-500 dark:text-slate-400">من تاريخ</Label>
-                    <Input 
-                      type="date" 
-                      value={startDate} 
-                      onChange={(e) => setStartDate(e.target.value)} 
-                      className="dark:bg-navy-800 dark:border-white/10 text-right font-mono" 
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-bold text-slate-500 dark:text-slate-400">إلى تاريخ</Label>
-                    <Input 
-                      type="date" 
-                      value={endDate} 
-                      onChange={(e) => setEndDate(e.target.value)} 
-                      className="dark:bg-navy-800 dark:border-white/10 text-right font-mono" 
-                    />
-                  </div>
-                </div>
-
-                {/* Export Format Selector */}
-                <div className="space-y-2">
-                  <Label className="text-xs font-bold text-slate-500 dark:text-slate-400">تنسيق تصدير الملف</Label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button 
-                      type="button"
-                      onClick={() => setExportFormat("pdf")}
-                      className={cn(
-                        "py-2.5 rounded-lg border text-sm font-bold transition-all flex items-center justify-center gap-1.5",
-                        exportFormat === "pdf" 
-                          ? "bg-emerald-50 border-emerald-300 text-emerald-700 dark:bg-emerald-950/20 dark:border-emerald-700/50 dark:text-emerald-400" 
-                          : "border-slate-200 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-navy-800 text-slate-600 dark:text-slate-400"
-                      )}
-                    >
-                      <FileText size={16} />
-                      مستند PDF رسمي
-                    </button>
-                    <button 
-                      type="button"
-                      onClick={() => setExportFormat("csv")}
-                      className={cn(
-                        "py-2.5 rounded-lg border text-sm font-bold transition-all flex items-center justify-center gap-1.5",
-                        exportFormat === "csv" 
-                          ? "bg-emerald-50 border-emerald-300 text-emerald-700 dark:bg-emerald-950/20 dark:border-emerald-700/50 dark:text-emerald-400" 
-                          : "border-slate-200 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-navy-800 text-slate-600 dark:text-slate-400"
-                      )}
-                    >
-                      <TrendingUp size={16} />
-                      ورقة Excel (CSV)
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Dialog Footer Actions */}
-              <div className="flex items-center justify-end gap-3 mt-4 pt-4 border-t dark:border-white/10">
-                <Button 
-                  variant="ghost" 
-                  onClick={() => setExportModalOpen(false)}
-                  disabled={isExporting}
-                  className="font-bold dark:text-white"
-                >
-                  إلغاء
-                </Button>
-                <Button 
-                  onClick={handleExportReport}
-                  disabled={isExporting}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold gap-2 px-5"
-                >
-                  {isExporting ? <Loader2 className="animate-spin w-4 h-4" /> : <Download className="w-4 h-4" />}
-                  تصدير وتحميل التقرير
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-
-          <Select value={timePeriod} onValueChange={(val) => { if (val) setTimePeriod(val); }}>
-            <SelectTrigger className="w-40 dark:bg-navy-800 dark:border-white/10">
+          <Select value={timePeriod} onValueChange={setTimePeriod}>
+            <SelectTrigger className="w-[180px] dark:bg-navy-800 dark:border-white/10 h-10">
               <Calendar className="w-4 h-4 mr-2 text-slate-400" />
               <SelectValue placeholder="اختر الفترة" />
             </SelectTrigger>
-            <SelectContent className="dark:bg-navy-800">
-              <SelectItem value="month">الشهر الحالي</SelectItem>
+            <SelectContent className="dark:bg-navy-800 dark:border-white/10">
+              <SelectItem value="month">هذا الشهر</SelectItem>
               <SelectItem value="6_months">آخر 6 أشهر</SelectItem>
-              <SelectItem value="year">السنة الحالية</SelectItem>
+              <SelectItem value="year">هذا العام</SelectItem>
             </SelectContent>
           </Select>
-        </div>
-      </div>
+
+          <Button 
+            onClick={() => setExportModalOpen(true)}
+            className="bg-primary-500 hover:bg-primary-600 text-white gap-2 h-10 px-4"
+          >
+            <Download className="w-4 h-4" />
+            تصدير تقرير
+          </Button>
+
+          <Dialog open={exportModalOpen} onOpenChange={setExportModalOpen}>
+             <DialogContent className="sm:max-w-[480px] dark:bg-navy-900 border-none shadow-2xl p-6 font-sans text-right" dir="rtl">
+               <DialogHeader>
+                 <DialogTitle className="text-lg font-extrabold text-navy-950 dark:text-white flex items-center gap-2 pb-2 border-b dark:border-white/10">
+                   <FileText className="w-5 h-5 text-emerald-600" />
+                   تصدير التقرير المالي
+                 </DialogTitle>
+               </DialogHeader>
+
+               <div className="space-y-5 py-4">
+                 <div className="space-y-1.5">
+                   <Label className="text-xs font-bold text-slate-500 dark:text-slate-400">نوع التقرير</Label>
+                   <Select value={reportType} onValueChange={setReportType}>
+                     <SelectTrigger className="w-full text-right dark:bg-navy-800 dark:border-white/10">
+                       <SelectValue placeholder="اختر نوع التقرير" />
+                     </SelectTrigger>
+                     <SelectContent className="dark:bg-navy-800">
+                       <SelectItem value="pnl">📊 ملخص الأرباح والخسائر (P&L)</SelectItem>
+                       <SelectItem value="invoices">🧾 كشف الفواتير</SelectItem>
+                       <SelectItem value="expenses">💸 كشف المصروفات</SelectItem>
+                       <SelectItem value="trust">🏛️ حسابات الأمانات</SelectItem>
+                       <SelectItem value="receivables">⚖️ تقرير الذمم المالية</SelectItem>
+                     </SelectContent>
+                   </Select>
+                 </div>
+
+                 <div className="grid grid-cols-2 gap-4">
+                   <div className="space-y-1.5">
+                     <Label className="text-xs font-bold text-slate-500 dark:text-slate-400">من تاريخ</Label>
+                     <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="dark:bg-navy-800 dark:border-white/10 text-right font-mono" />
+                   </div>
+                   <div className="space-y-1.5">
+                     <Label className="text-xs font-bold text-slate-500 dark:text-slate-400">إلى تاريخ</Label>
+                     <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="dark:bg-navy-800 dark:border-white/10 text-right font-mono" />
+                   </div>
+                 </div>
+
+                 <div className="space-y-2">
+                   <Label className="text-xs font-bold text-slate-500 dark:text-slate-400">التنسيق</Label>
+                   <div className="grid grid-cols-2 gap-2">
+                     <Button variant={exportFormat === "pdf" ? "default" : "outline"} onClick={() => setExportFormat("pdf")} className="w-full">PDF</Button>
+                     <Button variant={exportFormat === "csv" ? "default" : "outline"} onClick={() => setExportFormat("csv")} className="w-full">CSV</Button>
+                   </div>
+                 </div>
+               </div>
+
+               <div className="flex items-center justify-end gap-3 mt-4 pt-4 border-t dark:border-white/10">
+                 <Button variant="ghost" onClick={() => setExportModalOpen(false)} disabled={isExporting}>إلغاء</Button>
+                 <Button onClick={handleExportReport} disabled={isExporting} className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold gap-2">
+                   {isExporting ? <Loader2 className="animate-spin w-4 h-4" /> : <Download className="w-4 h-4" />}
+                   تصدير
+                 </Button>
+               </div>
+             </DialogContent>
+           </Dialog>
+         </div>
+       </div>
 
       {/* Financial Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="border-none shadow-sm dark:bg-navy-800 bg-white">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 min-h-[140px]">
+        <Card className="border-none shadow-sm dark:bg-navy-800 bg-white min-h-[120px]">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div className="space-y-1">
                 <p className="text-xs font-bold text-slate-500">إجمالي الإيرادات</p>
-                <p className="text-2xl font-extrabold font-mono text-navy-900 dark:text-white">{formatEGP(totalRevenue)}</p>
+                <div className="h-8 flex items-center">
+                  {isLoading ? <Skeleton className="h-7 w-24" /> : (
+                    <p className="text-2xl font-extrabold font-mono text-navy-900 dark:text-white">
+                      {formatEGP(totalRevenue)}
+                    </p>
+                  )}
+                </div>
               </div>
               <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/30">
                 <TrendingUp className="w-6 h-6 text-emerald-600" />
               </div>
             </div>
-            <div className="flex items-center gap-1 text-[11px] text-emerald-600 mt-4 font-bold">
-              <ArrowUpRight size={14} />
-              <span>مقبوضات فواتير المكتب المعتمدة</span>
-            </div>
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-sm dark:bg-navy-800 bg-white">
+        <Card className="border-none shadow-sm dark:bg-navy-800 bg-white min-h-[120px]">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div className="space-y-1">
                 <p className="text-xs font-bold text-slate-500">إجمالي المصروفات</p>
-                <p className="text-2xl font-extrabold font-mono text-navy-900 dark:text-white">{formatEGP(totalExpenses)}</p>
+                <div className="h-8 flex items-center">
+                  {isLoading ? <Skeleton className="h-7 w-24" /> : (
+                    <p className="text-2xl font-extrabold font-mono text-navy-900 dark:text-white">
+                      {formatEGP(totalExpenses)}
+                    </p>
+                  )}
+                </div>
               </div>
               <div className="p-3.5 rounded-xl bg-red-50 dark:bg-red-950/30">
                 <TrendingDown className="w-6 h-6 text-red-600" />
               </div>
             </div>
-            <div className="flex items-center gap-1 text-[11px] text-red-600 mt-4 font-bold">
-              <ArrowDownRight size={14} />
-              <span>تكاليف إدارية وقضائية مدفوعة</span>
-            </div>
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-sm dark:bg-navy-800 bg-white">
+        <Card className="border-none shadow-sm dark:bg-navy-800 bg-white min-h-[120px]">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div className="space-y-1">
-                <p className="text-xs font-bold text-slate-500">صافي الأرباح التشغيلية</p>
-                <p className={cn(
-                  "text-2xl font-extrabold font-mono",
-                  netProfit >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"
-                )}>{formatEGP(netProfit)}</p>
+                <p className="text-xs font-bold text-slate-500">صافي الأرباح</p>
+                <div className="h-8 flex items-center">
+                  {isLoading ? <Skeleton className="h-7 w-24" /> : (
+                    <p className={cn(
+                      "text-2xl font-extrabold font-mono",
+                      netProfit >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"
+                    )}>
+                      {formatEGP(netProfit)}
+                    </p>
+                  )}
+                </div>
               </div>
               <div className="p-3.5 rounded-xl bg-blue-50 dark:bg-blue-950/30">
                 <DollarSign className="w-6 h-6 text-blue-600" />
               </div>
             </div>
-            <div className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 mt-4 font-bold">
-              <span>العائد المالي الصافي للمكتب</span>
-            </div>
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-sm dark:bg-navy-800 bg-white">
+        <Card className="border-none shadow-sm dark:bg-navy-800 bg-white min-h-[120px]">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div className="space-y-1">
-                <p className="text-xs font-bold text-slate-500">نسبة التحصيل والتحكم</p>
-                <p className="text-2xl font-extrabold font-mono text-navy-900 dark:text-white">{collectionRate.toLocaleString('ar-EG')}%</p>
+                <p className="text-xs font-bold text-slate-500">نسبة التحصيل</p>
+                <div className="h-8 flex items-center">
+                  {isLoading ? <Skeleton className="h-7 w-12" /> : (
+                    <p className="text-2xl font-extrabold font-mono text-navy-900 dark:text-white">
+                      {`${collectionRate}%`}
+                    </p>
+                  )}
+                </div>
               </div>
               <div className="p-3.5 rounded-xl bg-purple-50 dark:bg-purple-950/30">
                 <Wallet className="w-6 h-6 text-purple-600" />
               </div>
             </div>
-            <div className="flex items-center gap-1 text-[11px] text-purple-600 mt-4 font-bold">
-              <span>معدل تحصيل الفواتير الصادرة</span>
-            </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Grid of Main Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Cash Flow History Chart */}
-        <Card className="lg:col-span-2 border-none shadow-sm dark:bg-navy-800 bg-white">
+        <Card className="lg:col-span-2 border-none shadow-sm dark:bg-navy-800 bg-white min-h-[380px]">
           <CardHeader className="pb-2 border-b border-slate-50 dark:border-white/5">
             <CardTitle className="text-base font-bold flex items-center gap-2">
               <TrendingUp className="text-emerald-500" size={18} />
-              📈 التدفق النقدي: مقارنة الإيرادات بالمصروفات (آخر 6 أشهر)
+              التدفق النقدي والربحية
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
-            <div className="h-[280px] w-full font-mono text-xs">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={cashFlowHistoryData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fill: '#94a3b8' }} />
-                  <YAxis tickLine={false} axisLine={false} tick={{ fill: '#94a3b8' }} />
-                  <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ direction: 'rtl', textAlign: 'right' }} />
-                  <Legend verticalAlign="top" height={36} iconType="circle" />
-                  <Bar dataKey="الإيرادات" fill="#16a34a" radius={[4, 4, 0, 0]} barSize={25} />
-                  <Bar dataKey="المصروفات" fill="#ef4444" radius={[4, 4, 0, 0]} barSize={25} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            {isLoading ? (
+              <Skeleton className="h-[280px] w-full" />
+            ) : (
+              <Suspense fallback={<Skeleton className="h-[280px] w-full" />}>
+                <CashFlowChart data={cashFlowHistoryData} />
+              </Suspense>
+            )}
           </CardContent>
         </Card>
 
-        {/* Expenses Category Chart */}
-        <Card className="border-none shadow-sm dark:bg-navy-800 bg-white">
+        <Card className="border-none shadow-sm dark:bg-navy-800 bg-white min-h-[380px]">
           <CardHeader className="pb-2 border-b border-slate-50 dark:border-white/5">
             <CardTitle className="text-base font-bold flex items-center gap-2">
               <Wallet className="text-red-500" size={18} />
-              📊 توزيع المصروفات حسب التصنيف
+              توزيع المصروفات
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
-            {expensePieData.length > 0 ? (
-              <div className="flex flex-col items-center justify-between gap-4">
-                <div className="h-[160px] w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={expensePieData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={50}
-                        outerRadius={70}
-                        paddingAngle={4}
-                        dataKey="value"
-                      >
-                        {expensePieData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(value) => value !== undefined && value !== null ? `${value.toLocaleString('ar-EG')} ج.م` : ""} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-                <div className="w-full space-y-1.5 max-h-[120px] overflow-y-auto pr-1">
-                  {expensePieData.map((item, idx) => {
-                    const pct = totalExpenses > 0 ? Math.round((item.value / totalExpenses) * 100) : 0;
-                    return (
-                      <div key={idx} className="flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-1.5">
-                          <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
-                          <span className="text-slate-600 dark:text-slate-300 font-bold truncate max-w-[120px]">{item.name}</span>
-                        </div>
-                        <span className="font-mono text-slate-400">{pct}% ({item.value.toLocaleString('ar-EG')} ج.م)</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+            {isLoading ? (
+              <Skeleton className="h-[280px] w-full" />
             ) : (
-              <div className="h-[260px] flex flex-col items-center justify-center text-slate-400 text-xs">
-                لا توجد مصروفات مسجلة في هذه الفترة.
-              </div>
+              <Suspense fallback={<Skeleton className="h-[280px] w-full" />}>
+                <ExpensePieChart data={expensePieData} colors={COLORS} />
+              </Suspense>
             )}
           </CardContent>
         </Card>
@@ -1006,83 +667,64 @@ export default function FinancialDashboard() {
       {/* Grid of Aging Chart and High-Revenue cases */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Receivables Aging Chart */}
-        <Card className="border-none shadow-sm dark:bg-navy-800 bg-white">
+        <Card className="border-none shadow-sm dark:bg-navy-800 bg-white min-h-[350px]">
           <CardHeader className="pb-2 border-b border-slate-50 dark:border-white/5">
             <CardTitle className="text-base font-bold flex items-center gap-2">
               <AlertTriangle className="text-amber-500" size={18} />
-              ⚖️ تقرير أعمار ذمم المطالبات المعلقة
+              أعمار ذمم المطالبات المعلقة
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
-            <div className="h-[250px] w-full font-mono text-xs">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  layout="vertical"
-                  data={agingBarData}
-                  margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-                  <XAxis type="number" tickLine={false} axisLine={false} tick={{ fill: '#94a3b8' }} />
-                  <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} tick={{ fill: '#94a3b8' }} />
-                  <Tooltip contentStyle={{ direction: 'rtl', textAlign: 'right' }} formatter={(value) => value !== undefined && value !== null ? `${value.toLocaleString('ar-EG')} ج.م` : ""} />
-                  <Bar dataKey="المستحقات" fill="#f59e0b" radius={[0, 4, 4, 0]} barSize={20} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            {isLoading ? (
+              <Skeleton className="h-[250px] w-full" />
+            ) : (
+              <Suspense fallback={<Skeleton className="h-[250px] w-full" />}>
+                <AgingBarChart data={agingBarData} />
+              </Suspense>
+            )}
           </CardContent>
         </Card>
 
         {/* Top 5 High-Revenue Cases */}
-        <Card className="lg:col-span-2 border-none shadow-sm dark:bg-navy-800 bg-white">
+        <Card className="lg:col-span-2 border-none shadow-sm dark:bg-navy-800 bg-white min-h-[350px]">
           <CardHeader className="pb-2 border-b border-slate-50 dark:border-white/5">
             <CardTitle className="text-base font-bold flex items-center gap-2">
               <Scale className="text-purple-500" size={18} />
-              🏆 القضايا والمطالبات الأعلى إيراداً للمكتب (أعلى 5)
+              أعلى 5 قضايا ربحية
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            <Table>
-              <TableHeader className="bg-slate-50/50 dark:bg-white/5">
-                <TableRow>
-                  <TableHead className="text-start font-bold">الموكل</TableHead>
-                  <TableHead className="text-start font-bold">القضية / المعاملة</TableHead>
-                  <TableHead className="text-start font-bold">المبلغ الكلي</TableHead>
-                  <TableHead className="text-start font-bold">المحصل الفعلي</TableHead>
-                  <TableHead className="text-start font-bold">حالة الملف</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {topCases.length > 0 ? (
-                  topCases.map((c) => (
+            {isLoading ? (
+              <div className="p-4 space-y-4">
+                {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
+              </div>
+            ) : (
+              <Table>
+                <TableHeader className="bg-slate-50/50 dark:bg-white/5">
+                  <TableRow>
+                    <TableHead className="text-start font-bold">الموكل</TableHead>
+                    <TableHead className="text-start font-bold">المبلغ الكلي</TableHead>
+                    <TableHead className="text-start font-bold">المحصل</TableHead>
+                    <TableHead className="text-start font-bold">حالة الملف</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {topCases.map((c) => (
                     <TableRow key={c.id} className="hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors">
-                      <TableCell className="font-bold text-navy-900 dark:text-white">{c.clientName}</TableCell>
-                      <TableCell className="text-xs text-slate-500">{c.caseId || "معاملة مستقلة"}</TableCell>
-                      <TableCell className="font-mono font-bold">{c.totalAmount.toLocaleString('ar-EG')} ج.م</TableCell>
-                      <TableCell className="font-mono text-emerald-600 font-bold">{c.collectedAmount.toLocaleString('ar-EG')} ج.م</TableCell>
+                      <TableCell className="font-bold text-navy-900 dark:text-white py-4">{c.clientName}</TableCell>
+                      <TableCell className="font-mono font-bold">{formatEGP(c.totalAmount)}</TableCell>
+                      <TableCell className="font-mono text-emerald-600 font-bold">{formatEGP(c.collectedAmount)}</TableCell>
                       <TableCell>
-                        <Badge className={cn(
-                          "font-bold text-[10px]",
-                          c.status === "مغلق" ? "bg-emerald-100 text-emerald-700" :
-                          c.status === "متأخر" ? "bg-red-100 text-red-700" : "bg-blue-100 text-blue-700"
-                        )}>
-                          {c.status}
-                        </Badge>
+                        <Badge className="bg-emerald-100 text-emerald-700">{c.status}</Badge>
                       </TableCell>
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8 text-slate-400">
-                      لم يتم تسجيل تحصيل إيرادات مطالبات بعد.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
       </div>
-      {renderPrintArea()}
     </motion.div>
   );
 }

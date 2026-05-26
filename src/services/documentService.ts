@@ -7,14 +7,15 @@ import { requireOrgId, logAuditAction } from "./utils";
  * جلب قائمة سجلات المستندات من قاعدة البيانات
  * @returns {Promise<any[]>} قائمة المستندات
  */
-export async function fetchDocuments(): Promise<any[]> {
+export async function fetchDocuments(limit: number = 50): Promise<any[]> {
   const orgId = requireOrgId();
   try {
     const { data, error } = await supabase
       .from("documents")
       .select("id, case_id, client_id, file_name, file_url, category, shared_with_client, size, created_at")
       .eq("organization_id", orgId)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .limit(limit);
     if (error) throw error;
     return data || [];
   } catch (error) {

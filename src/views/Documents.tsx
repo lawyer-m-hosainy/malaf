@@ -8,13 +8,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Upload, Search, Download, Trash2, Folder, File, Filter } from "lucide-react";
+import { Upload, Search, Download, Trash2, Folder, File, Filter, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { useState, useCallback, memo, useEffect } from "react";
+import { useState, useCallback, memo, useEffect, lazy, Suspense } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useCasesStore } from "@/store/useCasesStore";
 import React from "react";
-import { fetchDocuments, saveDocument, deleteDocumentRecord, uploadDocumentFile, downloadDocumentFile, deleteDocumentFile } from "@/services/legalDataService";
+import { fetchDocuments, deleteDocumentRecord, downloadDocumentFile, deleteDocumentFile } from "@/services/legalDataService";
+
+// Lazy load the upload form to reduce initial bundle size
+const UploadForm = lazy(() => import("./documents-components/UploadForm"));
 
 type DocRow = {
   id: string;
@@ -41,7 +44,7 @@ const DocumentRow = memo(({ doc, onDownload, onDelete }: { doc: DocRow, onDownlo
           <div className="w-8 h-8 rounded bg-blue-50 dark:bg-blue-900/20 text-blue-600 flex items-center justify-center">
             <File size={16} />
           </div>
-          <span className="font-bold text-navy-900 dark:text-white">{doc.name}</span>
+          <span className="font-bold text-navy-900 dark:text-white truncate max-w-[200px]" title={doc.name}>{doc.name}</span>
         </div>
       </TableCell>
       <TableCell className="font-mono text-sm text-slate-500">{doc.case}</TableCell>
@@ -50,8 +53,8 @@ const DocumentRow = memo(({ doc, onDownload, onDelete }: { doc: DocRow, onDownlo
           {doc.type}
         </Badge>
       </TableCell>
-      <TableCell className="text-sm text-slate-500">{doc.size}</TableCell>
-      <TableCell className="text-sm text-slate-500">{doc.date}</TableCell>
+      <TableCell className="text-sm text-slate-500 whitespace-nowrap">{doc.size}</TableCell>
+      <TableCell className="text-sm text-slate-500 whitespace-nowrap">{doc.date}</TableCell>
       <TableCell className="text-end">
         <div className="flex items-center justify-end gap-2">
           <Button variant="ghost" size="icon" className="text-slate-400 hover:text-primary-600" onClick={() => onDownload(doc)}>
@@ -89,13 +92,13 @@ export default function Documents() {
       const docs = await fetchDocuments();
       setDocuments(docs.map((d: any) => ({
         id: d.id,
-        name: d.name,
+        name: d.file_name || d.name || "مستند بدون اسم",
         case: d.case_id || "عام",
-        type: d.type || "مستند",
-        size: formatBytes(d.size_bytes || 0),
+        type: d.category || d.type || "مستند",
+        size: formatBytes(d.size || d.size_bytes || 0),
         date: new Date(d.created_at).toISOString().slice(0, 10),
         uploadedBy: d.uploaded_by || "مستخدم",
-        storagePath: d.storage_path
+        storagePath: d.storage_path || d.file_url
       })));
     } catch (e) {
       toast.error("فشل تحميل المستندات");
@@ -151,7 +154,7 @@ export default function Documents() {
   }, [documents]);
 
   const filteredDocuments = documents.filter((doc) => {
-    const matchesSearch = doc.name.includes(searchTerm) || doc.case.includes(searchTerm);
+    const matchesSearch = doc.name.toLowerCase().includes(searchTerm.toLowerCase()) || doc.case.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFolder = activeFolder ? doc.type === activeFolder : true;
     return matchesSearch && matchesFolder;
   }).sort((a, b) => {
@@ -165,16 +168,17 @@ export default function Documents() {
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
       className="space-y-6"
     >
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-navy-900 dark:text-white">إدارة المستندات</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">أرشفة وتنظيم الملفات والوثائق القانونية وربطها بالقضايا.</p>
         </div>
-        <Button type="button" className="bg-primary-500 hover:bg-primary-600 text-white gap-2" onClick={() => setUploadOpen(true)}>
+        <Button type="button" className="bg-primary-500 hover:bg-primary-600 text-white gap-2 w-full sm:w-auto" onClick={() => setUploadOpen(true)}>
           <Upload size={18} />
           رفع مستند جديد
         </Button>
@@ -185,67 +189,9 @@ export default function Documents() {
           <DialogHeader>
             <DialogTitle className="font-bold">رفع مستند جديد</DialogTitle>
           </DialogHeader>
-          <form
-            className="space-y-4 pt-2"
-            onSubmit={async (e) => {
-              e.preventDefault();
-              const fd = new FormData(e.currentTarget);
-              const file = (fd.get("file") as File) || null;
-              if (!file || !file.size) {
-                toast.error("اختر ملفاً");
-                return;
-              }
-              const caseRef = String(fd.get("caseRef") || "").trim();
-              const docType = String(fd.get("docType") || "").trim() || "مستند";
-              
-              const loadingToast = toast.loading("جاري الرفع...");
-              try {
-                const { path } = await uploadDocumentFile(file, caseRef);
-                const newDoc = {
-                  name: file.name,
-                  case_id: caseRef || null,
-                  type: docType,
-                  size_bytes: file.size,
-                  storage_path: path,
-                  uploaded_by: currentUser?.name || "مستخدم"
-                };
-                await saveDocument(newDoc);
-                toast.success("تم تسجيل المستند في المكتب", { id: loadingToast });
-                setUploadOpen(false);
-                loadDocuments();
-              } catch (err) {
-                toast.error("فشل رفع المستند", { id: loadingToast });
-              }
-            }}
-          >
-            <div className="space-y-2">
-              <Label htmlFor="doc-file">الملف</Label>
-              <Input id="doc-file" name="file" type="file" required className="dark:bg-white/5" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="doc-case">القضية المرتبطة</Label>
-              <select 
-                id="doc-case" 
-                name="caseRef" 
-                title="القضية المرتبطة"
-                className="w-full h-10 rounded-md border border-slate-200 dark:border-white/10 bg-transparent px-3 py-2 text-sm dark:text-white"
-              >
-                <option value="" className="dark:bg-navy-900">— ملف عام (بدون قضية) —</option>
-                {cases.map((c: any) => (
-                  <option key={c.id} value={c.id} className="dark:bg-navy-900">
-                    {c.id} - {c.plaintiff} ضد {c.defendant}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="doc-type">نوع المستند</Label>
-              <Input id="doc-type" name="docType" placeholder="لائحة، مذكرة، عقد..." className="dark:bg-white/5" />
-            </div>
-            <Button type="submit" className="w-full bg-primary-600 text-white hover:bg-primary-700">
-              حفظ في السجل
-            </Button>
-          </form>
+          <Suspense fallback={<div className="flex justify-center p-8"><Loader2 className="animate-spin text-primary-500" /></div>}>
+            <UploadForm cases={cases} onComplete={() => { setUploadOpen(false); loadDocuments(); }} />
+          </Suspense>
         </DialogContent>
       </Dialog>
 

@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "motion/react";
-import React, { useState } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -9,14 +9,13 @@ import { Search, MoreHorizontal, Link2, Link2Off, ChevronDown, ChevronUp, Plus, 
 import { useCasesStore } from "@/store/useCasesStore";
 import { useFinanceStore } from "@/store/useFinanceStore";
 import { useTeamStore } from "@/store/useTeamStore";
-import { useClientsStore } from "@/store/useClientsStore";
-import { useEnforcementStore } from "@/store/useEnforcementStore";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
-import { fetchCases, fetchClients, fetchEnforcement, fetchTasks, fetchTeam, fetchTrustAccounts, saveCase } from "@/services/legalDataService";
+import { fetchCases, saveCase } from "@/services/legalDataService";
 import { CSVImporter } from "@/components/CSVImporter";
 import { EmptyState } from "@/components/EmptyState";
-
+import { useQuery } from "@tanstack/react-query";
+import { CASES_KEY, queryConfig } from "@/lib/queryConfig";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -171,11 +170,15 @@ const CaseRow = React.memo(({
 });
 
 export default function Cases() {
-  const cases = useCasesStore(state => state.cases);
+  const { data: cases = [], isLoading: isCasesLoading } = useQuery({
+    queryKey: [CASES_KEY],
+    queryFn: () => fetchCases(),
+    staleTime: queryConfig.cases.staleTime,
+  });
+
   const sessions = useCasesStore(state => state.sessions);
   const deadlines = useCasesStore(state => state.deadlines);
   const deleteCase = useCasesStore(state => state.deleteCase);
-  const hasLoaded = useCasesStore(state => state.hasLoaded);
   const expenses = useFinanceStore(state => state.expenses);
   const tasks = useTeamStore(state => state.tasks);
 
@@ -192,7 +195,7 @@ export default function Cases() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
   
-  const isLoading = !hasLoaded;
+  const isLoading = isCasesLoading;
 
   // R8: Data loading moved to global AppDataLoader to prevent redundant fetches on navigation
 
@@ -337,11 +340,21 @@ export default function Cases() {
             </TableHeader>
             <TableBody data-testid="cases-list">
               {isLoading ? (
-                Array.from({ length: 5 }).map((_, i) => (
+                Array.from({ length: 8 }).map((_, i) => (
                   <TableRow key={i}>
-                    <TableCell colSpan={8} className="p-4">
-                      <Skeleton className="h-12 w-full rounded-md" />
+                    <TableCell className="w-10"><Skeleton className="h-4 w-4 rounded" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-24 rounded" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-32 rounded" /></TableCell>
+                    <TableCell>
+                      <div className="space-y-2">
+                        <Skeleton className="h-3 w-40 rounded" />
+                        <Skeleton className="h-3 w-36 rounded" />
+                      </div>
                     </TableCell>
+                    <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+                    <TableCell><Skeleton className="h-6 w-24 rounded-md" /></TableCell>
+                    <TableCell><Skeleton className="h-8 w-24 rounded-md" /></TableCell>
+                    <TableCell className="text-end"><Skeleton className="h-8 w-8 rounded-md ms-auto" /></TableCell>
                   </TableRow>
                 ))
               ) : currentCases.length > 0 ? (

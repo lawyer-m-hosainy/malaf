@@ -1,0 +1,1465 @@
+Malaf pro super prompts complete · TXT
+🧠 مجموعة السوبر برومبتات الشاملة — مراجعة منصة SaaS القانونية (مَلَف)
+دليل التدقيق التقني المتكامل | 8 أقسام × 2–3 سوبر برومبت لكل قسم
+ 
+بيئة النشر الفعلية:
+Hosting: Render.com
+Domain: malaf.pro (مُسجَّل عبر Hostinger)
+Stack: React 19 + Vite + Supabase + TypeScript
+آخر تحديث: مايو 2026
+ 
+تعليمات الاستخدام: كل سوبر برومبت مستقل وقابل للتنفيذ المباشر. انسخه كاملاً وألصقه في نافذة المحادثة مع إرفاق الملفات أو الكود المطلوب تحليله.
+ 
+═══════════════════════════════════════════════════
+القسم الأول: مراجعة الكود المصدري
+═══════════════════════════════════════════════════
+ 
+📌 سوبر برومبت 1-A: التحليل الساكن للجودة والبنية
+أنت خبير مراجعة كود أول (Senior Code Reviewer) متخصص في منصات SaaS المبنية بـ React 19 + Vite + Supabase + TypeScript. مهمتك إجراء مراجعة ساكنة شاملة (Static Code Review) لقاعدة الكود المُرفقة لمنصة malaf.pro.
+ 
+🎯 الأهداف الرئيسية
+1. قياس جودة الكود وقابليته للصيانة وفق معايير موضوعية قابلة للقياس
+2. اكتشاف مشكلات البنية: الكود الميت، التكرار، التعقيد الزائد
+3. التحقق من الامتثال الكامل لمعايير التسمية والتوثيق
+4. تحديد المكونات التي تحتاج إعادة هيكلة عاجلة قبل الإطلاق
+ 
+⚙️ المتطلبات التقنية والمعايير الإلزامية
+ 
+أ. جودة البنية:
+- الحد الأقصى لعدد أسطر أي ملف: 300 سطر (ما فوقه يستوجب التقسيم)
+- الحد الأقصى للتعقيد الحلزوني (Cyclomatic Complexity) لأي دالة: 10
+- الحد الأقصى لعدد معاملات أي دالة: 4 (ما فوقه يستوجب Object Parameter)
+- عمق التداخل (Nesting Depth) الأقصى: 3 مستويات
+- نسبة الكود الميت المقبولة: صفر (0%)
+ 
+ب. معايير التسمية (TypeScript/React):
+- المتغيرات والدوال: camelCase حصراً
+- الفئات والأنواع والواجهات: PascalCase مع بادئة I للواجهات (IUserProfile)
+- الثوابت: UPPER_SNAKE_CASE
+- ملفات المكونات: PascalCase.tsx
+- ملفات الخدمات والـ Hooks: camelCase مع بادئة use للـ Hooks
+- لا magic numbers: كل رقم ثابت يُعرَّف بـ const مسمى
+ 
+ج. التوثيق الإلزامي:
+- كل دالة عامة (exported): JSDoc كامل (وصف + @param + @returns + @throws)
+- كل نوع مُعقد (Type/Interface): تعليق يشرح الغرض والسياق
+- كل Supabase Query: تعليق يوضح الجدول والعلاقات والـ RLS Policy المعمول بها
+ 
+د. مبادئ SOLID:
+- S: كل مكون/كلاس مسؤولية واحدة فقط
+- O: المكونات مفتوحة للتوسعة مغلقة للتعديل (Props-based extensibility)
+- D: الاعتماد على Abstractions لا على Implementations (مثل: Service Layer فوق Supabase)
+ 
+📋 الخطوات التنفيذية المطلوبة
+ 
+الخطوة 1 — فحص هيكل الملفات:
+راجع مخطط المجلدات وأجب: هل يتبع Feature-based أم Layer-based؟ هل التنظيم متسق؟ هل هناك ملفات في مواضع خاطئة؟
+ 
+الخطوة 2 — فحص TypeScript Strictness:
+تحقق من tsconfig.json: هل strict: true مفعّل؟ هل noImplicitAny و strictNullChecks فعّالان؟ أبلّغ عن كل any صريح في الكود.
+ 
+الخطوة 3 — قياس التعقيد:
+لكل ملف، احسب: عدد الأسطر، عدد الدوال، متوسط التعقيد، أعلى تعقيد دالة واحدة. قدم جدولاً مرتباً تنازلياً.
+ 
+الخطوة 4 — فحص التكرار (DRY Violations):
+حدد كل مقطع كود مكرر (≥ 5 أسطر متطابقة أو شبه متطابقة) مع اقتراح مكون/دالة مشتركة لاستخلاصه.
+ 
+الخطوة 5 — فحص Import/Export:
+حدد الـ Circular Dependencies وكل Import غير مستخدم وكل re-export غير مبرر.
+ 
+الخطوة 6 — فحص Error Handling:
+تحقق من: كل Promise تحتها .catch() أو try/catch، كل Supabase call تتحقق من .error، كل async function تعالج حالات الفشل بشكل صريح.
+ 
+الخطوة 7 — فحص التوثيق:
+أنشئ قائمة بكل دالة exported تفتقر لـ JSDoc أو لها JSDoc منقوص (بدون @param أو @returns).
+ 
+✅ معايير النجاح
+- [ ] صفر ملفات تتجاوز 300 سطر
+- [ ] صفر دوال بتعقيد حلزوني > 10
+- [ ] صفر any صريح في الكود الأساسي (يُسمح فقط في ملفات .d.ts أو test)
+- [ ] صفر Circular Dependencies
+- [ ] صفر Magic Numbers بدون تعريف const
+- [ ] توثيق JSDoc لـ 100% من الدوال المُصدَّرة
+ 
+📊 المخرجات المطلوبة
+1. ملخص تنفيذي (5 أسطر): النتيجة العامة، أبرز المشكلة، الأولوية القصوى
+2. جدول مقاييس الملفات: اسم الملف | أسطر | دوال | أعلى تعقيد | مشكلات مكتشفة
+3. قائمة مرتبة بالأولوية: المشكلات الحرجة (تمنع الإطلاق) ثم المهمة ثم المحسّنة
+4. مقترحات إعادة الهيكلة: كود قبل/بعد لكل مشكلة جوهرية
+5. خريطة الديون التقنية: تقدير ساعات الإصلاح لكل مجموعة من المشكلات
+ 
+لا تقدم تعليقات عامة. كل ملاحظة يجب أن تتضمن: رقم السطر → المشكلة المحددة → الكود المشكل → الإصلاح المقترح.
+ 
+───────────────────────────────────────────────────
+ 
+📌 سوبر برومبت 1-B: مراجعة الاختبارات وتغطية الكود
+أنت مهندس جودة برمجيات (QA Engineer) متخصص في منصات SaaS. مهمتك تحليل وتقييم منظومة الاختبارات الموجودة في مشروع malaf.pro وتحديد الثغرات في التغطية مع خارطة طريق إصلاح شاملة.
+ 
+🎯 الأهداف الرئيسية
+1. قياس نسبة تغطية الكود الحالية بشكل دقيق (السطور + الفروع + الدوال)
+2. تحديد الوحدات والميزات الجوهرية غير المُختبرة
+3. تقييم جودة الاختبارات القائمة (ليس فقط كميتها)
+4. توفير قوالب اختبار جاهزة للميزات الأكثر حساسية
+ 
+⚙️ المتطلبات التقنية
+أدوات بيئة الاختبار المتوقعة:
+- Vitest (Unit + Integration) أو Jest
+- React Testing Library للمكونات
+- Playwright لاختبارات E2E
+- MSW (Mock Service Worker) لمحاكاة Supabase/APIs
+ 
+عتبات التغطية الإلزامية:
+| نوع التغطية | الحد الأدنى المقبول | الهدف المثالي |
+|---|---|---|
+| تغطية السطور (Line Coverage) | 85% | 95% |
+| تغطية الفروع (Branch Coverage) | 80% | 90% |
+| تغطية الدوال (Function Coverage) | 90% | 100% |
+| تغطية E2E للمسارات الجوهرية | 100% | 100% |
+ 
+الميزات ذات الأولوية القصوى للاختبار (Zero Tolerance للثغرات):
+- منظومة المصادقة (Auth): تسجيل الدخول، انتهاء الجلسة، استعادة كلمة المرور
+- التحكم في الوصول (RBAC + RLS): التحقق من صلاحيات كل Role
+- إدارة القضايا: إنشاء، تعديل، حذف، استعلام
+- الفواتير والمالية: حسابات الضريبة، الإنشاء، التحقق من ETA
+- رفع الملفات: التحقق من النوع والحجم، التشفير، الرابط المؤقت
+ 
+📋 الخطوات التنفيذية
+ 
+الخطوة 1 — جرد الاختبارات الموجودة:
+أنشئ جدولاً شاملاً: اسم الاختبار | النوع (Unit/Integration/E2E) | الميزة التي يغطيها | هل اجتاز آخر تشغيل | وقت التنفيذ
+ 
+الخطوة 2 — خريطة التغطية:
+حدد لكل وحدة برمجية رئيسية: نسبة التغطية الحالية، الدوال غير المختبرة، الفروع المفقودة (if/else/catch غير مختبرة)
+ 
+الخطوة 3 — تقييم جودة الاختبارات القائمة:
+لكل اختبار موجود، قيّم:
+- هل يختبر السلوك أم التطبيق الداخلي؟ (Tests behavior, not implementation)
+- هل يحتوي على Assertions كافية؟ (لا اختبار بـ assertion واحدة فقط)
+- هل يُنظَّف بعد نفسه؟ (afterEach cleanup)
+- هل Mocks مُعرَّفة بشكل صحيح؟ (لا Mocks مبهمة أو تغطي منطقاً حقيقياً)
+ 
+الخطوة 4 — كتابة اختبارات مفقودة حرجة:
+بناءً على التحليل، اكتب الاختبارات المفقودة للميزات ذات الأولوية القصوى مع:
+- Happy Path: السيناريو الطبيعي الناجح
+- Error Path: سيناريو الفشل المتوقع مع التحقق من رسالة الخطأ
+- Edge Cases: القيم الحدية، البيانات الفارغة، البيانات الضخمة
+- Security Cases: محاولة وصول غير مصرح به
+ 
+الخطوة 5 — خطة Mutation Testing:
+صف كيفية تطبيق Stryker.js وكيف تفسر نتائجه لقياس جودة الاختبارات ذاتها
+ 
+✅ معايير النجاح
+- [ ] تغطية السطور ≥ 95% بعد إضافة الاختبارات المفقودة
+- [ ] صفر اختبارات فاشلة (0 failing tests)
+- [ ] جميع اختبارات Auth وRBAC تغطي حالة الرفض (Authorization Failure)
+- [ ] وقت تشغيل كامل مجموعة الاختبارات ≤ 5 دقائق
+- [ ] Mutation Score (Stryker) ≥ 70%
+ 
+📊 المخرجات المطلوبة
+1. تقرير Coverage يوضح نسبة كل وحدة قبل/بعد الإضافات المقترحة
+2. كود الاختبارات الجديدة للميزات الحرجة (قابل للتشغيل مباشرة)
+3. ملف vitest.config.ts مُحسَّن بحدود التغطية الإلزامية
+4. خريطة أولويات: ما يُكتب الآن، ما يُؤجل، ما يُحذف (اختبارات بلا قيمة)
+ 
+───────────────────────────────────────────────────
+ 
+📌 سوبر برومبت 1-C: الامتثال لمعايير أمان الكود (Code Security Audit)
+أنت خبير أمان تطبيقات (Application Security Engineer) متخصص في منصات SaaS تخزن بيانات قانونية حساسة. مهمتك فحص كود مشروع malaf.pro بحثاً عن الثغرات الأمنية المدمجة في الكود المصدري.
+ 
+🎯 الأهداف الرئيسية
+1. اكتشاف الثغرات الأمنية المدمجة في الكود (SAST - Static Application Security Testing)
+2. التحقق من صحة تطبيق مبادئ Secure Coding لكل طبقة
+3. فحص إدارة الأسرار (Secrets Management) والتكوين الحساس
+4. التحقق من سلامة تطبيق التشفير AES-256 وإدارة المفاتيح
+ 
+⚙️ المتطلبات التقنية
+ 
+أ. التحقق من صحة المدخلات (Input Validation):
+- كل Input من المستخدم يجب أن يمر بـ Zod Schema Validation قبل أي معالجة
+- لا string concatenation في SQL (Supabase يحمي من SQLi لكن تحقق من Raw Queries)
+- كل رفع ملف: التحقق من mime type + extension + حجم + فحص محتوى (Magic Bytes)
+- تطهير HTML قبل العرض: dangerouslySetInnerHTML محظور بدون DOMPurify
+ 
+ب. إدارة الجلسات:
+- JWT Tokens: التحقق من expiry، لا تخزين في localStorage (SessionStorage أو HttpOnly Cookie)
+- Supabase Auth: التحقق من إعدادات autoRefreshToken وpersistSession
+- Logout: التحقق من تدمير الجلسة على الخادم وليس فقط حذف الـ Token
+ 
+ج. إدارة الأسرار — خاص ببيئة Render:
+- صفر بيانات حساسة (API Keys, Secrets) في الكود أو Git History
+- كل متغير بيئة يبدأ بـ VITE_ هو مكشوف للـ Client — تحقق من عدم تسريب Secrets خلاله
+- في Render: تحقق من أن الـ Secret Files والـ Environment Groups مُعرَّفة بشكل صحيح وليس في الكود
+- Supabase Service Role Key: يجب أن يكون فقط في Environment Variables الخادمية في Render Dashboard، ليس في الـ Client
+ 
+د. التشفير:
+- AES-256-GCM (وليس AES-256-CBC): تحقق من Initialization Vector (IV) عشوائي لكل عملية
+- لا تخزين مفاتيح التشفير في الـ LocalStorage أو الـ State
+- bcrypt cost factor ≥ 12 لكلمات المرور (إذا استخدم المشروع Custom Auth)
+ 
+هـ. CORS وCSP:
+- Content Security Policy header: default-src 'self'، لا unsafe-inline ولا unsafe-eval
+- CORS: القائمة البيضاء صريحة بالنطاقات، لا wildcard (*)
+- في Render: تحقق من إعدادات CORS في render.yaml أو Custom Headers
+ 
+📋 الخطوات التنفيذية
+ 
+الخطوة 1 — فحص Git History:
+ابحث في الكود عن: كلمات مثل "password", "secret", "key", "token" خارج ملفات .env — أبلّغ عن أي تسريب
+ 
+الخطوة 2 — فحص نقاط دخول البيانات:
+حدد كل نموذج (Form) وكل API Route وكل رفع ملف. تحقق من: هل يوجد Zod Validation؟ هل يوجد Rate Limiting؟
+ 
+الخطوة 3 — فحص منطق Authorization:
+لكل Supabase Query في الكود، تحقق من: هل الـ RLS Policy وحدها كافية أم تحتاج حماية إضافية في الكود؟ أبلّغ عن أي Query تعتمد كلياً على RLS بدون فحص مسبق في الكود
+ 
+الخطوة 4 — فحص التشفير:
+حدد كل استخدام لـ Crypto-JS وتحقق من: نوع الخوارزمية، طريقة توليد IV، مكان تخزين المفتاح، هل تُشفَّر البيانات الصحيحة
+ 
+الخطوة 5 — فحص Environment Variables (Render-specific):
+أنشئ قائمة بجميع المتغيرات البيئية المستخدمة مع تصنيف:
+- آمن للعميل (VITE_ prefix)
+- خاص بالخادم (Render Environment Variables)
+- غير محدد (خطر)
+تحقق من عدم وجود أي Secret في ملف render.yaml المُرفق بالـ Repo
+ 
+✅ معايير النجاح
+- [ ] صفر Secrets في الكود أو Git History أو render.yaml
+- [ ] 100% من المدخلات تمر بـ Zod Validation
+- [ ] صفر استخدام لـ dangerouslySetInnerHTML بدون DOMPurify
+- [ ] AES يستخدم GCM مع IV عشوائي لكل عملية
+- [ ] صفر VITE_ Variables تحتوي على Secrets
+ 
+📊 المخرجات المطلوبة
+1. تقرير SAST مصنف: Critical | High | Medium | Low | Informational
+2. قائمة المتغيرات البيئية مع تصنيف الخطورة
+3. كود إصلاح لكل ثغرة Critical و High
+4. Zod Schemas المقترحة للمدخلات غير المحمية
+5. CSP Header مقترح جاهز للتطبيق على Render
+ 
+═══════════════════════════════════════════════════
+القسم الثاني: مراجعة المسارات الوظيفية
+═══════════════════════════════════════════════════
+ 
+📌 سوبر برومبت 2-A: التحقق من صحة RBAC وسلامة Multi-Tenancy
+أنت متخصص في أمان التطبيقات متعددة المستأجرين (Multi-Tenant SaaS Security). مهمتك التحقق من أن منظومة التحكم في الوصول في malaf.pro تمنع بشكل قاطع أي وصول Cross-Tenant وتطبق الصلاحيات بدقة تامة.
+ 
+🎯 الأهداف الرئيسية
+1. التحقق من أن كل مستأجر (مكتب محاماة) معزول تماماً عن غيره
+2. التحقق من صحة تطبيق RBAC لكل دور: سوبر أدمن | أدمن مكتب | محامٍ | مساعد | موكّل
+3. اختبار سيناريوهات الاختراق المنطقية (Business Logic) لكل Role
+4. التحقق من صحة RLS Policies في Supabase وعدم وجود ثغرات فيها
+ 
+⚙️ المتطلبات التقنية
+مصفوفة الصلاحيات المرجعية (يجب التحقق من كل خلية):
+ 
+| الميزة/الإجراء | سوبر أدمن | أدمن مكتب | محامٍ | مساعد | موكّل |
+|---|:---:|:---:|:---:|:---:|:---:|
+| عرض كل المكاتب | ✅ | ❌ | ❌ | ❌ | ❌ |
+| إنشاء مكتب جديد | ✅ | ❌ | ❌ | ❌ | ❌ |
+| إدارة مستخدمي المكتب | ✅ | ✅ | ❌ | ❌ | ❌ |
+| إنشاء قضية | ✅ | ✅ | ✅ | ❌ | ❌ |
+| تعديل قضية | ✅ | ✅ | ✅* | ❌ | ❌ |
+| حذف قضية | ✅ | ✅ | ❌ | ❌ | ❌ |
+| عرض قضاياه فقط | - | - | ✅ | ✅ | ✅** |
+| إصدار فاتورة | ✅ | ✅ | ❌ | ❌ | ❌ |
+| عرض فواتيره | ✅ | ✅ | ❌ | ❌ | ✅** |
+| رفع مستند | ✅ | ✅ | ✅ | ✅ | ❌ |
+| حذف مستند | ✅ | ✅ | ✅* | ❌ | ❌ |
+ 
+(*) قضاياه المُسندة فقط، (**) قضاياه المرتبط بها فقط
+ 
+📋 الخطوات التنفيذية
+ 
+الخطوة 1 — تدقيق RLS Policies:
+استعرض كل RLS Policy في Supabase لكل جدول وأجب لكل Policy:
+- ما الجداول التي تطبق عليها؟
+- هل تتحقق من tenant_id صحيح؟
+- هل تتحقق من role صحيح؟
+- هل يمكن تجاوزها عبر Supabase Client مباشرةً بـ JWT مُعدَّل؟
+ 
+الخطوة 2 — محاكاة هجمات IDOR (Insecure Direct Object Reference):
+صف تفصيلياً كيف تختبر السيناريوهات التالية:
+- محامٍ من مكتب A يحاول جلب قضية من مكتب B بتعديل الـ UUID في الـ URL
+- موكّل يحاول الوصول لفاتورة موكّل آخر بتعديل الـ invoice_id
+- مساعد يحاول رفع طلب حذف قضية عبر API مباشر
+وحدد: هل تصدّ المنصة هذه المحاولات؟ في أي طبقة؟ (UI / API / Database)
+ 
+الخطوة 3 — اختبار Privilege Escalation:
+صف كيف تختبر: هل يستطيع محامٍ تعديل role الخاص به أو أي مستخدم آخر؟ هل API لتحديث المستخدم تقبل تغيير الـ role من الـ Client؟
+ 
+الخطوة 4 — اختبار Session Hijacking:
+بعد تسجيل الخروج، هل يمكن استخدام الـ JWT القديم؟ هل Refresh Token يُلغى عند الخروج؟
+ 
+الخطوة 5 — توثيق نتائج كل اختبار:
+لكل اختبار: الحالة الممتازة (Expected) | النتيجة الفعلية (Actual) | اجتاز/فشل | الثغرة إن وُجدت
+ 
+✅ معايير النجاح
+- [ ] صفر سيناريوهات Cross-Tenant Access ناجحة
+- [ ] صفر حالات IDOR ناجحة على أي مورد
+- [ ] صفر إمكانية Privilege Escalation من الـ Client
+- [ ] JWT المنتهي الصلاحية مرفوض بـ 401 في كل Endpoint
+- [ ] جميع RLS Policies تتحقق من كلٍّ من tenant_id وuser_role معاً
+ 
+📊 المخرجات المطلوبة
+1. مصفوفة الصلاحيات موثقة مع حالة كل خلية (مطبق/غير مطبق/جزئي)
+2. تقرير RLS لكل جدول مع التقييم والثغرات المكتشفة
+3. نتائج سيناريوهات IDOR وPrivilege Escalation مفصلة
+4. اقتراحات RLS Policies إضافية أو تصحيح القائمة
+5. Playwright Test Scripts لأبرز سيناريوهات الاختبار للتشغيل المستمر
+ 
+───────────────────────────────────────────────────
+ 
+📌 سوبر برومبت 2-B: اختبار سلامة تدفق البيانات والوظائف المتزامنة
+أنت مهندس اختبار متكامل (Integration Testing Engineer) متخصص في منصات SaaS. مهمتك اختبار سلامة تدفق البيانات عبر كل طبقات malaf.pro والتحقق من عدم وجود تعارض بين الميزات عند تشغيلها متزامنة.
+ 
+🎯 الأهداف الرئيسية
+1. التحقق من أن البيانات المُدخلة تُخزن بدقة وتُسترجع بأمانة (Data Fidelity)
+2. اختبار Atomicity: إما تتم العملية كاملة أو لا شيء (Database Transactions)
+3. اكتشاف Race Conditions عند تشغيل عمليات متزامنة
+4. التحقق من صحة المزامنة بين الـ Real-time Subscriptions والبيانات الفعلية
+ 
+⚙️ المتطلبات التقنية
+ 
+أ. متطلبات Data Integrity:
+- كل حقل يخضع لـ Database Constraint (NOT NULL, CHECK, UNIQUE) حيثما يلزم
+- الحذف المتتالي (Cascade Delete): تحديد الجداول التي تتأثر بحذف مستخدم أو قضية
+- Optimistic Locking أو Timestamps للكشف عن التعديل المتزامن
+ 
+ب. متطلبات Transactions:
+- عمليات تشمل جدولين أو أكثر يجب أن تكون في Supabase Transaction (RPC Function)
+- مثال: إنشاء قضية + إنشاء أول جلسة = عملية واحدة أو لا شيء
+ 
+ج. متطلبات Real-time:
+- Supabase Realtime Subscriptions: التحقق من أن التحديثات تصل في ≤ 500ms
+- التحقق من عدم تكرار الأحداث (Duplicate Events) عند إعادة الاتصال
+ 
+📋 الخطوات التنفيذية
+ 
+الخطوة 1 — رسم Data Flow لكل عملية جوهرية:
+ارسم تسلسل البيانات خطوة بخطوة لكل عملية:
+1. إنشاء قضية جديدة: Form → Zod Validation → Supabase Insert → Realtime → UI Update
+2. إصدار فاتورة: Form → Calculation → ETA API → Supabase Insert → PDF → Email
+3. رفع مستند: File → Type Check → Size Check → Encrypt → Supabase Storage → Record
+حدد كل نقطة يمكن أن تفشل فيها العملية وما يحدث للبيانات عند الفشل.
+ 
+الخطوة 2 — اختبار الحالات الحدية لكل حقل:
+لكل نموذج رئيسي في المنصة، اختبر:
+- حقل نصي: فارغ | مسافة فقط | أقصى طول | Unicode/Arabic | XSS Payload
+- حقل رقمي: صفر | سالب | أعلى من الحد | عشري بدقة زائدة
+- حقل تاريخ: تاريخ في الماضي | تاريخ مستقبلي بعيد | تنسيق خاطئ | null
+- حقل UUID: UUID صحيح | UUID مزيف | UUID تابع لمستأجر آخر
+ 
+الخطوة 3 — اختبار Race Conditions:
+صف سيناريوهات التزامن التالية واختبرها:
+- محاميان يعدلان نفس القضية في الوقت ذاته: ما الذي يُحفظ؟
+- مستخدمان يحاولان حذف نفس المستند: ما الذي يحدث للثاني؟
+- إنشاء قضية بينما يُحذف الموكل المرتبط بها في نفس اللحظة
+ 
+الخطوة 4 — اختبار مزامنة Realtime:
+- فتح المنصة في متصفحين (نفس الحساب) وتعديل قضية من الأول: هل يتحدث الثاني تلقائياً؟
+- فصل الاتصال وإعادته: هل تُستأنف الـ Subscriptions بشكل صحيح؟
+- ما حجم الـ Payload المُرسل بـ Realtime؟ هل يحتوي على بيانات مستأجرين آخرين؟
+ 
+الخطوة 5 — اختبار Cascade وData Retention:
+- حذف مكتب: ما الذي يحدث لقضاياه، موكليه، وملفاته؟ هل يتم الحذف أم Soft Delete؟
+- حذف محامٍ: هل تُعاد إسناد قضاياه أم تبقى بدون مسؤول؟
+- انتهاء الاشتراك: هل البيانات محمية أم متاحة للقراءة فقط؟
+ 
+✅ معايير النجاح
+- [ ] صفر بيانات مفقودة أو تالفة في 100% من سيناريوهات الفشل المختبرة
+- [ ] الـ Race Conditions تنتهي دائماً بحالة متسقة (آخر تعديل أو خطأ صريح)
+- [ ] تحديثات Realtime تصل في ≤ 500ms في 95% من الحالات
+- [ ] Cascade Delete تعمل بشكل صحيح مع صفر Orphaned Records
+- [ ] جميع العمليات متعددة الجداول محاطة بـ Database Transactions
+ 
+📊 المخرجات المطلوبة
+1. Data Flow Diagrams لكل عملية جوهرية مع نقاط الفشل المحتملة
+2. تقرير نتائج اختبارات الحالات الحدية لكل حقل (جدول شامل)
+3. تقرير Race Conditions: السيناريو | النتيجة | هل هي مقبولة | الحل المقترح
+4. Supabase RPC Functions مقترحة للعمليات التي تحتاج Transactions
+5. Integration Test Suite (Vitest + Supabase Test Helpers) جاهز للتشغيل
+ 
+═══════════════════════════════════════════════════
+القسم الثالث: مراجعة الواجهة الأمامية
+═══════════════════════════════════════════════════
+ 
+📌 سوبر برومبت 3-A: تجربة المستخدم وسهولة الاستخدام (UX Audit)
+أنت خبير تجربة المستخدم (UX Engineer) متخصص في تطبيقات B2B المهنية موجهة للمحامين. مهمتك إجراء تدقيق شامل لتجربة الاستخدام في malaf.pro من منظور المحامي المصري الذي يستخدم المنصة يومياً في بيئة عمل مكثفة.
+ 
+🎯 الأهداف الرئيسية
+1. قياس سهولة إتمام المهام الجوهرية (Task Completion Efficiency)
+2. تحديد نقاط الاحتكاك (Friction Points) التي تُبطئ سير العمل اليومي
+3. التحقق من جودة دعم اللغة العربية واتجاه RTL
+4. تقييم اتساق نظام التصميم عبر كل صفحات المنصة
+ 
+⚙️ المتطلبات التقنية
+ 
+أ. معايير قابلية الاستخدام (Jakob Nielsen's 10 Heuristics):
+1. رؤية حالة النظام: هل المستخدم يعلم دائماً ما يجري؟ (Loading states, Progress, Success/Error)
+2. التطابق مع الواقع: هل المصطلحات قانونية مصرية صحيحة؟ (دائرة، قاعة، جلسة، طعن)
+3. تحكم المستخدم: هل يمكن التراجع عن كل إجراء؟ (Undo, Cancel, Back)
+4. الاتساق: هل نفس الإجراء يبدو ويعمل بنفس الطريقة في كل مكان؟
+5. منع الأخطاء: هل التصميم يمنع الأخطاء قبل حدوثها؟ (Confirmations, Validations)
+6. التعرف لا التذكر: هل الإجراءات واضحة بدون قراءة توثيق؟
+7. المرونة: هل المستخدمون المتقدمون يجدون Shortcuts؟
+8. الجماليات والمحتوى الأدنى: هل الواجهة خالية من الفوضى؟
+9. رسائل خطأ مفيدة: هل الخطأ يخبر بالمشكلة والحل؟
+10. المساعدة: هل توجد Help قابلة للوصول؟
+ 
+ب. معايير RTL الإلزامية للعربية:
+- كل العناصر الاتجاهية (أسهم التنقل، أيقونات القائمة) يجب عكسها في RTL
+- الأرقام: يُستخدم الترقيم العربي-الهندي (٠١٢٣) أو العربي-الغربي حسب السياق بشكل متسق
+- التواريخ: يوم/شهر/سنة بالتقويم الميلادي والهجري (للجلسات القضائية)
+- لا text-overflow بدون ellipsis في RTL
+- الـ Inputs: text-align: right لكل حقول الإدخال
+ 
+📋 الخطوات التنفيذية
+ 
+الخطوة 1 — مراجعة المسارات الجوهرية (Critical User Journeys):
+قيّم كل مسار بعدد الخطوات والنقرات اللازمة:
+- إنشاء قضية جديدة كاملة: [ ] يجب ≤ 5 دقائق من البداية للحفظ
+- جدولة جلسة وإضافة ملاحظات: [ ] يجب ≤ 2 دقيقة
+- رفع مستند وربطه بقضية: [ ] يجب ≤ 1 دقيقة (Drag & Drop)
+- إصدار فاتورة وإرسالها للموكّل: [ ] يجب ≤ 3 دقائق
+- البحث عن قضية بالاسم أو الرقم: [ ] يجب ≤ 10 ثواني
+ 
+الخطوة 2 — جرد حالات الواجهة:
+لكل مكون تفاعلي، تحقق من وجود:
+- [ ] Loading State (Skeleton أو Spinner)
+- [ ] Empty State (نص وأيقونة وزر للإجراء)
+- [ ] Error State (رسالة محددة مع خيار إعادة المحاولة)
+- [ ] Success State (تأكيد واضح)
+- [ ] Disabled State (عند عدم توفر صلاحية)
+ 
+الخطوة 3 — تدقيق RTL:
+افحص يدوياً كل عنصر:
+- أسهم التنقل ← يجب أن تصبح → في RTL
+- القوائم الجانبية تفتح من اليمين
+- Progress Bars تمتلئ من اليمين
+- Toast notifications تظهر في الزاوية الصحيحة
+- Tooltips تظهر في الاتجاه الصحيح
+- Focus Ring واضح لكل عنصر تفاعلي
+ 
+الخطوة 4 — تدقيق المصطلحات القانونية:
+مراجعة كل النصوص في الواجهة:
+- هل المصطلحات متوافقة مع القاموس القانوني المصري الرسمي؟
+- هل التسميات متسقة؟ (مثلاً: "موكّل" أو "عميل" — يجب اختيار مصطلح واحد)
+- هل رسائل الخطأ والنجاح صحيحة لغوياً ومهنياً؟
+ 
+الخطوة 5 — تدقيق نظام التصميم:
+تحقق من الاتساق عبر جميع الصفحات:
+- ألوان: هل يوجد سيستم ألوان متسق (primary, secondary, success, warning, danger)?
+- خطوط: هل حجم ووزن النص متسقان في نفس العناصر عبر الصفحات؟
+- تباعد: هل الـ Spacing Scale (8px system) مُطبق باتساق؟
+- المكونات: هل نفس الزر يبدو بنفس الشكل في كل مكان؟
+ 
+✅ معايير النجاح
+- [ ] كل المسارات الجوهرية تُنجز في الوقت المحدد أعلاه
+- [ ] 100% من المكونات التفاعلية تملك حالات Loading/Error/Empty
+- [ ] صفر عناصر اتجاهية غير معكوسة في RTL
+- [ ] 100% من المصطلحات متسقة ومتوافقة مع المعجم القانوني المصري
+- [ ] Lighthouse Accessibility Score ≥ 90
+ 
+📊 المخرجات المطلوبة
+1. تقرير UX Heuristics Evaluation: النتيجة لكل مبدأ من العشرة مع الأمثلة
+2. جدول حالات المكونات المفقودة مع الأولوية
+3. قائمة مشكلات RTL مع وصف دقيق لكل مشكلة
+4. قاموس مصطلحات موحد (Glossary) مقترح للاعتماد في كل الواجهة
+5. مقياس تقييم UX (1-10) لكل صفحة رئيسية مع مبررات
+ 
+───────────────────────────────────────────────────
+ 
+📌 سوبر برومبت 3-B: أداء الواجهة والتوافق عبر المتصفحات
+أنت متخصص في أداء الويب (Web Performance Engineer) وتوافق المتصفحات. مهمتك قياس وتحسين أداء واجهة malaf.pro المنشورة على Render.com وضمان عملها بشكل صحيح على جميع البيئات المستهدفة.
+ 
+🎯 الأهداف الرئيسية
+1. قياس Core Web Vitals وتحديد أسباب أي انخفاض عن العتبات المستهدفة
+2. تحليل وتقليص Bundle Size وتحسين استراتيجية تحميل الكود
+3. التحقق من عمل الواجهة بشكل صحيح على المتصفحات الرئيسية
+4. قياس الأداء على شبكات 4G محاكاة (السيناريو الواقعي للمستخدم المصري)
+ 
+⚙️ المتطلبات التقنية
+ 
+عتبات Core Web Vitals الإلزامية:
+| المقياس | جيد | يحتاج تحسين | سيئ |
+|---|---|---|---|
+| LCP (Largest Contentful Paint) | ≤ 2.5s | 2.5s–4s | > 4s |
+| FID (First Input Delay) | ≤ 100ms | 100–300ms | > 300ms |
+| CLS (Cumulative Layout Shift) | ≤ 0.1 | 0.1–0.25 | > 0.25 |
+| TTFB (Time to First Byte) | ≤ 200ms | 200–500ms | > 500ms |
+| FCP (First Contentful Paint) | ≤ 1.8s | 1.8s–3s | > 3s |
+ 
+ملاحظة خاصة بـ Render: Render على الـ Free/Starter Plan قد يُعاني من Cold Start Delay (30-60 ثانية) عند عدم الاستخدام لفترة. تأكد من تفعيل Health Check Endpoint لإبقاء الـ Service حياً، أو الترقية لـ Paid Plan الذي يمنع الـ Spin-down.
+ 
+حدود Bundle Size:
+- Initial Bundle (JS): ≤ 200 KB gzipped
+- حزمة المحرر (TipTap أو مشابه): مُحمَّلة بـ Lazy Loading
+- الصور: WebP أو AVIF مع أبعاد صريحة (width + height) لمنع CLS
+- الخطوط: preload للخطوط الأساسية مع font-display: swap
+ 
+متصفحات الاختبار الإلزامية:
+- Chrome 120+ (الأكثر استخداماً)
+- Safari 17+ (iPhone/iPad)
+- Firefox 121+
+- Edge 120+
+- Chrome for Android (Samsung Galaxy S-series)
+ 
+📋 الخطوات التنفيذية
+ 
+الخطوة 1 — قياس Core Web Vitals (مع مراعاة Cold Start):
+قس الأداء في الحالتين:
+- Warm Instance: الخادم نشط بالفعل
+- Cold Start: أول طلب بعد فترة خمول (هام جداً في Render Free Tier)
+ 
+لكل صفحة رئيسية (Home / Cases / Calendar / Finances / Documents):
+- شبكة سريعة (Fiber)
+- شبكة 4G محاكاة (Chrome DevTools: Fast 4G)
+- جهاز مكتبي (4x CPU slowdown)
+- جهاز محمول (6x CPU slowdown)
+ 
+الخطوة 2 — تحليل Bundle:
+استخدم rollup-plugin-visualizer أو vite-bundle-analyzer:
+- ما أكبر 10 مكتبات في الـ Bundle؟
+- ما المكتبات التي يمكن Lazy Load؟
+- ما المكتبات المكررة (Duplicated Packages) بنسخ مختلفة؟
+- ما حجم التوفير المتوقع بعد تطبيق Code Splitting؟
+ 
+الخطوة 3 — تحليل Render-specific Performance:
+- هل Static Assets مُخزَّنة على Render CDN بشكل صحيح؟
+- هل Cache-Control Headers مُعيَّنة بشكل صحيح في render.yaml؟
+- هل يُستفاد من Render's Built-in CDN لتسريع malaf.pro للمستخدمين المصريين؟
+- ما الـ Region المُختارة لـ Render Service؟ (يُفضَّل Frankfurt أو Singapore للمستخدمين المصريين)
+ 
+الخطوة 4 — اختبار Cross-Browser:
+لكل متصفح، تحقق من:
+- [ ] CSS Grid / Flexbox يعمل بشكل صحيح
+- [ ] Web Fonts تُحمَّل وتُعرض صحيح
+- [ ] File Upload يعمل
+- [ ] Date Picker يعمل (Safari معروف بمشاكل input[type=date])
+- [ ] Crypto Web API (للتشفير AES-256) مدعومة
+- [ ] WebSocket / Supabase Realtime يعمل
+ 
+الخطوة 5 — اختبار Service Worker (PWA إن وُجد):
+إذا كانت المنصة تدعم PWA:
+- ما الموارد المُخزنة مسبقاً (Pre-cached)?
+- هل تعمل الوظائف الأساسية Offline أو في ضعف الاتصال؟
+- ما حجم ملفات Service Worker Cache؟
+ 
+✅ معايير النجاح
+- [ ] Lighthouse Performance Score ≥ 85 على 4G محاكى (Warm Instance)
+- [ ] جميع Core Web Vitals في المنطقة الخضراء
+- [ ] Initial Bundle ≤ 200KB gzipped
+- [ ] الواجهة تعمل بشكل صحيح على 100% من المتصفحات المدرجة
+- [ ] CLS = 0 في صفحات القوائم والجداول (لا اهتزاز عند تحميل البيانات)
+ 
+📊 المخرجات المطلوبة
+1. جدول Core Web Vitals لكل صفحة × شبكة × جهاز (مع Warm وCold Start)
+2. تقرير Bundle Analysis مرئي مع توصيات Code Splitting
+3. قائمة مشكلات Cross-Browser مع الأولوية والإصلاح المقترح
+4. خطة تحسين الأداء مرتبة بالأولوية: التأثير × الجهد × الوقت المتوقع
+5. render.yaml محسّن جاهز للتطبيق (Headers, Cache, Health Check)
+ 
+═══════════════════════════════════════════════════
+القسم الرابع: مراجعة الأمن السيبراني
+═══════════════════════════════════════════════════
+ 
+📌 سوبر برومبت 4-A: اختبار الاختراق الشامل (OWASP Top 10)
+أنت مختبر اختراق (Penetration Tester) محترف ومعتمد (CEH/OSCP). مهمتك تنفيذ اختبار اختراق منهجي لمنصة malaf.pro وفق إطار OWASP Top 10:2021 وتوثيق كل ثغرة مكتشفة مع خطوات الاستغلال والإصلاح.
+ 
+تنبيه مهم: هذا الاختبار يُنفَّذ في بيئة Staging مخصصة على Render بإذن صريح من أصحاب المنصة، ولا يُطبَّق أبداً على بيئة الإنتاج (malaf.pro) بدون عزل كامل.
+ 
+🎯 الأهداف الرئيسية
+1. تحديد جميع ثغرات OWASP Top 10 الموجودة في المنصة
+2. إثبات قابلية استغلال كل ثغرة مكتشفة (Proof of Concept)
+3. تصنيف الثغرات وفق CVSS v3.1 Score
+4. تقديم خطة إصلاح مُولوية ومحددة التفاصيل التقنية
+ 
+⚙️ نطاق الاختبار وأدوات الفحص
+ 
+ثغرات OWASP 2021 المستهدفة:
+| # | الفئة | الأولوية | أدوات الفحص |
+|---|---|---|---|
+| A01 | Broken Access Control | 🔴 حرجة | Burp Suite, Autorize |
+| A02 | Cryptographic Failures | 🔴 حرجة | SSLyze, testssl.sh |
+| A03 | Injection | 🔴 حرجة | SQLMap, XSSHunter |
+| A04 | Insecure Design | 🟠 عالية | Manual Review |
+| A05 | Security Misconfiguration | 🟠 عالية | Nikto, Nuclei |
+| A06 | Vulnerable Components | 🟠 عالية | Snyk, npm audit |
+| A07 | Auth & Session Failures | 🔴 حرجة | Manual Testing |
+| A08 | Software Integrity Failures | 🟡 متوسطة | Manual Review |
+| A09 | Logging Failures | 🟡 متوسطة | Manual Review |
+| A10 | SSRF | 🟡 متوسطة | Burp Suite |
+ 
+📋 الخطوات التنفيذية التفصيلية
+ 
+الخطوة 1 — Reconnaissance (جمع المعلومات):
+- تحديد كل Subdomains المرتبطة بـ malaf.pro
+- فحص DNS Records (A, CNAME, MX, TXT) بحثاً عن معلومات مُفيدة
+- فحص Shodan / Censys لمعرفة ما هو مكشوف من البنية التحتية
+- مراجعة robots.txt وsitemap.xml ومصادر JavaScript للـ Endpoints المخفية
+- فحص HTTP Headers للتحقق من: Server Version Leakage, X-Powered-By
+ 
+الخطوة 2 — A01 Broken Access Control:
+1. IDOR: استبدل كل UUID في URL وAPI بـ UUID تابع لمستأجر آخر
+2. Method Override: أرسل POST بـ _method=DELETE لعمليات الحذف
+3. Mass Assignment: أرسل حقولاً إضافية في الـ JSON (role, admin, is_verified) وتحقق هل تُقبل
+4. Path Traversal: في رفع الملفات، جرب: ../../etc/passwd كاسم ملف
+5. Forced Browsing: جرب الوصول لـ /admin لـ /api/v1/superadmin بدون Auth
+ 
+الخطوة 3 — A02 Cryptographic Failures:
+1. فحص TLS: هل الإصدار 1.3 فقط؟ أم يقبل TLS 1.1/1.0؟ (testssl.sh)
+2. فحص رؤوس الأمان: HSTS, CSP, X-Frame-Options, X-Content-Type-Options
+3. فحص تخزين البيانات الحساسة: هل أرقام الهوية أو الحسابات مخزنة نصاً صريحاً؟
+4. Supabase Storage URLs: هل روابط الملفات مؤقتة (Signed URLs) أم دائمة؟
+ 
+الخطوة 4 — A03 Injection:
+1. SQL Injection: اختبار كل Search Field وFilter Parameter
+2. XSS Reflected: اختبر كل Input يظهر في الـ URL أو الـ Response
+3. XSS Stored: ادخل Payload مثل <img src=x onerror=alert(1)> في أسماء القضايا والملاحظات
+4. SSTI (Server-Side Template Injection): إن كان يوجد Server Rendering
+5. Command Injection: في دوال رفع الملفات وإنشاء PDF
+ 
+الخطوة 5 — A07 Authentication Failures:
+1. Brute Force: هل يوجد Rate Limiting على /auth/signin؟ (اختبر 100 محاولة)
+2. Credential Stuffing: هل يُسمح بكلمات مرور ضعيفة (123456)?
+3. JWT Manipulation: جرب: تغيير algorithm لـ none | تزوير sub claim | تعديل role
+4. Session Fixation: هل الـ Session ID يتغير بعد تسجيل الدخول؟
+5. Account Enumeration: هل رسائل الخطأ تكشف وجود البريد الإلكتروني؟
+ 
+الخطوة 6 — Business Logic Vulnerabilities:
+1. تجاوز دفع الاشتراك: هل يمكن الوصول لميزات Premium بتعديل الـ Request؟
+2. هجوم Race Condition على الفواتير: إنشاء فاتورة مرتين في نفس الوقت
+3. تجاوز حدود الاشتراك: محاولة إنشاء قضايا أكثر من الحد المسموح
+4. إلغاء الاشتراك أثناء استخدام الميزة: ما يحدث للعملية الجارية؟
+ 
+✅ معايير النجاح
+- [ ] صفر ثغرات CVSS Score ≥ 7.0 (High/Critical) دون إصلاح
+- [ ] اجتياز جميع اختبارات A01 وA07 بدون ثغرات
+- [ ] SSL Labs Grade: A+
+- [ ] جميع Security Headers مُطبقة بقيم صحيحة
+- [ ] XSS Stored: مُعالج بشكل كامل في جميع حقول الإدخال
+ 
+📊 المخرجات المطلوبة
+1. تقرير Penetration Testing الكامل: Executive Summary + Technical Details + Appendices
+2. جدول الثغرات: ID | OWASP | CVSS Score | التأثير | الإصلاح | الجهة المسؤولة | المهلة
+3. PoC لكل ثغرة Critical/High: الخطوات التفصيلية + Request/Response
+4. Remediation Roadmap: ما يُصلح خلال 24 ساعة | أسبوع | شهر
+5. Retest Checklist: قائمة اختبار للتحقق من كل إصلاح
+ 
+───────────────────────────────────────────────────
+ 
+📌 سوبر برومبت 4-B: أمان البنية التحتية والإعدادات السحابية
+أنت متخصص في أمان البنية التحتية السحابية (Cloud Security Architect) مع خبرة في Supabase وRender وبيئات Serverless. مهمتك مراجعة إعدادات بنية malaf.pro التحتية وضمان خلوها من الثغرات الناجمة عن سوء التكوين.
+ 
+بيئة النشر الفعلية:
+- Application Hosting: Render.com
+- Database & Auth: Supabase
+- Domain: malaf.pro (مُسجَّل في Hostinger، DNS يمكن إدارته من Hostinger أو Cloudflare)
+ 
+🎯 الأهداف الرئيسية
+1. فحص إعدادات Supabase (Auth, Storage, Database, Edge Functions)
+2. فحص إعدادات Render (Environment Variables, Headers, Health Checks, Scaling)
+3. التحقق من صحة إعدادات DNS في Hostinger للنطاق malaf.pro
+4. مراجعة آليات النسخ الاحتياطي وخطة الاستجابة للحوادث
+ 
+📋 الخطوات التنفيذية
+ 
+الخطوة 1 — تدقيق Supabase Security:
+Auth Settings:
+- [ ] JWT expiry: ≤ 3600 ثانية (ساعة)
+- [ ] Refresh Token Rotation: مُفعَّل
+- [ ] Email confirmations: مُفعَّل
+- [ ] Password minimum length: ≥ 8
+- [ ] Rate limiting on auth endpoints: مُفعَّل
+- [ ] هل يوجد OAuth providers غير مستخدم ومُفعَّل؟ (خطر)
+ 
+Storage Settings:
+- [ ] Bucket Policies: Private Bucket للملفات الحساسة (ليس Public)
+- [ ] Signed URLs: مُستخدمة لكل روابط التحميل مع expiry ≤ 1 ساعة
+- [ ] Upload size limit: محدد (لا unlimited)
+- [ ] Allowed MIME types: مُقيَّدة بالأنواع الضرورية فقط
+- [ ] فحص أن لا ملف يمكن رفعه كـ .html/.js/.exe
+ 
+Database Settings:
+- [ ] Extensions: هل يوجد extensions غير ضرورية مُفعَّلة؟
+- [ ] Connection pooling: PgBouncer مُفعَّل
+- [ ] Direct database access: هل مُقيَّد بـ IP Whitelist؟
+- [ ] Backup: Point-in-Time Recovery مُفعَّل مع retention مناسب
+ 
+الخطوة 2 — تدقيق Render Security:
+Environment Variables:
+- [ ] هل جميع الـ Secrets مُخزَّنة في Render Environment Variables وليس في الكود؟
+- [ ] هل تم استخدام Render Secret Files للملفات الحساسة؟
+- [ ] هل يوجد Environment Groups لتجميع المتغيرات المشتركة بين Services؟
+- [ ] هل الـ Preview Environments تستخدم بيانات Staging وليس Production؟
+ 
+Service Configuration:
+- [ ] Health Check Path: مُعرَّف بشكل صحيح (مثل /health) لمنع الـ Spin-down
+- [ ] Auto-Deploy: هل مُفعَّل من GitHub؟ هل Branch Protection مُطبَّق؟
+- [ ] Build Command: هل يشغّل فقط npm run build دون تسريب أوامر خطرة؟
+- [ ] Instance Type: هل مناسب للحمل المتوقع؟ (Starter vs Standard)
+ 
+Custom Headers في render.yaml — التحقق من وجود:
+```yaml
+services:
+  - type: web
+    name: malaf-pro
+    headers:
+      - path: /*
+        name: Strict-Transport-Security
+        value: max-age=31536000; includeSubDomains; preload
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /*
+        name: Content-Security-Policy
+        value: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co"
+      - path: /*
+        name: Permissions-Policy
+        value: "geolocation=(), microphone=(), camera=()"
+```
+ 
+الخطوة 3 — تدقيق DNS وSSL لـ malaf.pro عبر Hostinger:
+- [ ] تحقق من أن CNAME Record لـ malaf.pro يشير لـ Render Service الصحيح
+- [ ] تحقق من www.malaf.pro redirect يعمل بشكل صحيح
+- [ ] هل DNSSEC مدعوم ومُفعَّل في Hostinger؟
+- [ ] CAA Records: أضف malaf.pro. CAA 0 issue "letsencrypt.org"
+- [ ] هل Render يستخدم Let's Encrypt لشهادة SSL؟ تحقق من التجديد التلقائي
+- [ ] تحقق عبر: https://crt.sh/?q=malaf.pro
+ 
+الخطوة 4 — مراجعة Security Headers الكاملة:
+اختبر عبر securityheaders.com بإدخال https://malaf.pro وأكد الحصول على Grade A على الأقل
+ 
+الخطوة 5 — مراجعة Dependency Security:
+- npm audit --audit-level=high
+- Snyk Test للحصول على CVE IDs
+- License Checker: لا GPL v3 في المشاريع التجارية
+- Outdated Check: ما المكتبات التي لم تُحدَّث منذ > 6 أشهر؟
+ 
+✅ معايير النجاح
+- [ ] درجة A على securityheaders.com لـ malaf.pro
+- [ ] صفر Supabase Storage Buckets عامة تحتوي على ملفات حساسة
+- [ ] صفر ثغرات High+ في npm audit وSnyk
+- [ ] Health Check مُفعَّل على Render لمنع Cold Starts
+- [ ] HSTS Preload مُطبق على malaf.pro
+- [ ] CAA Record مُضاف في Hostinger DNS
+- [ ] صفر Secrets في render.yaml أو Git Repository
+ 
+📊 المخرجات المطلوبة
+1. تقرير Infrastructure Security Checklist: كل بند محدد (مطبق/غير مطبق/جزئي)
+2. render.yaml محدث مع Security Headers الكاملة جاهز للتطبيق
+3. تقرير Dependency Vulnerabilities مع خطة الترقية
+4. Supabase Security Checklist مع الإعدادات المقترحة لكل بند
+5. Hostinger DNS Checklist لـ malaf.pro مع الإعدادات الموصى بها
+6. Incident Response Plan مختصر: ما الخطوات عند اكتشاف اختراق على malaf.pro؟
+ 
+═══════════════════════════════════════════════════
+القسم الخامس: مراجعة الأداء والتوسع
+═══════════════════════════════════════════════════
+ 
+📌 سوبر برومبت 5-A: اختبار الحمل وتحليل نقاط الاختناق
+أنت مهندس أداء (Performance Engineer) متخصص في منصات SaaS متعددة المستأجرين. مهمتك تنفيذ اختبارات حمل شاملة على malaf.pro المنشورة على Render وتحديد نقاط الاختناق قبل الإطلاق.
+ 
+تنبيه Render-specific: خطط اختبار الحمل يجب أن تأخذ في الحسبان:
+- Render Free Tier: يدعم عدداً محدوداً من الـ Concurrent Connections
+- Render Starter/Standard: يدعم Auto-Scaling أفقي — تحقق من تفعيله
+- Supabase Connection Limits: Free Plan يدعم 60 Connection فقط — مهم جداً تحت الحمل
+ 
+🎯 الأهداف الرئيسية
+1. تحديد الحد الأقصى للمستخدمين المتزامنين الذي تتحمله المنصة
+2. اكتشاف نقاط الاختناق في: الـ API، قاعدة البيانات، الـ Storage، الـ Edge Functions
+3. التحقق من عدم تدهور الأداء تحت الحمل التراكمي (Soak Test)
+4. التحقق من انتعاش المنصة بعد ذروة الحمل (Recovery Time)
+ 
+⚙️ أهداف SLA:
+| المقياس | P50 | P95 | P99 |
+|---|---|---|---|
+| API Read Requests | ≤ 100ms | ≤ 300ms | ≤ 500ms |
+| API Write Requests | ≤ 200ms | ≤ 500ms | ≤ 1000ms |
+| File Upload (1MB) | ≤ 2s | ≤ 5s | ≤ 10s |
+| AI Document Generation | ≤ 5s | ≤ 15s | ≤ 30s |
+| Report Generation | ≤ 3s | ≤ 8s | ≤ 15s |
+ 
+بروفايل الحمل المستهدف:
+- متوسط: 50 مستخدم متزامن
+- ذروة: 200 مستخدم متزامن
+- أقصى اختبار: 500 مستخدم متزامن
+ 
+📋 الخطوات التنفيذية
+ 
+الخطوة 1 — اختبار Baseline (مستخدم واحد):
+قبل أي حمل، قس الأداء بمستخدم واحد:
+- جميع API Endpoints: وقت الاستجابة، حجم الـ Response، عدد استعلامات DB
+- حجم الـ Payload لكل Response (هل يُرجع بيانات زائدة؟)
+- عدد HTTP Requests لكل صفحة (Network Waterfall)
+ 
+الخطوة 2 — كتابة k6 Load Test Scripts:
+اكتب Scripts تحاكي سيناريوهات حقيقية:
+ 
+```javascript
+// سيناريو: محامٍ يسجل دخوله ويتصفح قضاياه ويضيف جلسة
+import http from 'k6/http';
+import { sleep, check } from 'k6';
+ 
+export const options = {
+  stages: [
+    { duration: '2m', target: 50 },   // رفع تدريجي لـ 50 مستخدم
+    { duration: '5m', target: 50 },   // حمل ثابت
+    { duration: '2m', target: 200 },  // ذروة
+    { duration: '5m', target: 200 },  // حمل ذروة ثابت
+    { duration: '2m', target: 0 },    // هبوط تدريجي
+  ],
+  thresholds: {
+    http_req_duration: ['p(95)<500', 'p(99)<1000'],
+    http_req_failed: ['rate<0.001'],
+  },
+};
+// استهدف: https://malaf.pro/api/...
+```
+ 
+قدم Scripts كاملة للسيناريوهات التالية:
+1. تصفح القضايا والبحث
+2. إنشاء قضية جديدة مع جلسة
+3. رفع ملف PDF (1MB)
+4. توليد مستند بالذكاء الاصطناعي
+ 
+الخطوة 3 — Stress Test مع مراقبة Render Metrics:
+زِد الحمل تدريجياً: 50 → 100 → 200 → 300 → 500 مستخدم
+راقب في Render Dashboard:
+- CPU Usage ورسم بياني الـ Memory
+- هل يُشغَّل الـ Auto-Scaling تلقائياً؟
+- ما عدد الـ Instances المشغَّلة عند الذروة؟
+- هل Supabase Connection Pool وصل للحد الأقصى؟
+ 
+الخطوة 4 — Soak Test (24 ساعة):
+شغّل 50 مستخدم متزامن لمدة 24 ساعة وراقب:
+- Memory Usage: هل ترتفع تدريجياً؟ (Memory Leak علامة)
+- Error Rate: هل ترتفع مع الوقت؟
+- Response Time: هل يتدهور بمرور الوقت؟
+- Database Connections: هل تستنفد؟
+ 
+الخطوة 5 — Database Performance Analysis:
+خلال اختبارات الحمل، راقب:
+- استعلامات > 100ms عبر pg_stat_statements
+- Lock Waits وDeadlocks
+- Connection Pool Utilization
+- Index Hit Ratio (يجب أن يكون > 99%)
+- Cache Hit Ratio (يجب أن يكون > 95%)
+ 
+✅ معايير النجاح
+- [ ] P95 ≤ 500ms لكل API Requests تحت 200 مستخدم متزامن
+- [ ] Error Rate ≤ 0.1% في كل مراحل الاختبار
+- [ ] صفر Memory Leaks في Soak Test لـ 24 ساعة
+- [ ] Recovery Time ≤ 60 ثانية بعد انتهاء ذروة الحمل
+- [ ] Database Connection Pool لا يتجاوز 80% من الـ Maximum
+ 
+📊 المخرجات المطلوبة
+1. k6 Test Suite الكامل (قابل للتشغيل) مع كل السيناريوهات لـ malaf.pro
+2. Grafana Dashboard مُصدَّر (JSON) للمراقبة في الإنتاج
+3. تقرير نقاط الاختناق: المورد | الأعراض | الجذر | الحل
+4. نموذج قدرة (Capacity Model): عند 1000/10000 مستخدم — ما خطة Render Scaling؟
+5. Supabase Query Optimizations المقترحة
+ 
+───────────────────────────────────────────────────
+ 
+📌 سوبر برومبت 5-B: تحسين الأداء وبنية التخزين المؤقت
+أنت مهندس متخصص في تحسين أداء قواعد البيانات وبنى التخزين المؤقت. مهمتك تحليل وتحسين طبقة البيانات في malaf.pro لتحقيق أقصى كفاءة ممكنة ضمن قيود الـ Free/Starter Tier.
+ 
+🎯 الأهداف الرئيسية
+1. تحليل وتحسين الاستعلامات البطيئة في Supabase PostgreSQL
+2. تصميم وتطبيق استراتيجية تخزين مؤقت (Caching Strategy) فعّالة
+3. تحسين هيكل البيانات (Indexing Strategy) لأنماط الاستعلام المتوقعة
+4. تقليص عدد الـ Database Calls عبر تقنيات Batching وData Prefetching
+ 
+📋 الخطوات التنفيذية
+ 
+الخطوة 1 — تحليل Slow Queries:
+بناءً على سجل pg_stat_statements:
+لكل استعلام يتجاوز 100ms:
+- ما الاستعلام (الوصف الوظيفي)؟
+- ما متوسط وقته؟
+- كم مرة يُنفَّذ يومياً؟
+- ما EXPLAIN ANALYZE يكشف؟ (Sequential Scan أم Index Scan؟)
+- ما الـ Index المقترح؟ (مع تقدير التحسين المتوقع)
+ 
+الخطوة 2 — Indexing Strategy:
+راجع الجداول الرئيسية وقدم:
+- الـ Indexes المقترحة لأنماط الاستعلام الشائعة
+- هل يحتاج بعض الأعمدة Composite Index؟
+- الـ Partial Indexes لفلتر القضايا النشطة فقط
+- الـ GIN Indexes للبحث النصي الكامل في أسماء القضايا والموكلين
+ 
+الخطوة 3 — N+1 Query Detection:
+حدد كل حالة N+1 في الكود:
+- قائمة القضايا: هل يُجلب الموكل والمحامي لكل قضية في استعلامات منفصلة؟
+- قائمة الجلسات: هل تُجلب تفاصيل المحكمة لكل جلسة على حدة؟
+قدم كود Supabase Query المُحسَّن باستخدام .select() مع nested relations
+ 
+الخطوة 4 — Caching Strategy:
+صمم استراتيجية التخزين المؤقت لكل نوع بيانات:
+| نوع البيانات | TTL المقترح | طريقة التخزين | استراتيجية الإلغاء |
+|---|---|---|---|
+| قوائم المحاكم والدوائر | 24 ساعة | Browser LocalStorage | يدوي (نادراً تتغير) |
+| بيانات المكتب وإعداداته | 1 ساعة | React Query Cache | عند التعديل |
+| قائمة القضايا (الأخيرة) | 5 دقائق | React Query | Stale-While-Revalidate |
+| بيانات القضية المفتوحة | 30 ثانية | React Query | WebSocket Invalidation |
+| بيانات المستخدم الحالي | حتى الخروج | Zustand + Persist | عند تغيير البروفايل |
+ 
+الخطوة 5 — Pagination وVirtualization:
+للقوائم الطويلة (قضايا > 50، مستندات > 20):
+- Cursor-based Pagination (أسرع من Offset لـ PostgreSQL)
+- Virtual Scrolling (TanStack Virtual) للقوائم بدون تقسيم صفحات
+- Infinite Scroll مع Prefetch للصفحة التالية
+ 
+✅ معايير النجاح
+- [ ] الاستعلامات الجوهرية ≤ 50ms بعد التحسين
+- [ ] Cache Hit Rate ≥ 85% لـ React Query على الصفحات الشائعة
+- [ ] صفر N+1 Queries في أي Data Fetching
+- [ ] وقت تحميل قائمة القضايا (أول 20) ≤ 300ms على 4G
+ 
+📊 المخرجات المطلوبة
+1. قائمة SQL Indexes جاهزة للتطبيق مع توقع التحسين لكل منها
+2. Supabase Queries المُحسَّنة (قبل/بعد) لكل حالة N+1 مكتشفة
+3. React Query Configuration كامل مع TTL وInvalidation Strategy لكل Query Key
+4. تقرير مقارنة الأداء: قبل وبعد التحسينات (Baseline vs Optimized)
+ 
+═══════════════════════════════════════════════════
+القسم السادس: مراجعة الامتثال القانوني والتنظيمي
+═══════════════════════════════════════════════════
+ 
+📌 سوبر برومبت 6-A: الامتثال لقانون حماية البيانات الشخصية المصري
+أنت مستشار قانوني متخصص في قانون تكنولوجيا المعلومات وحماية البيانات في مصر، مع خلفية تقنية قوية. مهمتك مراجعة منصة malaf.pro للتحقق من امتثالها الكامل لقانون حماية البيانات الشخصية المصري رقم 151 لسنة 2020 ولائحته التنفيذية.
+ 
+🎯 الأهداف الرئيسية
+1. تحديد كل فجوات الامتثال بين ممارسات المنصة ومتطلبات القانون 151/2020
+2. التحقق من صحة آليات الموافقة وحقوق أصحاب البيانات
+3. مراجعة سياسة الخصوصية وعقود المعالجة من منظور القانون المصري
+4. وضع خطة عمل لسد الفجوات المكتشفة قبل الإطلاق
+ 
+⚙️ المتطلبات التقنية والقانونية
+ 
+المادة 6 — شروط مشروعية المعالجة:
+- هل توجد موافقة صريحة قابلة للإثبات لكل غرض جمع بيانات؟
+- هل الغرض محدد وصريح ومشروع؟
+- هل كمية البيانات المجمعة ضرورية فقط؟ (Data Minimization)
+ 
+المادة 7-10 — حقوق أصحاب البيانات (يجب توفيرها تقنياً):
+- [ ] حق الوصول: يمكن للمستخدم تنزيل نسخة من كل بياناته (Data Export)
+- [ ] حق التصحيح: يمكن تعديل البيانات الشخصية مباشرة من الإعدادات
+- [ ] حق الحذف: آلية طلب حذف الحساب وجميع البيانات المرتبطة
+- [ ] حق الاعتراض: آلية رفض معالجة البيانات لأغراض التسويق
+- [ ] حق النقل: تصدير البيانات بتنسيق قابل للقراءة (CSV/JSON)
+ 
+المادة 18 — الإخطار بالاختراق:
+- هل توجد آلية للكشف عن الاختراق وإخطار الجهات المعنية خلال 72 ساعة؟
+- ما القنوات المستخدمة للإخطار؟ (البريد الإلكتروني / Dashboard)
+ 
+اشتراطات الجهاز القومي لتنظيم الاتصالات (NTRA):
+- هل تخزين البيانات على خوادم داخل مصر أم خارجها؟
+- إن كان خارجها (Supabase)، هل توجد Data Processing Agreement؟
+- هل المنصة مسجلة في سجل مراقبي المعلومات؟
+ 
+📋 الخطوات التنفيذية
+ 
+الخطوة 1 — Data Mapping الشامل:
+أنشئ سجل معالجة البيانات يشمل:
+| نوع البيانات | مصدرها | الغرض | من يعالجها | أين تُخزَّن | مدة الاحتفاظ | قانونية المعالجة |
+|---|---|---|---|---|---|---|
+| بيانات هوية الموكل | نموذج التسجيل | إنشاء الملف | الفريق | Supabase (EU/US) | طوال العلاقة + 5 سنوات | موافقة صريحة |
+| ملفات القضايا | رفع المستخدم | حفظ الوثائق | الفريق | Supabase Storage | طوال العلاقة | موافقة صريحة |
+| بيانات الفواتير | نظام الفوترة | الالتزام الضريبي | الفريق + ETA | Supabase + ETA | 5 سنوات (قانون ضريبي) | التزام قانوني |
+ 
+ملاحظة خاصة بالبنية التحتية: Supabase يخزّن البيانات في منطقة تختارها. تحقق من المنطقة المختارة وهل تتوافق مع اشتراطات NTRA. يُنصح بإعداد DPA مع Supabase وRender معاً.
+ 
+الخطوة 2 — تدقيق آلية الموافقة:
+افحص نموذج التسجيل وانظر:
+- هل الموافقة مستقلة (Unbundled) عن الشروط والأحكام؟
+- هل يوجد Checkbox منفصل لكل غرض استخدام مختلف؟
+- هل يُسجَّل وقت الموافقة وعنوان IP وإصدار السياسة؟
+- هل يستطيع المستخدم سحب موافقته بنفس سهولة إعطائها؟
+ 
+الخطوة 3 — اختبار تنفيذ حقوق أصحاب البيانات:
+- Data Export: هل تعمل؟ هل تشمل كل البيانات؟ (بيانات الحساب + القضايا + الفواتير + سجل النشاط)
+- Right to Erasure: قدم طلب حذف تجريبي وتحقق: هل تُحذف البيانات من قاعدة البيانات؟ من Storage؟ من Backups? هل يُرسل تأكيد؟
+- Data Portability: هل تنسيق التصدير قابل للقراءة والاستخدام في منصة أخرى؟
+ 
+الخطوة 4 — مراجعة سياسة الخصوصية:
+تأكد أن سياسة الخصوصية في malaf.pro تذكر صراحةً:
+- Supabase (قاعدة البيانات والمصادقة والتخزين)
+- Render.com (استضافة التطبيق)
+- Hostinger (إدارة النطاق malaf.pro)
+- Google Gemini AI (توليد المستندات)
+- Paymob (معالجة المدفوعات)
+- WhatsApp Business API (الإشعارات)
+- Daily.co (مكالمات الفيديو)
+ 
+الخطوة 5 — تدقيق عقود المعالجة مع الأطراف الثالثة:
+لكل طرف ثالث يُعالج بيانات المستخدمين:
+- هل تم إبرام Data Processing Agreement (DPA)؟
+- هل يمتثل الطرف للقانون المصري أو ما يعادله؟
+- هل توجد آلية لضمان حماية البيانات في حال إنهاء العقد؟
+ 
+✅ معايير النجاح
+- [ ] Data Processing Register مكتمل لكل فئات البيانات
+- [ ] آلية Data Export تعمل وتشمل 100% من بيانات المستخدم
+- [ ] آلية Right to Erasure تعمل مع تأكيد موثق للمستخدم
+- [ ] سياسة الخصوصية تذكر جميع المعالجين الثانويين (بما فيهم Render وHostinger)
+- [ ] DPA موقعة مع Supabase وRender وكل طرف ثالث يُعالج بيانات شخصية
+ 
+📊 المخرجات المطلوبة
+1. Data Processing Register جاهز (Excel/Notion) لكل فئات البيانات (يشمل Render وHostinger)
+2. تقرير فجوات الامتثال: الفجوة | المادة القانونية | الأولوية | الإصلاح | المهلة
+3. سياسة خصوصية مُراجعة ومُحدَّثة (عربي + إنجليزي) تشمل جميع الأطراف الثالثة
+4. Privacy Consent Flow المقترح (مسار تسجيل محدث)
+5. Data Subject Request Procedure: خطوات معالجة كل نوع من الطلبات
+ 
+───────────────────────────────────────────────────
+ 
+📌 سوبر برومبت 6-B: الامتثال لمنظومة الفاتورة الإلكترونية المصرية (ETA)
+أنت متخصص في تكامل منظومة الفاتورة الإلكترونية المصرية (ETA) وضرائب القيمة المضافة. مهمتك التحقق من امتثال وحدة الفوترة في malaf.pro لكافة متطلبات مصلحة الضرائب المصرية وضمان صحة الإصدار والإرسال.
+ 
+🎯 الأهداف الرئيسية
+1. التحقق من صحة هيكل الفاتورة الإلكترونية وامتثاله لمعايير ETA API
+2. اختبار دورة حياة الفاتورة كاملة (إصدار → إرسال → قبول/رفض → إلغاء)
+3. التحقق من صحة حسابات ضريبة القيمة المضافة (14%) والضريبة الجدولية
+4. ضمان صحة التوقيع الرقمي وترميز UUID لكل فاتورة
+ 
+📋 الخطوات التنفيذية
+ 
+الخطوة 1 — مراجعة هيكل بيانات الفاتورة:
+تحقق من أن كل فاتورة مُنشأة تحتوي على الحقول الإلزامية:
+- issuer: type, id (Tax Registration Number), name, address
+- receiver: type, id (National ID or Tax Reg), name, address
+- documentType: "I"
+- documentTypeVersion: "1.0"
+- dateTimeIssued: ISO 8601 format
+- taxpayerActivityCode
+- internalID: Sequential Internal Number
+- invoiceLines مع: description, itemType, itemCode, unitType, quantity, unitValue, salesTotal, taxableItems, total
+- totalSalesAmount, totalDiscountAmount, netAmount, taxTotals, totalAmount
+ 
+الخطوة 2 — اختبار الحسابات الضريبية:
+أنشئ Test Cases لكل سيناريو:
+- خدمة استشارة: 1000 جنيه → ضريبة = 140 → الإجمالي = 1140
+- أتعاب ترافع: 5000 جنيه → ضريبة = 700 → الإجمالي = 5700
+- خدمة متعددة: Item1=1000 + Item2=2000 → ضريبة = 420 → الإجمالي = 3420
+- خصم جزئي: 3000 جنيه بخصم 10% → صافي = 2700 → ضريبة = 378 → الإجمالي = 3078
+- هل تستخدم المنصة أرقاماً من نوع Decimal (ليس Float) لتجنب أخطاء التقريب؟
+ 
+الخطوة 3 — اختبار Integration مع ETA Sandbox:
+اختبر الدورة الكاملة على بيئة ETA Sandbox:
+1. POST /api/v1/documents — إصدار فاتورة
+2. تحقق من UUID المُعاد من ETA
+3. GET /api/v1/documents/{uuid} — استرجاع حالة الفاتورة
+4. PUT /api/v1/documents/state/{uuid}/cancel — إلغاء فاتورة
+5. التحقق من أن كل Response يُخزَّن في قاعدة البيانات
+ 
+الخطوة 4 — اختبار التوقيع الرقمي:
+- هل يُستخدم الـ Certificate الصادر من ITIDA؟
+- هل التوقيع بخوارزمية RSA-SHA256؟
+- هل Canonicalization صحيح قبل التوقيع؟
+- هل يُعاد توليد التوقيع عند تعديل الفاتورة؟
+ 
+الخطوة 5 — اختبار سيناريوهات الرفض:
+ما الذي يحدث عندما ترفض ETA الفاتورة؟
+- هل يُخطر المستخدم بالسبب؟
+- هل تُعلَّم الفاتورة بحالة "مرفوضة" في قاعدة البيانات؟
+- هل يمكن تعديل الفاتورة وإعادة إرسالها؟
+- هل يوجد Retry Logic مع Exponential Backoff عند فشل الاتصال؟
+ 
+✅ معايير النجاح
+- [ ] 100% من الفواتير تُقبل في ETA Sandbox دون أخطاء
+- [ ] صحة حسابات ضريبة القيمة المضافة في 100% من Test Cases
+- [ ] صفر أخطاء تقريب في الحسابات المالية (استخدام Decimal)
+- [ ] UUID مُخزَّن لكل فاتورة مُرسلة لـ ETA
+- [ ] آلية إلغاء الفاتورة تعمل وفق معايير ETA
+ 
+📊 المخرجات المطلوبة
+1. تقرير اختبار ETA Sandbox: كل Request/Response موثق
+2. قائمة Test Cases الضريبية مع النتائج الفعلية
+3. Invoice Data Validation Schema (Zod) جاهز للتطبيق
+4. Retry & Error Handling Logic للتكامل مع ETA
+5. وثيقة إجراء استعادة الفواتير المرفوضة
+ 
+═══════════════════════════════════════════════════
+القسم السابع: مراجعة الـ API والتكامل مع الخدمات الخارجية
+═══════════════════════════════════════════════════
+ 
+📌 سوبر برومبت 7-A: تدقيق جودة الـ API الداخلية (OpenAPI & REST)
+أنت مهندس API متخصص في RESTful Design وOpenAPI Specification. مهمتك مراجعة جميع الـ API Endpoints في malaf.pro والتحقق من اتساقها وجودتها ومطابقتها للمعايير.
+ 
+🎯 الأهداف الرئيسية
+1. التحقق من الاتساق الكامل في تصميم الـ REST API
+2. ضمان معالجة صحيحة لجميع حالات الخطأ وفق RFC 7807
+3. التحقق من OpenAPI Specification وصحتها
+4. اختبار API Rate Limiting وIdempotency وVersioning
+ 
+📋 الخطوات التنفيذية
+ 
+الخطوة 1 — مراجعة تصميم الـ Endpoints:
+لكل Endpoint، تحقق من:
+- URL Naming: Nouns لا Verbs (/cases لا /getCases)
+- HTTP Methods: GET/POST/PUT/PATCH/DELETE مستخدمة بشكل صحيح
+- Status Codes: 200/201/204/400/401/403/404/409/422/500 مستخدمة بدقة
+- Plural Resources: /cases لا /case
+- Nested Resources لا تتجاوز مستويين: /cases/{id}/sessions ✅
+ 
+الخطوة 2 — مراجعة معالجة الأخطاء (RFC 7807):
+كل Error Response يجب أن تتبع:
+{
+  "type": "https://api.malaf.pro/errors/validation-error",
+  "title": "Validation Error",
+  "status": 422,
+  "detail": "حقل 'تاريخ الجلسة' مطلوب ولا يمكن أن يكون في الماضي",
+  "instance": "/api/v1/cases/123/sessions",
+  "errors": [{ "field": "session_date", "message": "يجب أن يكون في المستقبل" }]
+}
+تحقق من: كل Endpoint يُرجع هذا الشكل عند الخطأ، لا Stack Traces في بيئة الإنتاج
+ 
+الخطوة 3 — فحص OpenAPI Specification:
+- هل الـ Spec موجودة ومحدثة؟
+- هل جميع الـ Parameters موثقة (required, type, format, example)?
+- هل Request/Response Schemas موثقة بمثال لكل نوع؟
+- هل الأخطاء موثقة (400/401/403/404/422)?
+- هل الـ Security Schemes (BearerAuth) محددة ومطبقة على كل Endpoint؟
+ 
+الخطوة 4 — اختبار Idempotency:
+لعمليات الكتابة (POST للفواتير والمدفوعات):
+- أرسل نفس الطلب مرتين بنفس Idempotency-Key Header
+- تحقق: هل تُنفَّذ مرة واحدة فقط؟ هل الثانية تُرجع نفس النتيجة؟
+- ما مدة صلاحية الـ Idempotency Key (يجب ≥ 24 ساعة)؟
+ 
+الخطوة 5 — اختبار Pagination و Filtering:
+لكل Endpoint يُرجع قائمة:
+- هل يدعم Cursor-based Pagination؟ (page_size + after_cursor)
+- هل يدعم Filtering بالأعمدة الجوهرية؟
+- هل يدعم Sorting؟ (?sort=created_at&order=desc)
+- هل الـ Response يشمل: total_count, next_cursor, has_more؟
+- هل يوجد حد أقصى لـ page_size لمنع جلب كميات ضخمة؟ (≤ 100)
+ 
+✅ معايير النجاح
+- [ ] 100% من Endpoints تتبع REST Naming Conventions
+- [ ] 100% من Errors تتبع RFC 7807 format
+- [ ] OpenAPI Spec تغطي 100% من الـ Endpoints
+- [ ] Idempotency مُطبق على كل عمليات الدفع والفواتير
+- [ ] Pagination مُطبق على كل Endpoint يُرجع قائمة
+ 
+📊 المخرجات المطلوبة
+1. تقرير API Audit: كل Endpoint × المعيار × النتيجة
+2. OpenAPI Specification محدثة وصحيحة (YAML)
+3. Error Response Templates لكل نوع خطأ
+4. Postman Collection كاملة مع Test Scripts
+5. API Design Guidelines Document للفريق
+ 
+───────────────────────────────────────────────────
+ 
+📌 سوبر برومبت 7-B: اختبار تكاملات الخدمات الخارجية
+أنت مهندس تكامل (Integration Engineer) متخصص في اختبار Third-party APIs في بيئات SaaS. مهمتك اختبار جميع التكاملات الخارجية في malaf.pro والتحقق من صحتها وقدرتها على التعافي من الإخفاقات.
+ 
+🎯 الأهداف الرئيسية
+1. اختبار كل تكامل خارجي بشكل مستقل في بيئة Sandbox
+2. التحقق من Fallback Behavior عند إخفاق أي خدمة
+3. ضمان صحة Webhook Verification لكل خدمة ترسل Callbacks
+4. اختبار سيناريوهات الحدود: Rate Limits، Timeouts، Large Payloads
+ 
+📋 الخطوات التنفيذية لكل تكامل
+ 
+أ. Paymob (بوابة الدفع):
+اختبر في بيئة Sandbox:
+- [ ] إنشاء Payment Order بأتعاب الاشتراك الشهري
+- [ ] دفع ناجح ببطاقة اختبار
+- [ ] دفع فاشل (بطاقة مرفوضة) والرسالة المُعادة
+- [ ] Refund جزئي وكامل
+- [ ] Webhook: استقبال notification عند الدفع وتحديث قاعدة البيانات
+- [ ] Webhook Signature Verification: محاولة HMAC مزيفة (يجب الرفض)
+- [ ] ماذا يحدث عند انتهاء صلاحية المحاولة؟ (Payment Expiry)
+- [ ] هل Idempotency مُطبق لمنع الشحن المزدوج؟
+ 
+ب. Google Gemini AI:
+اختبر:
+- [ ] توليد مسودة عقد إيجار (أبسط حالة)
+- [ ] توليد مذكرة قانونية (نص طويل)
+- [ ] Rate Limit: ما يحدث عند استنفاد الحصة اليومية؟
+- [ ] Timeout: ما يحدث إذا لم يستجب في 30 ثانية؟
+- [ ] هل الـ Prompt Injection محمي؟ (مثلاً: مستخدم يُدخل "تجاهل التعليمات السابقة...")
+- [ ] هل المحتوى الناتج يُصفَّى للتأكد من عدم وجود معلومات ضارة؟
+- [ ] Fallback: إذا فشل Gemini، هل يُجرَّب Groq تلقائياً؟
+ 
+ج. Groq (Llama 3):
+- [ ] اختبار Fast Inference على نصوص قصيرة
+- [ ] اختبار Context Window Limit: ماذا عند نص أطول من الحد؟
+- [ ] API Key Rotation: هل يعمل النظام بعد تغيير الـ Key؟
+ 
+د. WhatsApp Business API:
+- [ ] إرسال Template Message (إشعار جلسة) لرقم اختبار
+- [ ] التحقق من حالة الإرسال (Delivered/Read)
+- [ ] Webhook: استقبال رد من الموكل وتخزينه
+- [ ] هل يوجد Queue لمنع تجاوز Rate Limit؟ (1000 رسالة/يوم للحساب الاعتيادي)
+- [ ] ماذا يحدث عند إرسال رسالة لرقم غير مسجل؟
+ 
+هـ. Daily.co (مكالمات الفيديو):
+- [ ] إنشاء Room برابط مؤقت (24 ساعة)
+- [ ] انضمام محامٍ وموكّل من متصفحات مختلفة
+- [ ] اختبار Screen Sharing وتسجيل المكالمة
+- [ ] انتهاء صلاحية الـ Room بعد المدة المحددة
+- [ ] ما يحدث عند انقطاع الاتصال وإعادته؟
+- [ ] Webhook: استقبال meeting-ended event وتخزين المدة
+ 
+✅ معايير النجاح
+- [ ] جميع Happy Path Tests ناجحة لكل خدمة
+- [ ] جميع Error Scenarios مُعالجة برسائل واضحة للمستخدم
+- [ ] Webhook Signature Verification يرفض كل محاولة مزيفة
+- [ ] Circuit Breaker مُطبق لكل خدمة خارجية
+- [ ] Fallback مُطبق للخدمات الحرجة (AI, Payment)
+ 
+📊 المخرجات المطلوبة
+1. Integration Test Report: كل خدمة × كل سيناريو × النتيجة
+2. Runbook لكل خدمة: ماذا تفعل عند إخفاقها؟
+3. Circuit Breaker Configuration مقترح (thresholds, recovery time)
+4. Monitoring Alerts مقترحة لكل تكامل (Latency, Error Rate, Rate Limit)
+5. API Keys Rotation Procedure: كيف تُحدَّث المفاتيح بدون downtime؟
+ 
+═══════════════════════════════════════════════════
+القسم الثامن: مراجعة قاعدة البيانات
+═══════════════════════════════════════════════════
+ 
+📌 سوبر برومبت 8-A: تدقيق تصميم الـ Schema وسلامة البيانات
+أنت مهندس قواعد بيانات (Database Architect) متخصص في PostgreSQL وSupabase. مهمتك إجراء مراجعة شاملة لتصميم قاعدة البيانات في malaf.pro والتحقق من صحة البنية وسلامة البيانات وقابلية التوسع.
+ 
+🎯 الأهداف الرئيسية
+1. التحقق من صحة التطبيع وغياب تكرار البيانات
+2. مراجعة Database Constraints وضمان سلامة البيانات على مستوى الـ Schema
+3. التحقق من صحة وكفاءة RLS Policies لكل جدول
+4. تقييم هيكل الـ Migrations وقدرتها على التراجع بأمان
+ 
+📋 الخطوات التنفيذية
+ 
+الخطوة 1 — مراجعة Schema الشاملة:
+لكل جدول رئيسي (organizations, users, cases, clients, sessions, documents, invoices, invoice_items, case_assignments, audit_log, subscriptions, notifications, powers_of_attorney) تحقق من:
+- Primary Key: UUID v4 أم UUID v7 (v7 أفضل للـ Indexing)
+- Timestamps: created_at DEFAULT NOW()، updated_at مع Trigger
+- Soft Delete: deleted_at TIMESTAMP NULL (بدلاً من الحذف الفعلي)
+- NOT NULL: على الحقول الإلزامية
+- CHECK Constraints: للقيم المقيدة
+- UNIQUE Constraints: مثل case_number UNIQUE per organization
+- Foreign Keys: مع ON DELETE CASCADE أو SET NULL حسب الحاجة
+ 
+الخطوة 2 — فحص التطبيع:
+تحقق من غياب:
+- تكرار البيانات (Denormalization غير مبرر)
+- التبعيات الوظيفية الجزئية (2NF Violations)
+- التبعيات العابرة (3NF Violations)
+- بيانات JSON تحتوي على بيانات يجب أن تكون في جداول منفصلة
+ 
+الخطوة 3 — تدقيق RLS Policies:
+لكل جدول، افحص الـ Policies:
+مثال: جدول cases يجب أن يكون له Policies كالتالي:
+```sql
+CREATE POLICY "cases_select_policy" ON cases
+  FOR SELECT USING (
+    organization_id = (SELECT organization_id FROM users WHERE id = auth.uid())
+    AND (
+      assigned_attorney_id = auth.uid()
+      OR EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role IN ('admin', 'super_admin'))
+    )
+  );
+```
+لكل جدول: هل تغطي الـ Policies كل العمليات (SELECT/INSERT/UPDATE/DELETE)?
+ 
+الخطوة 4 — مراجعة Migration Files:
+لكل Migration File:
+- هل لها Up وDown Function؟
+- هل Down تُعيد الحال تماماً؟ (لا partial rollback)
+- هل Migrations مرقمة بترتيب صحيح؟
+- هل يوجد Migration يعدّل عموداً بيانات موجودة دون إشارة لمعالجة البيانات القديمة؟
+ 
+الخطوة 5 — فحص Triggers وFunctions:
+لكل Database Trigger أو Function:
+- ما وظيفتها؟
+- هل هي مُختبرة؟
+- هل تُضاف للـ Migration لضمان وجودها في كل البيئات؟
+- هل تؤثر على أداء الكتابة بشكل ملحوظ؟
+ 
+✅ معايير النجاح
+- [ ] جميع الجداول في 3NF على الأقل
+- [ ] كل Foreign Key له NOT NULL Constraint حيثما يلزم
+- [ ] كل جدول له RLS Policy تغطي SELECT/INSERT/UPDATE/DELETE
+- [ ] كل Migration له Up/Down قابل للتشغيل دون خطأ
+- [ ] صفر Orphaned Records في أي جدول
+ 
+📊 المخرجات المطلوبة
+1. ERD مُحدَّث يعكس الـ Schema الحالي مع توثيق الـ Constraints
+2. تقرير RLS Policies: كل جدول × كل عملية × هل مُغطى؟
+3. قائمة Schema Issues مع SQL الإصلاح الجاهز
+4. Migration Audit Report: كل Migration × هل لها Rollback × هل اختُبرت؟
+5. Database Conventions Document: معايير التسمية والـ Patterns المعتمدة للفريق
+ 
+───────────────────────────────────────────────────
+ 
+📌 سوبر برومبت 8-B: تحسين الأداء والاستعلامات مع خطة النسخ الاحتياطي
+أنت متخصص في ضبط أداء PostgreSQL وتخطيط استمرارية الأعمال (Business Continuity Planning). مهمتك تحليل أداء قاعدة البيانات في malaf.pro وتحسينه، وبناء خطة نسخ احتياطي واسترداد قوية.
+ 
+🎯 الأهداف الرئيسية
+1. تحديد وتحسين الاستعلامات البطيئة وغير الفعّالة
+2. بناء Indexing Strategy شاملة لأنماط الاستعلام المتوقعة
+3. تصميم وتوثيق خطة النسخ الاحتياطي والاسترداد
+4. التحقق من أن RPO/RTO المستهدف قابل للتحقيق فعلياً
+ 
+📋 الخطوات التنفيذية
+ 
+الخطوة 1 — تحليل أداء الاستعلامات:
+قدم EXPLAIN ANALYZE لكل استعلام من القائمة التالية، مع بيانات اختبار ≥ 10,000 صف:
+ 
+```sql
+-- استعلام 1: جلب قضايا المكتب مع حالتها وجلستها القادمة
+SELECT c.*, cl.name as client_name,
+       u.name as attorney_name,
+       MIN(s.session_date) as next_session
+FROM cases c
+JOIN clients cl ON cl.id = c.client_id
+JOIN users u ON u.id = c.assigned_attorney_id
+LEFT JOIN sessions s ON s.case_id = c.id AND s.session_date > NOW()
+WHERE c.organization_id = $1 AND c.deleted_at IS NULL
+GROUP BY c.id, cl.name, u.name
+ORDER BY c.created_at DESC
+LIMIT 20;
+ 
+-- استعلام 2: البحث النصي الكامل في القضايا
+SELECT * FROM cases
+WHERE organization_id = $1
+  AND to_tsvector('arabic', COALESCE(title,'') || ' ' || COALESCE(case_number,''))
+    @@ plainto_tsquery('arabic', $2)
+LIMIT 10;
+ 
+-- استعلام 3: تقرير الأداء المالي الشهري
+SELECT DATE_TRUNC('month', issued_at) as month,
+       COUNT(*) as invoice_count,
+       SUM(total_amount) as total_revenue,
+       SUM(tax_amount) as total_tax
+FROM invoices
+WHERE organization_id = $1
+  AND issued_at BETWEEN $2 AND $3
+GROUP BY 1 ORDER BY 1;
+```
+ 
+لكل استعلام: هل يستخدم Index Scan؟ ما الـ Cost؟ ما التحسين المقترح؟
+ 
+الخطوة 2 — Indexing Plan:
+بناءً على التحليل، قدم Index Creation Scripts:
+```sql
+CREATE INDEX idx_cases_org_id ON cases(organization_id) WHERE deleted_at IS NULL;
+CREATE INDEX idx_cases_attorney ON cases(assigned_attorney_id, organization_id);
+CREATE INDEX idx_sessions_case_date ON sessions(case_id, session_date);
+CREATE INDEX idx_invoices_org_month ON invoices(organization_id, issued_at);
+CREATE INDEX idx_cases_fulltext ON cases USING GIN(
+  to_tsvector('arabic', COALESCE(title,'') || ' ' || COALESCE(case_number,''))
+);
+```
+لكل Index: ما الاستعلامات التي يُحسِّن؟ ما التأثير على الكتابة؟ ما حجمه المتوقع؟
+ 
+الخطوة 3 — خطة النسخ الاحتياطي:
+| النوع | التكرار | الأداة | مكان التخزين | مدة الاحتفاظ | RPO |
+|---|---|---|---|---|---|
+| Full Backup | يومياً | Supabase Auto Backup | Supabase Storage | 30 يوم | 24 ساعة |
+| Transaction Log | مستمر | PITR | Supabase | 7 أيام | 5 دقائق |
+| Snapshot يدوي | قبل Migration | pg_dump | Supabase Storage + External | 90 يوم | - |
+| Export البيانات | أسبوعياً | Custom Script | AWS S3 / Supabase | 1 سنة | - |
+ 
+الخطوة 4 — اختبار Disaster Recovery:
+صف إجراء اختبار DR خطوة بخطوة:
+1. إنشاء بيئة اختبار مستقلة (منفصلة عن الإنتاج)
+2. استعادة أحدث نسخة احتياطية
+3. قياس وقت الاستعادة الفعلي
+4. التحقق من سلامة البيانات (Row Count + Sample Verification)
+5. التحقق من عمل الـ RLS Policies في البيئة المستعادة
+6. توثيق RTO الفعلي (مقارنةً بالمستهدف ≤ 4 ساعات)
+ 
+الخطوة 5 — Database Maintenance Plan:
+```sql
+-- يُشغَّل يومياً في 2 AM (ساعة انتفاع منخفض بتوقيت مصر)
+VACUUM ANALYZE cases;
+VACUUM ANALYZE sessions;
+VACUUM ANALYZE documents;
+VACUUM ANALYZE invoices;
+ 
+-- يُشغَّل أسبوعياً
+REINDEX CONCURRENTLY idx_cases_fulltext;
+ 
+-- مراقبة Table Bloat
+SELECT schemaname, tablename,
+       pg_size_pretty(pg_total_relation_size(quote_ident(tablename))) as size,
+       n_dead_tup, n_live_tup,
+       round(100*n_dead_tup::numeric/GREATEST(n_live_tup+n_dead_tup,1), 2) as dead_ratio
+FROM pg_stat_user_tables
+ORDER BY n_dead_tup DESC;
+```
+ 
+✅ معايير النجاح
+- [ ] جميع الاستعلامات المُحللة ≤ 100ms بعد تطبيق الـ Indexes
+- [ ] DR Test ناجح مع RTO فعلي ≤ 4 ساعات
+- [ ] PITR مُفعَّل ومُختبَر في Supabase
+- [ ] Database Bloat < 10% في أكبر 5 جداول
+- [ ] Index Hit Ratio > 99% في قاعدة بيانات الـ Staging
+ 
+📊 المخرجات المطلوبة
+1. SQL Scripts للـ Indexes الجديدة مع تقديرات التحسين
+2. EXPLAIN ANALYZE Reports قبل/بعد لكل استعلام جوهري
+3. Disaster Recovery Runbook (خطوة بخطوة بلغة واضحة)
+4. نتائج DR Test: الوقت الفعلي والثغرات المكتشفة
+5. Database Monitoring Queries: للمراقبة اليومية في الإنتاج
+ 
+═════════════════════════════════════════════════════════════════
+ملحق: مصفوفة الأولويات والجدول الزمني
+═════════════════════════════════════════════════════════════════
+ 
+الأسبوع الأول (48 ساعة قبل أي كود في Staging):
+  ✦ 8-A: Schema وRLS Policies (يجب أن يكون الأساس سليماً)
+  ✦ 1-C: Security Audit للكود (يوقف الإطلاق إذا وُجدت Critical)
+  ✦ 4-A: OWASP Penetration Test (متوازٍ مع الأعلى)
+ 
+الأسبوع الثاني:
+  ✦ 2-A: RBAC وMulti-Tenancy (محور الأمان الوظيفي)
+  ✦ 6-B: ETA Integration Test (يمنع الإطلاق عند الفشل)
+  ✦ 7-B: Integration Tests لكل خدمة خارجية
+ 
+الأسبوع الثالث:
+  ✦ 1-A + 1-B: Code Quality وTest Coverage
+  ✦ 3-A + 3-B: UX وFrontend Performance (مع Cold Start Test لـ Render)
+  ✦ 5-A: Load Testing على Render Staging Environment
+ 
+الأسبوع الرابع (مراجعة نهائية):
+  ✦ 6-A: Legal Compliance (يشمل DPA مع Render وHostinger)
+  ✦ 8-B: Database Performance + DR Test
+  ✦ 2-B: Data Flow وConcurrency Testing
+  ✦ 4-B: Infrastructure Security (Render + Supabase + Hostinger DNS)
+ 
+═════════════════════════════════════════════════════════════════
+معيار بوابة الإطلاق (Launch Gate Criteria) — malaf.pro
+يُسمح بإطلاق malaf.pro فقط عند تحقق الشروط التالية:
+═════════════════════════════════════════════════════════════════
+ 
+  ✅ صفر ثغرات Critical/High في أقسام: الكود، الأمن، الـ API، قاعدة البيانات
+  ✅ تغطية الاختبارات ≥ 95%
+  ✅ اجتياز ETA Sandbox Test بنسبة 100%
+  ✅ P99 Latency ≤ 500ms تحت 200 مستخدم متزامن (على Render Staging)
+  ✅ DR Test ناجح مع RTO فعلي ≤ 4 ساعات
+  ✅ Lighthouse Score ≥ 85 على Mobile (Warm Instance)
+  ✅ سياسة الخصوصية مراجعة ومنشورة (تشمل Render وHostinger)
+  ✅ RBAC وRLS: صفر Cross-Tenant Access ناجح
+  ✅ render.yaml يحتوي على جميع Security Headers
+  ✅ Health Check مُفعَّل على Render لمنع Cold Starts
+  ✅ DNS malaf.pro في Hostinger مُعدَّل بشكل صحيح مع CNAME لـ Render
+  ✅ CAA Record مُضاف لـ malaf.pro في Hostinger
+  ✅ صفر Secrets في render.yaml أو Git History
+ 
+═════════════════════════════════════════════════════════════════
+مَلَف — السوبر برومبتات الشاملة لضمان جودة الإطلاق
+إعداد: Claude Sonnet 4.6 | آخر تحديث: مايو 2026
+المنصة: React 19 + Supabase + Render.com | النطاق: malaf.pro (Hostinger)
+═════════════════════════════════════════════════════════════════

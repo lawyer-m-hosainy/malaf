@@ -59,6 +59,20 @@ function agingBucket(days: number) {
   return "+90 يوم";
 }
 
+interface Receivable {
+  id: string;
+  client_id: string;
+  client_name: string;
+  case_id: string;
+  total_amount: number;
+  collected_amount: number;
+  outstanding_amount: number;
+  due_date: string;
+  status: string;
+  is_reconciled: boolean;
+  created_at: string;
+}
+
 export default function FinancialDashboard() {
   const { data: invoices = [], isLoading: invoicesLoading } = useQuery({
     queryKey: [FINANCES_KEY, "invoices"],
@@ -72,9 +86,9 @@ export default function FinancialDashboard() {
     staleTime: queryConfig.finances.staleTime,
   });
 
-  const { data: receivablesData = [], isLoading: receivablesLoading } = useQuery({
+  const { data: receivablesData = [], isLoading: receivablesLoading } = useQuery<Receivable[]>({
     queryKey: [FINANCES_KEY, "receivables"],
-    queryFn: () => fetchReceivables(),
+    queryFn: () => fetchReceivables() as Promise<Receivable[]>,
     staleTime: queryConfig.finances.staleTime,
   });
 

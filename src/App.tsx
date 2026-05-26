@@ -8,7 +8,7 @@
 
 import React, { lazy, Suspense, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { RootLayout } from "./components/layout/RootLayout";
+const RootLayout = lazy(() => import("./components/layout/RootLayout").then(m => ({ default: m.RootLayout })));
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "./components/AuthProvider";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -27,7 +27,7 @@ const queryClient = new QueryClient();
 const Login = lazy(() => import("./views/Login"));
 const AIDocumentAnalyzer = lazy(() => import('@/views/AIDocumentAnalyzer'));
 const Terms = lazy(() => import('@/views/Terms'));
-const Privacy = lazy(() => import('@/views/Privacy'));
+const Privacy = lazy(() => import("./views/Privacy"));
 const GlobalAdmin = lazy(() => import('@/views/GlobalAdmin'));
 const Landing = lazy(() => import("./views/Landing"));
 const Dashboard = lazy(() => import("./views/Dashboard"));
@@ -79,7 +79,7 @@ const ELitigation = lazy(() => import("./views/ELitigation"));
 const ExpertMissions = lazy(() => import("./views/ExpertMissions"));
 const TrustAccountsPage = lazy(() => import("./views/TrustAccountsPage"));
 const PaymentPlans = lazy(() => import("./views/PaymentPlans"));
-const FinancialDashboard = lazy(() => import("./views/FinancialDashboard"));
+const FinancialDashboard = lazy(() => import("@/views/FinancialDashboard"));
 
 function PermissionGate({ children, permission, fallback = <Navigate to="/dashboard" replace /> }: { children: React.ReactNode; permission: string; fallback?: React.ReactNode }) {
   const hasPermission = useAuthStore(state => state.hasPermission);

@@ -203,7 +203,21 @@ export async function deleteExpense(id: string): Promise<void> {
  * @returns {Promise<any[]>} قائمة المطالبات مع تفاصيل التحصيل والحسابات المتبقية
  * @throws {PostgrestError} عند حدوث خطأ في قاعدة البيانات
  */
-export async function fetchReceivables(): Promise<any[]> {
+export interface ReceivableData {
+  id: string;
+  client_id: string;
+  client_name: string;
+  total_amount: number;
+  collected_amount: number;
+  outstanding_amount: number;
+  status: string;
+  due_date: string;
+  description: string;
+  created_at: string;
+  case_id: string;
+}
+
+export async function fetchReceivables(): Promise<ReceivableData[]> {
   const orgId = requireOrgId();
   try {
     const { data, error } = await supabase
@@ -222,7 +236,7 @@ export async function fetchReceivables(): Promise<any[]> {
         collected_amount: collected,
         outstanding_amount: amount - collected,
       };
-    });
+    }) as ReceivableData[];
   } catch (error) {
     console.error("خطأ في جلب المطالبات:", error);
     return [];

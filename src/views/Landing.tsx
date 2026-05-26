@@ -1,5 +1,5 @@
 /* eslint-disable max-lines, max-lines-per-function */
-import React, { useState } from "react";
+import React from "react";
 import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,8 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { 
   Scale, ShieldCheck, Clock, Users, ArrowLeft, MessageCircle, 
   CheckCircle2, Star, Phone, Mail, MapPin, Briefcase, Building2, Gavel, FileText, TrendingUp,
-  Brain, Receipt, CalendarDays, Hammer, FileSignature, BarChart3, Bot, Globe, ListChecks, Banknote, Shield, Sparkles, Workflow, BookOpen,
-  User
+  Brain, Receipt, CalendarDays, Hammer, FileSignature, BarChart3, Bot, Globe, ListChecks, Banknote, Shield, Sparkles, Workflow, BookOpen
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -18,7 +17,6 @@ import { toast } from "sonner";
  */
 export default function Landing() {
   const navigate = useNavigate();
-  const [videoVersion, setVideoVersion] = useState<"male" | "female">("male");
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-navy-900 text-navy-900 dark:text-white font-sans selection:bg-primary-500/30 overflow-x-hidden">
@@ -98,93 +96,35 @@ export default function Landing() {
             </div>
 
             <div className="pt-16 flex flex-col items-center justify-center w-full">
-              <div className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3 flex items-center justify-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-primary-500 animate-pulse" />
-                اختر نسخة العرض التوضيحي:
-              </div>
-              
-              <div className="flex items-center justify-center gap-2 mb-8 bg-white dark:bg-navy-800/80 p-1.5 rounded-full border border-slate-200 dark:border-white/10 shadow-sm relative z-20">
-                <button
-                  type="button"
-                  onClick={() => setVideoVersion("male")}
-                  className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs md:text-sm font-black transition-all duration-300 ${
-                    videoVersion === "male"
-                      ? "bg-gradient-to-r from-primary-600 to-emerald-600 text-white shadow-md shadow-primary-500/20"
-                      : "text-slate-700 dark:text-slate-300 hover:text-primary-600 hover:bg-slate-50 dark:hover:bg-navy-700/50"
-                  }`}
-                >
-                  <User className="w-4 h-4 shrink-0" />
-                  المستشار (نسخة رجالية)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setVideoVersion("female")}
-                  className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs md:text-sm font-black transition-all duration-300 ${
-                    videoVersion === "female"
-                      ? "bg-gradient-to-r from-primary-600 to-emerald-600 text-white shadow-md shadow-primary-500/20"
-                      : "text-slate-700 dark:text-slate-300 hover:text-primary-600 hover:bg-slate-50 dark:hover:bg-navy-700/50"
-                  }`}
-                >
-                  <User className="w-4 h-4 shrink-0" />
-                  المستشارة (نسخة نسائية)
-                </button>
-              </div>
-
-              <motion.div
-                key={videoVersion}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4 }}
-                className="w-full flex justify-center"
+              <a 
+                href="https://app.heygen.com/videos/f2fd5c4f361a4036b3ce158cdb6291d3"
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="relative block w-full max-w-[600px] rounded-2xl md:rounded-[2rem] overflow-hidden shadow-2xl shadow-primary-500/20 border-4 md:border-[6px] border-white dark:border-navy-800 bg-gradient-to-br from-navy-900 to-slate-900 aspect-[4/3] md:aspect-video min-h-[200px] hover:scale-[1.02] hover:shadow-primary-500/40 transition-all duration-300 group"
               >
-                <a 
-                  href={
-                    videoVersion === "male"
-                      ? "https://app.heygen.com/videos/f2fd5c4f361a4036b3ce158cdb6291d3"
-                      : "https://app.heygen.com/videos/8dc83a38ae484418bbac75fd38674fe1"
-                  } 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="relative block w-full max-w-[600px] rounded-2xl md:rounded-[2rem] overflow-hidden shadow-2xl shadow-primary-500/20 border-4 md:border-[6px] border-white dark:border-navy-800 bg-gradient-to-br from-navy-900 to-slate-900 aspect-[4/3] md:aspect-video min-h-[200px] hover:scale-[1.02] hover:shadow-primary-500/40 transition-all duration-300 group"
-                >
-                  {videoVersion === "male" ? (
-                    <>
-                      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20"></div>
-                      <div className="absolute -top-10 -right-10 w-32 md:w-40 h-32 md:h-40 bg-primary-500 rounded-full mix-blend-screen filter blur-2xl md:blur-3xl opacity-50"></div>
-                      <div className="absolute -bottom-10 -left-10 w-32 md:w-40 h-32 md:h-40 bg-emerald-500 rounded-full mix-blend-screen filter blur-2xl md:blur-3xl opacity-50"></div>
-                    </>
-                  ) : (
-                    <>
-                      <div 
-                        className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105 bg-[url('https://resource2.heygen.ai/video/8dc83a38ae484418bbac75fd38674fe1/v18ef80c3651f410e90adfb5ba50ad885/gif.gif')]"
-                      ></div>
-                      <div className="absolute inset-0 bg-gradient-to-t from-navy-950/90 via-navy-950/60 to-transparent"></div>
-                      <div className="absolute inset-0 bg-navy-950/20 backdrop-blur-[1px]"></div>
-                    </>
-                  )}
-                  
-                  <div className="absolute inset-0 flex flex-col items-center justify-center p-4 md:p-6 text-center z-10">
-                    <div className="w-16 h-16 md:w-20 md:h-20 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center mb-4 md:mb-6 group-hover:bg-primary-600 transition-all duration-500 border border-white/20 shadow-xl group-hover:scale-110 group-hover:border-primary-500">
-                      <div className="w-0 h-0 border-y-[10px] md:border-y-[12px] border-y-transparent border-l-[14px] md:border-l-[18px] border-l-white ml-2"></div>
-                    </div>
-                    
-                    <span className="bg-primary-500/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-[10px] md:text-xs font-bold mb-2 shadow-sm flex items-center gap-1">
-                      <Sparkles className="w-3 h-3 text-amber-300 animate-pulse" />
-                      {videoVersion === "male" ? "بصوت المستشار الذكي" : "بصوت المستشارة الذكية"}
-                    </span>
-                    
-                    <h2 className="text-xl md:text-3xl font-black text-white mb-2 md:mb-3 px-2 drop-shadow-md">
-                      {videoVersion === "male" ? "مقدمة منصة مَلَف القانونية" : "تعريف مَلَف - النسخة النسائية"}
-                    </h2>
-                    
-                    <p className="text-primary-100/90 text-sm md:text-base font-medium max-w-sm px-4 drop-shadow-sm">
-                      {videoVersion === "male" 
-                        ? "انقر لمشاهدة العرض التوضيحي القصير وتعرف على مميزات النظام" 
-                        : "انقري لمشاهدة عرض المستشارة الذكية وتعرّفي على ميزات النظام للتطوير الفوري لمكتبك"}
-                    </p>
+                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20"></div>
+                <div className="absolute -top-10 -right-10 w-32 md:w-40 h-32 md:h-40 bg-primary-500 rounded-full mix-blend-screen filter blur-2xl md:blur-3xl opacity-50"></div>
+                <div className="absolute -bottom-10 -left-10 w-32 md:w-40 h-32 md:h-40 bg-emerald-500 rounded-full mix-blend-screen filter blur-2xl md:blur-3xl opacity-50"></div>
+                
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-4 md:p-6 text-center z-10">
+                  <div className="w-16 h-16 md:w-20 md:h-20 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center mb-4 md:mb-6 group-hover:bg-primary-600 transition-all duration-500 border border-white/20 shadow-xl group-hover:scale-110 group-hover:border-primary-500">
+                    <div className="w-0 h-0 border-y-[10px] md:border-y-[12px] border-y-transparent border-l-[14px] md:border-l-[18px] border-l-white ml-2"></div>
                   </div>
-                </a>
-              </motion.div>
+                  
+                  <span className="bg-primary-500/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-[10px] md:text-xs font-bold mb-2 shadow-sm flex items-center gap-1">
+                    <Sparkles className="w-3 h-3 text-amber-300 animate-pulse" />
+                    العرض التوضيحي السريع
+                  </span>
+                  
+                  <h2 className="text-xl md:text-3xl font-black text-white mb-2 md:mb-3 px-2 drop-shadow-md">
+                    مقدمة منصة مَلَف القانونية
+                  </h2>
+                  
+                  <p className="text-primary-100/90 text-sm md:text-base font-medium max-w-sm px-4 drop-shadow-sm">
+                    انقر لمشاهدة العرض التوضيحي السريع وتعرّف على ميزات النظام الأساسية
+                  </p>
+                </div>
+              </a>
             </div>
           </motion.div>
         </div>
@@ -411,6 +351,56 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Detailed Demonstration Section */}
+      <section className="py-20 bg-white dark:bg-navy-800 border-y border-slate-100 dark:border-white/5">
+        <div className="container mx-auto px-6 text-center">
+          <div className="max-w-3xl mx-auto space-y-6 mb-12">
+            <Badge className="bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400 border border-primary-100 dark:border-primary-800/30 px-4 py-1.5 text-xs md:text-sm font-medium">
+              شاهد العرض التفصيلي للميزات الذكية
+            </Badge>
+            <h2 className="text-3xl md:text-4xl font-bold text-navy-900 dark:text-white">
+              كيف تقوم منصة مَلَف بتطوير مكتبك؟
+            </h2>
+            <p className="text-slate-700 dark:text-slate-300">
+              تعرّف على أهم ميزات المنصة وكيف تساهم في تنظيم وإدارة القضايا والتوكيلات بكفاءة عالية.
+            </p>
+          </div>
+
+          <div className="w-full flex justify-center">
+            <a 
+              href="https://app.heygen.com/videos/8dc83a38ae484418bbac75fd38674fe1"
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="relative block w-full max-w-[600px] rounded-2xl md:rounded-[2rem] overflow-hidden shadow-2xl shadow-primary-500/20 border-4 md:border-[6px] border-white dark:border-navy-800 bg-gradient-to-br from-navy-900 to-slate-900 aspect-[4/3] md:aspect-video min-h-[200px] hover:scale-[1.02] hover:shadow-primary-500/40 transition-all duration-300 group"
+            >
+              <div 
+                className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105 bg-[url('https://resource2.heygen.ai/video/8dc83a38ae484418bbac75fd38674fe1/v18ef80c3651f410e90adfb5ba50ad885/gif.gif')]"
+              ></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-navy-950/90 via-navy-950/60 to-transparent"></div>
+              <div className="absolute inset-0 bg-navy-950/20 backdrop-blur-[1px]"></div>
+              
+              <div className="absolute inset-0 flex flex-col items-center justify-center p-4 md:p-6 text-center z-10">
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center mb-4 md:mb-6 group-hover:bg-primary-600 transition-all duration-500 border border-white/20 shadow-xl group-hover:scale-110 group-hover:border-primary-500">
+                  <div className="w-0 h-0 border-y-[10px] md:border-y-[12px] border-y-transparent border-l-[14px] md:border-l-[18px] border-l-white ml-2"></div>
+                </div>
+                
+                <span className="bg-primary-500/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-[10px] md:text-xs font-bold mb-2 shadow-sm flex items-center gap-1">
+                  <Sparkles className="w-3 h-3 text-amber-300 animate-pulse" />
+                  العرض الشامل للميزات
+                </span>
+                
+                <h2 className="text-xl md:text-3xl font-black text-white mb-2 md:mb-3 px-2 drop-shadow-md">
+                  دليل إدارة المكاتب والذكاء الاصطناعي
+                </h2>
+                
+                <p className="text-primary-100/90 text-sm md:text-base font-medium max-w-sm px-4 drop-shadow-sm">
+                  انقر لمشاهدة العرض التوضيحي الشامل وتعرّف على ميزات النظام للتطوير الفوري لمكتبك
+                </p>
+              </div>
+            </a>
+          </div>
+        </div>
+      </section>
 
       {/* Pricing Section */}
       <section id="pricing" className="py-24 bg-white dark:bg-navy-800">

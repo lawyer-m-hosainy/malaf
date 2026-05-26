@@ -229,12 +229,7 @@ export async function deleteExpense(id: string): Promise<void> {
 // ─── التحصيل والمطالبات (Receivables & Collections) ──────────────
 
 /**
- * جلب قائمة المطالبات المالية (الذمم المدينة) المستحقة للمكتب على الموكلين.
- * 
- * تقوم هذه الدالة بحساب المبالغ المتبقية (Outstanding) آلياً لكل مطالبة.
- * 
- * @returns {Promise<any[]>} قائمة المطالبات مع تفاصيل التحصيل والحسابات المتبقية
- * @throws {PostgrestError} عند حدوث خطأ في قاعدة البيانات
+ * واجهة تمثيل بيانات المطالبة المالية (الذمم المدينة) المستحقة للمكتب.
  */
 export interface ReceivableData {
   id: string;
@@ -250,6 +245,14 @@ export interface ReceivableData {
   case_id: string;
 }
 
+/**
+ * جلب قائمة المطالبات المالية (الذمم المدينة) المستحقة للمكتب على الموكلين.
+ * 
+ * تقوم هذه الدالة بحساب المبالغ المتبقية (Outstanding) آلياً لكل مطالبة.
+ * 
+ * @returns {Promise<ReceivableData[]>} قائمة المطالبات مع تفاصيل التحصيل والحسابات المتبقية
+ * @throws {PostgrestError} عند حدوث خطأ في قاعدة البيانات
+ */
 export async function fetchReceivables(): Promise<ReceivableData[]> {
   const orgId = requireOrgId();
   try {

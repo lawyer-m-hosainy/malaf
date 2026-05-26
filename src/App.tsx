@@ -6,7 +6,7 @@
  * @copyright (c) 2026. All rights reserved.
  */
 
-import React, { lazy, Suspense, useEffect } from "react";
+import React, { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 const RootLayout = lazy(() => import("./components/layout/RootLayout").then(m => ({ default: m.RootLayout })));
 import { ThemeProvider } from "next-themes";
@@ -18,7 +18,6 @@ import { Toaster } from "@/components/ui/sonner";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { AppDataLoader } from "@/components/AppDataLoader";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { seedDemoData } from "@/services/seedData";
 import { FullPageLoader } from "@/components/LoadingSpinner";
 
 const queryClient = new QueryClient();
@@ -85,6 +84,10 @@ function PermissionGate({ children, permission, fallback = <Navigate to="/dashbo
   return hasPermission(permission) ? <>{children}</> : <>{fallback}</>;
 }
 
+/**
+ * المكون الرئيسي لمنصة ملف (App).
+ * يقوم بتهيئة الموجه وموفرات السياق والتحقق من الصلاحيات والوصول للمسارات المختلفة.
+ */
 export default function App() {
   return (
     // @ts-ignore - next-themes version mismatch with React 19 types

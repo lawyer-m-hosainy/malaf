@@ -2,6 +2,10 @@ import { motion } from "motion/react";
 import { Card, CardContent } from "@/components/ui/card";
 import { ShieldCheck, Lock, Eye, RefreshCw, Trash2, Mail } from "lucide-react";
 
+/**
+ * صفحة سياسة الخصوصية لمنصة ملف (Privacy Policy).
+ * تعرض سياسة الخصوصية باللغتين العربية والإنجليزية وفقاً للقانون المصري رقم 151 لسنة 2020.
+ */
 export default function Privacy() {
   return (
     <motion.div 

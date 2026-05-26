@@ -292,38 +292,41 @@ export default function OnboardingFlow() {
                   <p className="text-sm text-slate-500 dark:text-slate-400 mb-4 text-center">
                     اختر الباقة المناسبة لمكتبك — جميع الباقات تبدأ بـ <span className="font-bold text-primary-600">14 يوم تجربة مجانية</span>
                   </p>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
                     {(Object.values(PLANS)).map((plan) => (
                       <button
                         key={plan.tier}
                         onClick={() => setData({ ...data, selectedPlan: plan.tier })}
                         className={cn(
-                          "p-5 rounded-xl border-2 text-start transition-all hover:shadow-lg relative",
+                          "p-6 rounded-2xl border-2 text-start transition-all hover:shadow-lg relative",
                           data.selectedPlan === plan.tier
-                            ? "border-primary-500 bg-primary-50 dark:bg-primary-900/20 shadow-lg"
-                            : "border-slate-200 dark:border-white/10 hover:border-primary-300"
+                            ? "border-primary-500 bg-primary-50/50 dark:bg-primary-900/10 shadow-lg"
+                            : "border-slate-200 dark:border-white/10 hover:border-primary-300 bg-white dark:bg-navy-800"
                         )}
                       >
                         {data.selectedPlan === plan.tier && (
-                          <div className="absolute -top-2 -end-2 w-6 h-6 bg-primary-500 rounded-full flex items-center justify-center">
+                          <div className="absolute -top-2 -end-2 w-6 h-6 bg-primary-500 rounded-full flex items-center justify-center shadow-md">
                             <CheckCircle2 className="w-4 h-4 text-white" />
                           </div>
                         )}
                         <div className="flex items-center justify-between mb-3">
-                          <span className="font-bold text-navy-900 dark:text-white">{plan.nameAr}</span>
-                          {plan.tier === 'advanced' && <Badge className="bg-accent-500 text-white text-[10px]">الأكثر طلباً</Badge>}
+                          <span className="font-bold text-navy-900 dark:text-white text-lg">{plan.nameAr}</span>
+                          {plan.tier === 'basic' && <Badge className="bg-primary-500 text-white text-[10px]">موصى به</Badge>}
+                          {plan.tier === 'enterprise' && <Badge className="bg-amber-600 text-white text-[10px]">للمؤسسات</Badge>}
                         </div>
-                        <p className="text-2xl font-bold text-primary-600 dark:text-primary-400">{plan.priceMonthly} <span className="text-xs font-normal text-slate-400">ج.م/شهر</span></p>
+                        <p className="text-2xl font-bold text-primary-600 dark:text-primary-400">
+                          {plan.priceMonthly} <span className="text-xs font-normal text-slate-400">ج.م/شهر</span>
+                        </p>
                         <ul className="mt-4 space-y-2">
                           {plan.features.slice(0, 4).map((f) => (
-                            <li key={f} className="text-xs text-slate-500 dark:text-slate-400 flex items-start gap-1.5">
+                            <li key={f} className="text-xs text-slate-600 dark:text-slate-350 flex items-start gap-1.5 leading-relaxed">
                               <CheckCircle2 size={12} className="text-primary-500 mt-0.5 shrink-0" />
-                              {f}
+                              <span>{f}</span>
                             </li>
                           ))}
                         </ul>
-                        <p className="text-[10px] text-slate-400 mt-3">
-                          {plan.maxUsers === -1 ? "مستخدمين غير محدود" : `حتى ${plan.maxUsers} مستخدمين`} · {plan.maxCases === -1 ? "قضايا غير محدودة" : `${plan.maxCases} قضية`}
+                        <p className="text-[10px] text-slate-400 mt-4 border-t border-dashed border-slate-200 dark:border-white/5 pt-2">
+                          {plan.maxUsers === -1 ? "مستخدمون غير محدودين" : `حتى ${plan.maxUsers} مستخدمين`} · {plan.maxCases === -1 ? "قضايا غير محدودة" : `${plan.maxCases} قضية`}
                         </p>
                       </button>
                     ))}

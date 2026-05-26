@@ -4,7 +4,7 @@
  * Provides a Facade for future Paymob/Fawry integration.
  */
 
-export type PlanTier = 'basic' | 'advanced' | 'enterprise';
+export type PlanTier = 'basic' | 'enterprise';
 
 export interface SubscriptionPlan {
   tier: PlanTier;
@@ -32,57 +32,38 @@ export interface TenantSubscription {
 export const PLANS: Record<PlanTier, SubscriptionPlan> = {
   basic: {
     tier: 'basic',
-    nameAr: 'الأساسية',
-    nameEn: 'Basic',
+    nameAr: 'Standard (الأساسية)',
+    nameEn: 'Standard',
     priceMonthly: 599,
     priceYearly: 5990,
     maxUsers: 5,
     maxCases: 50,
-    maxStorage: '5GB',
+    maxStorage: '10GB',
     features: [
-      'إدارة العملاء والقضايا',
-      'الفاتورة الإلكترونية المصرية (ETA)',
-      'التقويم والمواعيد',
-      'مساعد الذكاء الاصطناعي (محدود)'
-    ]
-  },
-  advanced: {
-    tier: 'advanced',
-    nameAr: 'المتقدمة',
-    nameEn: 'Advanced',
-    priceMonthly: 999,
-    priceYearly: 9990,
-    maxUsers: 20,
-    maxCases: 500,
-    maxStorage: '50GB',
-    features: [
-      'كل ميزات الأساسية',
-      'إدارة العقود (CLM)',
-      'نظام التحصيل',
-      'فحص تعارض المصالح',
-      'تتبع الوقت والفوترة',
-      'تقارير متقدمة',
-      'الإشعارات البريدية'
+      'إدارة الموكلين والقضايا والجلسات بالكامل',
+      'تكامل الفاتورة الإلكترونية المصرية (ETA)',
+      'التقويم والمواعيد التلقائية والتنبيهات القضائية',
+      'مساعد الذكاء الاصطناعي لتحليل العقود والمستندات',
+      'المالية وتتبع المصاريف والإيرادات بدقة',
+      'تشفير كامل للبيانات الحساسة وأمان بنكي'
     ]
   },
   enterprise: {
     tier: 'enterprise',
-    nameAr: 'المؤسسات',
-    nameEn: 'Enterprise',
-    priceMonthly: 1599,
-    priceYearly: 15990,
+    nameAr: 'White Label (منصة خاصة)',
+    nameEn: 'White Label',
+    priceMonthly: 1500, // 18000 / 12
+    priceYearly: 18000,
     maxUsers: -1, // Unlimited
     maxCases: -1, // Unlimited
-    maxStorage: '500GB',
+    maxStorage: '100GB',
     features: [
-      'كل ميزات المتقدمة',
-      'إدارة الامتثال (GRC)',
-      'لوحة الشريك والتقارير التنفيذية',
-      'بوابة العميل',
-      'الملكية الفكرية',
-      'المسارات المتخصصة',
-      'الدعم الفني ذو الأولوية',
-      'عدد غير محدود من المستخدمين والقضايا'
+      'كل ميزات باقة Standard بالكامل',
+      'نظام تشغيل كامل باسم مكتبك ودومينك الخاص',
+      'تطبيق كامل بهويتك وألوانك وشعارك الخاص',
+      'عدد غير محدود من المستخدمين والقضايا',
+      'عزل تام للبيانات وامتثال للقانون 151 لسنة 2020',
+      'صيانة وتحديثات مستمرة ودعم فني مخصص'
     ]
   }
 };

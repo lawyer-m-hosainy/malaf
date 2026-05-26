@@ -409,80 +409,53 @@ export default function Landing() {
             <Badge className="bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400 border-none px-4 py-1.5 text-sm mb-4">
               باقات الاشتراك
             </Badge>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">ابدأ مجاناً — وكبّر مع نمو مكتبك</h2>
-            <p className="text-slate-800 dark:text-slate-300 text-lg">أسعار شفافة بدون رسوم خفية. أقل من تكلفة كوب قهوة يومياً.</p>
+            <h2 className="text-3xl md:text-5xl font-black mb-4">أسعار شفافة لرقمنة وتطوير مكتبك</h2>
+            <p className="text-slate-800 dark:text-slate-300 text-lg">اختر الباقة المناسبة لحجم مكتبك. ميزات قانونية متكاملة مصممة للمحامي المصري.</p>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto items-stretch">
             {[
               {
-                name: "تجربة مجانية",
-                price: 0,
-                priceLabel: "مجاناً",
-                desc: "جرب المنصة بكامل ميزاتها لمدة أسبوع",
-                popular: false,
-                isCustom: false,
-                isFree: true,
-                features: [
-                  "تجربة كاملة للباقة المتقدمة",
-                  "موكلون وقضايا غير محدودة",
-                  "الذكاء الاصطناعي وبوت واتساب",
-                  "إدارة العقود والفواتير",
-                  "بدون بطاقة ائتمان",
-                ]
-              },
-              {
-                name: "الأساسية",
+                name: "Standard (الأساسية)",
                 price: 599,
                 priceLabel: "599",
-                desc: "للمحامي الفردي والمكاتب الناشئة",
-                popular: false,
-                isCustom: false,
-                isFree: false,
-                features: [
-                  "50 قضية",
-                  "الفاتورة الإلكترونية (ETA)",
-                  "التقويم والمواعيد",
-                  "مساعد AI محدود",
-                  "حتى 5 مستخدمين",
-                  "دعم بالبريد",
-                ]
-              },
-              {
-                name: "المتقدمة",
-                price: 999,
-                priceLabel: "999",
-                desc: "الأنسب للمكاتب المتنامية",
+                priceSub: "ج.م/شهرياً",
+                desc: "نظام تشغيل قانوني متكامل لمكتبك بالكامل",
                 popular: true,
-                isCustom: false,
-                isFree: false,
+                isWhiteLabel: false,
+                priceDayText: "يعادل 20 ج.م/يوم فقط (أقل من كوب قهوة)",
+                buttonText: "ابدأ تجربتك المجانية (14 يوم)",
+                onClick: () => navigate('/login'),
                 features: [
-                  "500 قضية",
-                  "إدارة العقود (CLM)",
-                  "التنفيذ القضائي",
-                  "نظام التحصيل الكامل",
-                  "AI غير محدود",
-                  "بوت واتساب الذكي",
-                  "حتى 20 مستخدم",
-                  "تقارير متقدمة",
+                  "حتى 5 مستخدمين للمكتب بالكامل (بدون دفع لكل مستخدم)",
+                  "إدارة كاملة للقضايا والموكلين والجلسات والتوكيلات",
+                  "تكامل تام مع منظومة الضرائب المصرية (ETA) والفاتورة الإلكترونية",
+                  "ذكاء اصطناعي مساعد لتحليل العقود واستخراج الثغرات في دقيقة",
+                  "أجندة إلكترونية وتنبيهات استباقية للجلسات ومواعيد الطعون",
+                  "تتبع دقيق للمالية والمصروفات وحساب الأتعاب المعلقة والمسددة",
+                  "تخزين سحابي مشفر وآمن (10GB) مع نسخ احتياطي يومي تلقائي",
+                  "دعم فني متواصل وحماية للبيانات متوافقة مع البنوك"
                 ]
               },
               {
-                name: "المؤسسات",
-                price: 1599,
-                priceLabel: "1599",
-                desc: "لشركات المحاماة والمكاتب الكبرى",
+                name: "White Label (منصة خاصة)",
+                price: 18000,
+                priceLabel: "18,000",
+                priceSub: "ج.م/سنوياً",
+                desc: "البرستيج والاحترافية والسيطرة على الهوية بالكامل أمام موكليك",
                 popular: false,
-                isCustom: false,
-                isFree: false,
+                isWhiteLabel: true,
+                priceDayText: "شامل الاستضافة والدعم التقني والتحديثات طوال العام",
+                buttonText: "احجز عرضاً توضيحياً خاصاً (Demo)",
+                onClick: () => window.open('https://wa.me/201141973834', '_blank'),
                 features: [
-                  "قضايا غير محدودة",
-                  "كل ميزات المتقدمة",
-                  "بوابة الموكلين الخاصة",
-                  "الملكية الفكرية",
-                  "إدارة الامتثال",
-                  "مستخدمين غير محدود",
-                  "دعم فني ذو أولوية",
-                  "تقارير تنفيذية",
+                  "كل ميزات باقة Standard بالكامل بدون أي قيود",
+                  "منصة مستقلة باسم مكتبك ودومينك الخاص (app.yourfirm.com)",
+                  "لوحة التحكم بهويتك البصرية واللوجو والألوان الخاصة بمكتبك",
+                  "مستخدمين ومحامين مساعدين وقضايا وموكلين غير محدودين",
+                  "عزل تام لقاعدة البيانات (Data Isolation) لضمان الخصوصية القصوى",
+                  "امتثال كامل للقانون 151 لسنة 2020 لحماية البيانات الشخصية",
+                  "دعم فني ذو أولوية قصوى بمكالمات مباشرة لحل أي معوقات فوراً",
+                  "تظهر المنصة للموكلين والشركات كأنك من قمت بتطويرها بالكامل"
                 ]
               }
             ].map((plan, i) => (
@@ -492,51 +465,62 @@ export default function Landing() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.12 }}
-                className={`relative p-7 rounded-3xl border-2 transition-all ${
-                  plan.popular
-                    ? "border-primary-500 bg-primary-50/50 dark:bg-primary-900/10 shadow-xl shadow-primary-500/10 scale-105 z-10"
-                    : "border-slate-100 dark:border-white/5 bg-white dark:bg-navy-800 hover:border-primary-200 dark:hover:border-primary-800/30"
+                className={`relative p-8 md:p-10 rounded-[2.5rem] border-2 transition-all flex flex-col justify-between ${
+                  plan.isWhiteLabel
+                    ? "border-amber-500/50 bg-gradient-to-b from-amber-50/20 to-white dark:from-amber-950/10 dark:to-navy-800 shadow-xl shadow-amber-500/5 hover:border-amber-500"
+                    : "border-primary-500 bg-gradient-to-b from-primary-50/20 to-white dark:from-primary-900/10 dark:to-navy-800 shadow-xl shadow-primary-500/10 scale-100 md:scale-[1.02] z-10"
                 }`}
               >
-                {plan.popular && (
+                {plan.popular && !plan.isWhiteLabel && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <Badge className="bg-primary-600 text-white px-4 py-1 text-xs font-bold shadow-lg">الأكثر طلباً</Badge>
+                    <Badge className="bg-primary-600 text-white px-5 py-1 text-xs font-bold shadow-lg rounded-full">الباقة القياسية المقترحة</Badge>
                   </div>
                 )}
-                <div className="text-center mb-6">
-                  <h3 className="text-xl font-bold text-navy-900 dark:text-white mb-2">{plan.name}</h3>
-                  <p className="text-sm text-slate-700 dark:text-slate-300 mb-4">{plan.desc}</p>
-                  <div className="flex items-baseline justify-center gap-1">
-                    <span className={`font-black text-navy-900 dark:text-white ${plan.isFree ? 'text-3xl' : 'text-5xl'}`}>{plan.priceLabel}</span>
-                    {!plan.isFree && <span className="text-sm text-slate-700 dark:text-slate-300 font-medium">ج.م/شهر</span>}
+                {plan.isWhiteLabel && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                    <Badge className="bg-amber-600 text-white px-5 py-1 text-xs font-bold shadow-lg rounded-full">لشركات المحاماة الكبرى</Badge>
                   </div>
-                  {!plan.isFree && <p className="text-[11px] text-primary-600 dark:text-primary-400 font-medium mt-1">= {Math.round(plan.price / 30)} ج.م/يوم فقط</p>}
+                )}
+                <div>
+                  <div className="text-center mb-8">
+                    <h3 className={`text-2xl font-black mb-2 ${plan.isWhiteLabel ? 'text-amber-600 dark:text-amber-400' : 'text-primary-600 dark:text-primary-400'}`}>
+                      {plan.name}
+                    </h3>
+                    <p className="text-sm text-slate-700 dark:text-slate-300 min-h-[40px] leading-relaxed mb-6">{plan.desc}</p>
+                    <div className="flex items-baseline justify-center gap-1">
+                      <span className="font-black text-5xl md:text-6xl text-navy-900 dark:text-white tracking-tight">{plan.priceLabel}</span>
+                      <span className="text-base text-slate-700 dark:text-slate-300 font-bold">{plan.priceSub}</span>
+                    </div>
+                    <p className={`text-xs font-semibold mt-2 px-3 py-1 rounded-full inline-block ${plan.isWhiteLabel ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300' : 'bg-primary-50 text-primary-700 dark:bg-primary-950/40 dark:text-primary-300'}`}>
+                      {plan.priceDayText}
+                    </p>
+                  </div>
+                  <ul className="space-y-4 mb-10">
+                    {plan.features.map((f, j) => (
+                      <li key={j} className="flex items-start gap-3 text-sm text-slate-800 dark:text-slate-200">
+                        <CheckCircle2 className={`w-5 h-5 shrink-0 mt-0.5 ${plan.isWhiteLabel ? 'text-amber-500' : 'text-primary-500'}`} />
+                        <span className="leading-relaxed">{f}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <ul className="space-y-3 mb-8">
-                  {plan.features.map((f, j) => (
-                    <li key={j} className="flex items-center gap-2 text-sm text-slate-800 dark:text-slate-200">
-                      <CheckCircle2 className="w-4 h-4 text-primary-500 shrink-0" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
                 <Button
-                  onClick={() => navigate('/login')}
-                  aria-label={`${plan.isFree ? 'ابدأ مجاناً — باقة التجربة المجانية لمدة أسبوع' : `ابدأ الآن — اشترك في باقة ${plan.name}`}`}
-                  className={`w-full py-5 rounded-xl font-bold transition-all ${
-                    plan.popular
-                      ? "bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-500/20"
-                      : plan.isFree
-                        ? "bg-slate-100 dark:bg-white/5 hover:bg-primary-600 hover:text-white text-navy-900 dark:text-white"
-                        : "bg-slate-100 dark:bg-white/5 hover:bg-primary-600 hover:text-white text-navy-900 dark:text-white"
+                  onClick={plan.onClick}
+                  aria-label={plan.buttonText}
+                  className={`w-full py-6 rounded-2xl font-bold text-base transition-all ${
+                    plan.isWhiteLabel
+                      ? "bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white shadow-lg shadow-amber-500/20 hover:scale-[1.02]"
+                      : "bg-gradient-to-r from-primary-600 to-emerald-600 hover:from-primary-700 hover:to-emerald-700 text-white shadow-lg shadow-primary-500/20 hover:scale-[1.02]"
                   }`}
                 >
-                  {plan.isFree ? 'ابدأ مجاناً' : 'ابدأ الآن'}
+                  {plan.buttonText}
                 </Button>
               </motion.div>
             ))}
           </div>
-          <p className="text-center text-sm text-slate-700 dark:text-slate-300 mt-8">جميع الأسعار بالجنيه المصري وتشمل ضريبة القيمة المضافة. خصم 20% على الاشتراك السنوي.</p>
+          <p className="text-center text-xs text-slate-500 dark:text-slate-400 mt-10 leading-relaxed max-w-md mx-auto">
+            جميع الأسعار بالجنيه المصري. باقة Standard تمنحك تجربة مجانية بالكامل لمدة 14 يوماً بدون الحاجة لإدخال أي بطاقة ائتمان.
+          </p>
         </div>
       </section>
 

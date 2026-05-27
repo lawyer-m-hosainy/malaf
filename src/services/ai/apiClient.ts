@@ -1,8 +1,5 @@
 /**
  * AI API Client — يستدعي Supabase Edge Functions.
- * 
- * بدلاً من استدعاء /api/ai/* (خادم غير موجود)،
- * يستدعي Supabase Edge Function "legal-assistant" مباشرةً.
  */
 import { supabase } from "@/lib/supabase";
 
@@ -12,17 +9,26 @@ export interface ApiResponse {
   isFallback?: boolean;
 }
 
+/**
+ * استدعاء الدالة السحابية لخدمة الذكاء الاصطناعي.
+ * 
+ * @template T - نوع البيانات المرسلة للـ API
+ * @param {string} path - المسار القديم ليتم تعيينه لإجراء
+ * @param {T} payload - محتوى الطلب
+ * @returns {Promise<ApiResponse>} الرد المولد من الذكاء الاصطناعي
+ */
 export async function callAiApi<T extends Record<string, unknown>>(
   path: string,
   payload: T
 ): Promise<ApiResponse> {
-  const { data: { session } } = await supabase.auth.getSession();
+  const sessionResult = await supabase.auth.getSession();
+  const sessionData = sessionResult.data.session;
 
-  if (!session?.access_token) {
+  if (!sessionData) {
     throw new Error("UNAUTHORIZED");
   }
 
-  // Map old paths to Edge Function action
+  // استخدام شروط صريحة وبسيطة لتقليل تعقيد الدالة
   let action = "chat";
   if (path.includes("analyze")) {
     action = "analyze";
@@ -30,19 +36,30 @@ export async function callAiApi<T extends Record<string, unknown>>(
     action = "draft";
   }
 
-  // Call Supabase Edge Function
+  // Call Supabase Edge Function directly
   const { data, error } = await supabase.functions.invoke("legal-assistant", {
     body: { action, ...payload },
   });
 
   if (error) {
     console.error("Edge Function error:", error);
-    throw new Error("AI_REQUEST_FAILED");
+    throw error;
   }
 
+  if (!data) {
+    throw new Error("NO_DATA_RECEIVED");
+  }
+
+  if (data.error) {
+    throw new Error(data.error);
+  }
+
+  const resText = data.text;
+  const resProvider = data.provider;
+
   return {
-    text: data?.text || "",
-    provider: data?.provider,
-    isFallback: data?.isFallback ?? true,
+    text: resText ? resText : "",
+    provider: resProvider ? resProvider : "gemini",
+    isFallback: false,
   };
 }

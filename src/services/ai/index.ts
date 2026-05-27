@@ -1,28 +1,8 @@
 /**
  * AI Service - الواجهة الرئيسية للذكاء الاصطناعي في التطبيق.
- * 
- * الهيكل:
- *   ai/
- *   ├── index.ts          ← أنت هنا (الواجهة العامة)
- *   ├── apiClient.ts      ← الاتصال بالخادم (Backend)
- *   └── mockResponses.ts  ← ردود احتياطية تعمل بدون خادم
- * 
- * كيف يعمل:
- *   1. يحاول الاتصال بالخادم (Backend) أولاً.
- *   2. إذا فشل (لا يوجد خادم أو لا يوجد مفتاح API) ← يُرجع رداً محلياً ذكياً.
- *   3. المستخدم لا يرى أي فرق — النظام يعمل دائماً.
- * 
- * للمستثمر:
- *   - لترقية الـ AI: فقط أضف GEMINI_API_KEY في إعدادات Render وشغّل الخادم.
- *   - لتغيير مزود الـ AI: عدّل apiClient.ts فقط.
  */
 
 import { callAiApi } from "./apiClient";
-import {
-  getMockAssistantResponse,
-  getMockDraftResponse,
-  getMockAnalyzeResponse,
-} from "./mockResponses";
 import { EGYPTIAN_LEGAL_TEMPLATES, AI_DISCLAIMER } from "./templates";
 import { useUIStore } from "../../store/useUIStore";
 import { sanitizeUserInput, sanitizeData } from "./prompt-sanitizer";
@@ -42,57 +22,12 @@ export interface DocumentContext {
 }
 
 /**
- * دالة ذكية لإدارة توليد المستندات مع نظام Fallback متعدد الطبقات وفحص الجودة
+ * استدعاء المساعد القانوني التفاعلي للحصول على ردود استشارية ذكية.
+ * 
+ * @param {string} userMessage - رسالة المستخدم/المحامي
+ * @param {any[]} history - سجل المحادثة السابقة
+ * @returns {Promise<string>} الرد القانوني المولد
  */
-async function smartGenerate(
-  type: string,
-  prompt: string,
-  context: Record<string, any> = {}
-): Promise<{ text: string; provider: string; quality?: any }> {
-  const FALLBACK_CHAIN = [
-    { name: 'primary_api', path: '/api/ai/generate', timeout: 15000 },
-    { name: 'secondary_api', path: '/api/ai/draft', timeout: 10000 },
-    { name: 'mock_fallback', path: null, timeout: 0 }
-  ];
-
-  const sanitizedPrompt = sanitizeUserInput(prompt);
-  const sanitizedContext = sanitizeData(context);
-
-  for (const provider of FALLBACK_CHAIN) {
-    try {
-      if (!provider.path) break; // الانتقال للمحاكاة (Mock)
-
-      const result = await Promise.race([
-        callAiApi(provider.path, { type, prompt: sanitizedPrompt, context: sanitizedContext }),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), provider.timeout))
-      ]) as any;
-
-      if (result && result.text) {
-        // فحص الجودة (اختياري حسب نوع المستند)
-        if (type !== 'chat') {
-          const quality = await checkDocumentQuality({
-            documentType: type,
-            generatedText: result.text,
-            sourceData: sanitizedContext
-          });
-          
-          if (quality.safe_to_use || quality.overall_score > 70) {
-            return { text: result.text, provider: provider.name, quality };
-          }
-          console.warn(`Quality too low for ${provider.name}, trying next...`);
-        } else {
-          return { text: result.text, provider: provider.name };
-        }
-      }
-    } catch (error) {
-      console.warn(`Provider ${provider.name} failed:`, error);
-    }
-  }
-
-  // الملاذ الأخير: المحاكاة الذكية
-  return { text: "", provider: 'mock' };
-}
-
 export async function getLegalAssistantResponse(
   userMessage: string,
   history: any[] = []
@@ -100,86 +35,168 @@ export async function getLegalAssistantResponse(
   const sanitizedMessage = sanitizeUserInput(userMessage);
   try {
     const result = await callAiApi("/api/ai/legal-assistant", { userMessage: sanitizedMessage, history });
-    if (result.isFallback) {
-      useUIStore.getState().setAiFallback(true);
-    } else {
-      useUIStore.getState().setAiFallback(false);
-    }
-    return result.text || getMockAssistantResponse(sanitizedMessage);
-  } catch (error) {
-    console.warn("AI Backend unavailable → using local response", error);
+    useUIStore.getState().setAiFallback(false);
+    return result.text;
+  } catch (error: any) {
+    console.error("AI Backend error:", error);
     useUIStore.getState().setAiFallback(true);
-    return getMockAssistantResponse(sanitizedMessage);
+    throw new Error(error.message || "عذراً، حدث خطأ في الاتصال بالذكاء الاصطناعي. يرجى المحاولة مرة أخرى.");
   }
 }
 
+/**
+ * الحصول على خارطة بالاستبدالات القانونية بناءً على سياق القضية.
+ * 
+ * @param {Record<string, string>} merged - سياق القضية المدمج بالقيم الافتراضية
+ * @param {string} aiContent - المحتوى المولد بالذكاء الاصطناعي
+ * @returns {Record<string, string>} خارطة الاستبدالات
+ */
+function getReplacementsMap(
+  merged: Record<string, string>,
+  aiContent: string
+): Record<string, string> {
+  const opponent = merged.opponentName === "_________" ? merged.defendantName : merged.opponentName;
+  const factsArr = aiContent.split("الدفاع");
+  const factsText = factsArr[0];
+  const factsVal = factsText ? factsText : aiContent;
+  
+  const legalText = factsArr[1];
+  const legalVal = legalText ? legalText : "يترك للمرافعة الشفوية.";
+
+  return {
+    "{{CLIENT_NAME}}": merged.clientName,
+    "{{CLIENT_NATIONAL_ID}}": merged.clientNationalId,
+    "{{DEFENDANT_NAME}}": merged.defendantName,
+    "{{OPPONENT_NAME}}": opponent,
+    "{{COURT_NAME}}": merged.courtName,
+    "{{CASE_NUMBER}}": merged.caseNumber,
+    "{{CASE_YEAR}}": merged.caseYear,
+    "{{POA_REF}}": merged.poaRef,
+    "{{CLIENT_ROLE}}": merged.clientRole,
+    "{{OPPONENT_ROLE}}": merged.opponentRole,
+    "{{FACTS_AND_ARGUMENTS}}": aiContent,
+    "{{FACTS}}": factsVal,
+    "{{LEGAL_ARGUMENTS}}": legalVal,
+  };
+}
+
+/**
+ * تطبيق استبدال الحقول البرمجية داخل بنية المستند القانوني.
+ * 
+ * @param {string} structure - البنية الأساسية للنموذج
+ * @param {string} aiContent - المحتوى المولد بالذكاء الاصطناعي
+ * @param {DocumentContext} context - سياق القضية والموكل
+ * @returns {string} النموذج بعد استبدال الحقول
+ */
+function applyTemplateReplacements(
+  structure: string,
+  aiContent: string,
+  context: DocumentContext
+): string {
+  const defaultContext: Record<string, string> = {
+    clientName: "_________",
+    clientNationalId: "_________",
+    defendantName: "_________",
+    opponentName: "_________",
+    courtName: "_________",
+    caseNumber: "_________",
+    caseYear: "2024",
+    poaRef: "_________",
+    clientRole: "المدعي",
+    opponentRole: "المدعى عليه",
+  };
+
+  const cleanContext: Record<string, string> = {};
+  const entries = Object.entries(context);
+  for (let i = 0; i < entries.length; i++) {
+    const entry = entries[i];
+    const key = entry[0];
+    const val = entry[1];
+    if (val !== undefined && val !== null) {
+      cleanContext[key] = val;
+    }
+  }
+
+  const merged = { ...defaultContext, ...cleanContext };
+  const replacements = getReplacementsMap(merged, aiContent);
+
+  let filled = structure;
+  const replacementEntries = Object.entries(replacements);
+  for (let j = 0; j < replacementEntries.length; j++) {
+    const item = replacementEntries[j];
+    filled = filled.replaceAll(item[0], item[1]);
+  }
+
+  return filled;
+}
+
+/**
+ * صياغة مسودة وثيقة قانونية جديدة بالاعتماد على الذكاء الاصطناعي ومراقبة الجودة.
+ * 
+ * @param {string} templateId - معرف النموذج المراد صياغته
+ * @param {string} facts - الوقائع المدخلة من المحامي
+ * @param {DocumentContext} context - سياق المستند والمعلومات الحقيقية
+ * @returns {Promise<string>} نص العقد النهائي المصاغ والمعدل
+ */
 export async function draftLegalDocument(
   templateId: string,
   facts: string,
   context: DocumentContext = {}
 ): Promise<string> {
   const template = EGYPTIAN_LEGAL_TEMPLATES.find(t => t.id === templateId);
-  if (!template) throw new Error("Template not found");
+  if (!template) {
+    throw new Error("Template not found");
+  }
+
+  const sanitizedFacts = sanitizeUserInput(facts);
+  const sanitizedContext = sanitizeData(context);
 
   try {
-    // استخدام المنطق الذكي للتوليد مع نظام Fallback وفحص الجودة
-    const result = await smartGenerate(template.name, facts, context as any);
+    const result = await callAiApi("/api/ai/draft", {
+      type: template.name,
+      prompt: sanitizedFacts,
+      context: sanitizedContext
+    });
     
-    if (result.provider === 'mock') {
-      useUIStore.getState().setAiFallback(true);
-      return getMockDraftResponse(template.name, facts);
+    useUIStore.getState().setAiFallback(false);
+    const aiContent = result.text;
+
+    // Quality check
+    const quality = await checkDocumentQuality({
+      documentType: template.name,
+      generatedText: aiContent,
+      sourceData: sanitizedContext
+    });
+    if (!quality.safe_to_use && quality.overall_score < 50) {
+      console.warn("Quality of generated document is low:", quality);
     }
 
-    useUIStore.getState().setAiFallback(false);
-    const aiContent = result.text || facts;
-
-    // 2. Auto-fill template
-    let filledTemplate = template.structure;
-    
-    const replacements: Record<string, string> = {
-      "{{CLIENT_NAME}}": context.clientName || "_________",
-      "{{CLIENT_NATIONAL_ID}}": context.clientNationalId || "_________",
-      "{{DEFENDANT_NAME}}": context.defendantName || "_________",
-      "{{OPPONENT_NAME}}": context.opponentName || context.defendantName || "_________",
-      "{{COURT_NAME}}": context.courtName || "_________",
-      "{{CASE_NUMBER}}": context.caseNumber || "_________",
-      "{{CASE_YEAR}}": context.caseYear || "2024",
-      "{{POA_REF}}": context.poaRef || "_________",
-      "{{CLIENT_ROLE}}": context.clientRole || "المدعي",
-      "{{OPPONENT_ROLE}}": context.opponentRole || "المدعى عليه",
-      "{{FACTS_AND_ARGUMENTS}}": aiContent,
-      "{{FACTS}}": aiContent.split("الدفاع")[0] || aiContent,
-      "{{LEGAL_ARGUMENTS}}": aiContent.split("الدفاع")[1] || "يترك للمرافعة الشفوية.",
-    };
-
-    Object.entries(replacements).forEach(([placeholder, value]) => {
-      filledTemplate = filledTemplate.replaceAll(placeholder, value);
-    });
-
-    // 3. Add Disclaimer
+    const filledTemplate = applyTemplateReplacements(template.structure, aiContent, context);
     return `${filledTemplate}\n\n---\n${AI_DISCLAIMER}`;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Drafting Error:", error);
     useUIStore.getState().setAiFallback(true);
-    return getMockDraftResponse(templateId, facts);
+    throw new Error(error.message || "عذراً، حدث خطأ في الاتصال بالذكاء الاصطناعي. يرجى المحاولة مرة أخرى.");
   }
 }
 
-
+/**
+ * تحليل وثيقة قانونية لاستخراج نقاط القوة والضعف والمخاطر.
+ * 
+ * @param {string} content - نص الوثيقة المراد تحليلها
+ * @returns {Promise<string>} نتيجة التحليل المفصلة
+ */
 export async function analyzeLegalDocument(
   content: string
 ): Promise<string> {
+  const sanitizedContent = sanitizeUserInput(content);
   try {
-    const result = await callAiApi("/api/ai/analyze", { content });
-    if (result.isFallback) {
-      useUIStore.getState().setAiFallback(true);
-    } else {
-      useUIStore.getState().setAiFallback(false);
-    }
-    return result.text || getMockAnalyzeResponse(content);
-  } catch (error) {
-    console.warn("AI Backend unavailable → using local analysis", error);
+    const result = await callAiApi("/api/ai/analyze", { content: sanitizedContent });
+    useUIStore.getState().setAiFallback(false);
+    return result.text;
+  } catch (error: any) {
+    console.error("AI Analysis error:", error);
     useUIStore.getState().setAiFallback(true);
-    return getMockAnalyzeResponse(content);
+    throw new Error(error.message || "عذراً، حدث خطأ في الاتصال بالذكاء الاصطناعي. يرجى المحاولة مرة أخرى.");
   }
 }

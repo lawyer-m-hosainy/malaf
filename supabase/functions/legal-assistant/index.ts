@@ -6,17 +6,20 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const SYSTEM_PROMPT = `أنت مستشار قانوني مصري متخصص وذو خبرة واسعة في القانون المصري. اسمك "مَلَف AI".
+const SYSTEM_PROMPT = `أنت مساعد قانوني ذكي متخصص في القانون المصري. تعمل داخل منصة "مَلَف" لإدارة مكاتب المحامين.
+مهامك:
 
-القواعد الأساسية:
-1. أجب باللغة العربية الفصحى القانونية.
-2. استند دائماً للقوانين المصرية الحقيقية (القانون المدني، قانون المرافعات، قانون العمل، قانون الأحوال الشخصية، إلخ).
-3. اذكر أرقام المواد القانونية عند الإمكان.
-4. قدم إجابات عملية وقابلة للتنفيذ.
-5. لا تقدم نفسك كبديل عن المحامي الحقيقي — وضّح أن هذه استشارة أولية.
-6. نسّق إجابتك بعناوين واضحة ونقاط مرقمة.
-7. إذا لم تكن متأكداً من معلومة، قل ذلك صراحةً.
-8. لا تختلق قوانين أو مواد غير موجودة.`;
+تحليل المستندات القانونية واستخراج النقاط الجوهرية
+صياغة العقود والمذكرات القانونية بالعربية الفصحى
+الإجابة على الاستفسارات القانونية بناءً على القانون المصري
+مساعدة المحامي في إدارة قضاياه
+
+قواعد صارمة:
+
+استخدم اللغة العربية الفصحى دائماً
+استند إلى القانون المصري فقط
+لا تقدم فتاوى قانونية نهائية، دائماً أوصِ بمراجعة المحامي المسؤول
+كن دقيقاً ومختصراً ومهنياً`;
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -55,14 +58,16 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json().catch(() => ({}));
-    const { action, userMessage, history, content } = body;
+    const { action, userMessage, content } = body;
 
     const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
     if (!geminiApiKey) {
-      // Fallback: return structured response without Gemini
       return new Response(
-        JSON.stringify({ text: '', isFallback: true, provider: 'none' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({
+          text: "عذراً، حدث خطأ في الاتصال بالذكاء الاصطناعي. يرجى المحاولة مرة أخرى.",
+          error: "Gemini API key is not configured"
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
       );
     }
 
@@ -76,30 +81,10 @@ Deno.serve(async (req) => {
       systemInstruction += '\n\nالمهمة: صِغ وثيقة قانونية احترافية بناءً على الوقائع المقدمة.';
       prompt = userMessage || content;
     } else {
-      // legal-assistant (chat)
       prompt = userMessage;
     }
 
-    // Build messages for Gemini
-    const messages: any[] = [];
-    
-    // Add history if available
-    if (history && Array.isArray(history)) {
-      for (const msg of history.slice(-10)) { // Last 10 messages max
-        messages.push({
-          role: msg.role === 'assistant' ? 'model' : 'user',
-          parts: [{ text: msg.content }]
-        });
-      }
-    }
-    
-    // Add current message
-    messages.push({
-      role: 'user',
-      parts: [{ text: prompt }]
-    });
-
-    // Call Gemini API
+    // Call Gemini API using exact structure and gemini-2.0-flash model
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`;
 
     const geminiResponse = await fetch(geminiUrl, {
@@ -109,18 +94,12 @@ Deno.serve(async (req) => {
         system_instruction: {
           parts: [{ text: systemInstruction }]
         },
-        contents: messages,
-        generationConfig: {
-          temperature: 0.4,
-          maxOutputTokens: 4096,
-          topP: 0.95,
-        },
-        safetySettings: [
-          { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
-          { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
-          { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
-          { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
+        contents: [
+          { role: "user", parts: [{ text: prompt }] }
         ],
+        generationConfig: {
+          temperature: 0.3
+        }
       }),
     });
 
@@ -128,13 +107,20 @@ Deno.serve(async (req) => {
       const errorBody = await geminiResponse.text();
       console.error('Gemini API Error:', geminiResponse.status, errorBody);
       return new Response(
-        JSON.stringify({ text: '', isFallback: true, provider: 'gemini-error', error: errorBody }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({
+          text: "عذراً، حدث خطأ في الاتصال بالذكاء الاصطناعي. يرجى المحاولة مرة أخرى.",
+          error: errorBody
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
       );
     }
 
     const geminiData = await geminiResponse.json();
-    const responseText = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const responseText = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!responseText) {
+      throw new Error("No response text in Gemini response");
+    }
 
     return new Response(
       JSON.stringify({ text: responseText, isFallback: false, provider: 'gemini' }),
@@ -144,7 +130,10 @@ Deno.serve(async (req) => {
   } catch (error: any) {
     console.error('Edge Function Error:', error);
     return new Response(
-      JSON.stringify({ error: error.message, text: '', isFallback: true }),
+      JSON.stringify({
+        text: "عذراً، حدث خطأ في الاتصال بالذكاء الاصطناعي. يرجى المحاولة مرة أخرى.",
+        error: error.message
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }

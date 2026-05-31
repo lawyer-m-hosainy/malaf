@@ -4,32 +4,11 @@ import { clientSchema } from "@/lib/schemas";
 import { ZodError } from "zod";
 import { toast } from "sonner";
 import { useEffect } from "react";
-import { fetchClients, fetchClientsPaginated, saveClient } from "@/services/legalDataService";
+import { fetchClientsPaginated, saveClient, deleteClient as deleteClientService } from "@/services/clientService";
 
 
 /**
  * Hook لإدارة حالة ومنطق صفحة الموكلين (Clients) مع دعم التصفح المرقم والبحث والتصفية.
- * 
- * يوفر هذا الـ Hook واجهة متكاملة للتعامل مع الموكلين تشمل:
- * - جلب البيانات بشكل مرقم (Paginated Fetching)
- * - البحث والفلترة المحلية
- * - إدارة نموذج الإضافة والتعديل (Form Management)
- * - التحقق من صحة البيانات باستخدام Zod
- * - منع تكرار الموكلين بناءً على الرقم القومي أو السجل التجاري
- * 
- * @returns {object} كائن يحتوي على الحالات (States) والعمليات (Actions) التالية:
- *   - `clients`: قائمة كافة الموكلين المحملة في الذاكرة
- *   - `filteredClients`: قائمة الموكلين بعد تطبيق البحث والفلترة
- *   - `currentClients`: قائمة الموكلين للصفحة الحالية فقط
- *   - `searchQuery`: نص البحث الحالي
- *   - `filterType`: نوع الفلترة المطبق (فرد/منشأة)
- *   - `currentPage`: رقم الصفحة الحالية
- *   - `totalPages`: إجمالي عدد الصفحات المتاحة
- *   - `isOpen`: حالة ظهور نافذة الإضافة/التعديل
- *   - `formData`: بيانات النموذج الحالي
- *   - `handleSubmit`: معالج إرسال النموذج مع التشفير والتحقق
- *   - `handleEditClick`: دالة لتجهيز النموذج لتعديل موكل معين
- *   - `handleDeleteClick`: دالة لحذف موكل ناعماً مع تأكيد
  */
 export function useClientsLogic() {
   const clients = useClientsStore(state => state.clients);
@@ -118,22 +97,11 @@ export function useClientsLogic() {
 
   const handleDeleteClick = useCallback((id: string) => {
     if (confirm("هل أنت متأكد من حذف هذا العميل؟")) {
+      deleteClientService(id);
       deleteClient(id);
       toast.success("تم حذف العميل بنجاح");
     }
   }, [deleteClient]);
-
-  const formatClientData = useCallback((data: typeof formData) => {
-    const cleanPhone = data.phone.trim().replace(/\s+/g, '');
-    return {
-      ...data,
-      name: data.name.trim(),
-      phone: cleanPhone.startsWith('01') ? `+20${cleanPhone.substring(1)}` : cleanPhone,
-      nationalId: data.nationalId.trim(),
-      commercialRegistration: data.commercialRegistration.trim(),
-      vatNumber: data.vatNumber.trim(),
-    };
-  }, []);
 
   const checkDuplicate = useCallback((validated: any) => {
     return clients.some(c => 
@@ -146,7 +114,7 @@ export function useClientsLogic() {
     e.preventDefault();
     
     try {
-      const formattedData = formatClientData(formData);
+      const formattedData = { ...formData };
       const validated = clientSchema.parse(formattedData);
       
       if (editingClientId) {
@@ -155,9 +123,7 @@ export function useClientsLogic() {
         toast.success("تم تحديث بيانات العميل بنجاح");
       } else {
         if (checkDuplicate(validated)) {
-          toast.error("هذا العميل مسجل بالفعل (يوجد تطابق في الرقم القومي أو السجل التجاري)", {
-            description: "يرجى التأكد من البيانات أو البحث عن العميل في القائمة."
-          });
+          toast.error("هذا العميل مسجل بالفعل");
           return;
         }
 
@@ -174,7 +140,7 @@ export function useClientsLogic() {
       const message = error instanceof ZodError ? error.issues[0].message : "حدث خطأ أثناء حفظ البيانات";
       toast.error(message);
     }
-  }, [formData, editingClientId, updateClient, addClient, resetForm, formatClientData, checkDuplicate]);
+  }, [formData, editingClientId, updateClient, addClient, resetForm, checkDuplicate]);
 
   const openNewClientDialog = useCallback(() => {
     resetForm();
@@ -182,7 +148,6 @@ export function useClientsLogic() {
   }, [resetForm]);
 
   return {
-    // State
     clients,
     filteredClients,
     currentClients,
@@ -193,13 +158,11 @@ export function useClientsLogic() {
     isOpen,
     editingClientId,
     formData,
-    // Setters
     setSearchQuery,
     setFilterType,
     setCurrentPage,
     setIsOpen,
     setFormData,
-    // Actions
     handleEditClick,
     handleDeleteClick,
     handleSubmit,

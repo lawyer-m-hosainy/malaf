@@ -27,7 +27,3 @@ CREATE POLICY "organizations_update"
         id = public.get_user_org_id()
         OR public.is_super_admin()
     );
-
--- 3. التأكد من منح الصلاحيات على الجداول
-GRANT ALL ON SEQUENCE public.payment_installments_id_seq TO authenticated;
-GRANT ALL ON SEQUENCE public.payment_plans_id_seq TO authenticated;

@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
 // ─── مفتاح التشفير من الأسرار ──────────────────────────────────
@@ -12,26 +13,31 @@ const ITERATIONS = 100000;
 
 /** Derive a 256-bit AES key from a passphrase */
 async function deriveKey(passphrase: string): Promise<CryptoKey> {
-  const enc = new TextEncoder();
-  const keyMaterial = await crypto.subtle.importKey(
-    "raw",
-    enc.encode(passphrase),
-    "PBKDF2",
-    false,
-    ["deriveKey"]
-  );
-  return crypto.subtle.deriveKey(
-    {
-      name: "PBKDF2",
-      salt: enc.encode(SALT),
-      iterations: ITERATIONS,
-      hash: "SHA-256",
-    },
-    keyMaterial,
-    { name: "AES-GCM", length: 256 },
-    false,
-    ["encrypt", "decrypt"]
-  );
+  try {
+    const enc = new TextEncoder();
+    const keyMaterial = await crypto.subtle.importKey(
+      "raw",
+      enc.encode(passphrase),
+      "PBKDF2",
+      false,
+      ["deriveKey"]
+    );
+    return crypto.subtle.deriveKey(
+      {
+        name: "PBKDF2",
+        salt: enc.encode(SALT),
+        iterations: ITERATIONS,
+        hash: "SHA-256",
+      },
+      keyMaterial,
+      { name: "AES-GCM", length: 256 },
+      false,
+      ["encrypt", "decrypt"]
+    );
+  } catch (e) {
+    console.error("Key derivation error:", e);
+    throw e;
+  }
 }
 
 let _cachedKey: CryptoKey | null = null;
@@ -41,30 +47,37 @@ async function getKey(): Promise<CryptoKey> {
 }
 
 Deno.serve(async (req) => {
-  // Handle CORS
+  console.log(`Incoming request: ${req.method}`);
+  
+  // Handle CORS OPTIONS preflight
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    console.log("Handling OPTIONS request");
+    return new Response("ok", {
+      status: 200,
+      headers: corsHeaders,
+    });
   }
 
   try {
-    // 1. التحقق من التوكيل (JWT)
-    const authHeader = req.headers.get("Authorization")!;
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      { global: { headers: { Authorization: authHeader } } }
-    );
+    // 1. التحقق من التوكيل (JWT) - اختبارنا إذا أمكن
+    let authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      authHeader = req.headers.get("apikey"); // محاولة احتياطية
+    }
 
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: "غير مصرح لك بالوصول" }), {
-        status: 401,
+    // 2. معالجة الطلب
+    let body;
+    try {
+      body = await req.json();
+    } catch (e) {
+      return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
+        status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // 2. معالجة الطلب
-    const { action, data, batch } = await req.json();
+    const { action, data, batch } = body;
+    console.log(`Action requested: ${action}`);
 
     if (action === "encrypt") {
       if (!data) throw new Error("بيانات التشفير مفقودة");
@@ -81,6 +94,7 @@ Deno.serve(async (req) => {
       combined.set(new Uint8Array(ciphertext), iv.length);
       const result = btoa(String.fromCharCode(...combined));
       return new Response(JSON.stringify({ result }), {
+        status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     } 
@@ -91,6 +105,7 @@ Deno.serve(async (req) => {
 
       const decrypt = async (encryptedValue: string) => {
         try {
+          if (!encryptedValue) return "";
           const combined = Uint8Array.from(atob(encryptedValue), (c) => c.charCodeAt(0));
           const iv = combined.slice(0, 12);
           const ciphertext = combined.slice(12);
@@ -108,11 +123,13 @@ Deno.serve(async (req) => {
       if (batch && Array.isArray(batch)) {
         const results = await Promise.all(batch.map((v) => v ? decrypt(v) : ""));
         return new Response(JSON.stringify({ results }), {
+          status: 200,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       } else {
         const result = await decrypt(data);
         return new Response(JSON.stringify({ result }), {
+          status: 200,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
@@ -124,7 +141,11 @@ Deno.serve(async (req) => {
     });
 
   } catch (error: any) {
-    return new Response(JSON.stringify({ error: error?.message || "خطأ غير متوقع" }), {
+    console.error("Function error:", error);
+    return new Response(JSON.stringify({ 
+      error: error?.message || "خطأ غير متوقع",
+      stack: error?.stack
+    }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

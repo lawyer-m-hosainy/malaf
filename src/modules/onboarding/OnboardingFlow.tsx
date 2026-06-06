@@ -111,16 +111,16 @@ export default function OnboardingFlow() {
       }
 
       // تحديث اسم المكتب والباقة
-      const orgUpdate: Record<string, unknown> = {
+      const orgUpdate = {
         name: data.officeName,
         plan: data.selectedPlan === 'basic' ? 'free' : data.selectedPlan,
       };
-      const { error: orgUpdateErr } = await supabase
+      const { error: orgUpdateErr } = await (supabase as any)
         .from('organizations')
         .update({ ...orgUpdate, onboarding_completed: true })
         .eq('id', orgId);
       if (orgUpdateErr?.message?.includes('onboarding_completed')) {
-        await supabase.from('organizations').update(orgUpdate).eq('id', orgId);
+        await (supabase as any).from('organizations').update(orgUpdate).eq('id', orgId);
       }
 
       setTenantIdCache(orgId);

@@ -31,7 +31,7 @@ export function TrialBanner() {
 
   async function checkSubscriptionStatus() {
     try {
-      const { data: sub } = await supabase
+      const { data: sub } = await (supabase as any)
         .from('subscriptions')
         .select('status, current_period_end, trial_ends_at, plan')
         .eq('organization_id', orgId)

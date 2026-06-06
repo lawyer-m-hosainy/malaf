@@ -60,14 +60,15 @@ export async function fetchClientsPaginated(
 export async function saveClient(client: Client): Promise<void> {
   const orgId = requireOrgId();
   try {
+    const { data: { user } } = await supabase.auth.getUser();
     const payload: any = {
-      organization_id: orgId,
       org_id: orgId,
       name: client.name,
-      type: client.type,
+      type: client.type || 'individual',
       phone: client.phone,
       email: client.email,
       address: client.address,
+      created_by: user?.id,
     };
 
     if (client.nationalId) {
@@ -96,7 +97,7 @@ export async function deleteClient(clientId: string): Promise<void> {
   const orgId = requireOrgId();
   const { error } = await supabase
     .from(CLIENTS_TABLE)
-    .update({ deleted_at: new Date().toISOString() })
+    .update({ deleted_at: new Date().toISOString() } as any)
     .eq("id", clientId)
     .or(`org_id.eq.${orgId},organization_id.eq.${orgId}`);
   

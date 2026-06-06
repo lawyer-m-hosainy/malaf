@@ -54,10 +54,10 @@ export function FirstLoginWizard() {
       const { data } = await supabase
         .from('organizations')
         .select('onboarding_completed')
-        .eq('id', orgId)
+        .eq('id', orgId!)
         .single();
       
-      if (data && !data.onboarding_completed) {
+      if (data && !(data as any).onboarding_completed) {
         setIsOpen(true);
       }
     } catch {
@@ -74,41 +74,42 @@ export function FirstLoginWizard() {
       if (address || barNumber) {
         await supabase
           .from('organizations')
-          .update({ address, bar_association_number: barNumber, onboarding_completed: true })
-          .eq('id', orgId);
+          .update({ address, bar_number: barNumber, onboarding_completed: true } as any)
+          .eq('id', orgId!);
       } else {
         await supabase
           .from('organizations')
-          .update({ onboarding_completed: true })
-          .eq('id', orgId);
+          .update({ onboarding_completed: true } as any)
+          .eq('id', orgId!);
       }
 
       // Step 2: Add team member (if entered)
       if (teamEmail && teamName) {
-        await supabase.from('team_invitations').insert({ org_id: orgId, email: teamEmail, role: 'محامي', status: 'pending' });
+        await supabase.from('team_invitations').insert({ org_id: orgId, email: teamEmail, role: 'محامي', status: 'pending' } as any);
         // Actually we just mock it for UI as invitation
       }
 
       // Step 3 & 4: Add client and case
       if (clientName) {
+        const userId = currentUser?.id;
         const { data: client } = await supabase.from('clients').insert({
           org_id: orgId,
           name: clientName,
           phone: clientPhone,
-          type: 'فرد',
-          status: 'نشط'
-        }).select().single();
+          type: 'individual',
+          created_by: userId
+        } as any).select().single();
 
         if (client && caseTitle) {
           await supabase.from('cases').insert({
             org_id: orgId,
-            client_id: client.id,
+            client_id: (client as any).id,
             title: caseTitle,
             type: caseType,
             status: 'متداولة',
             plaintiff: clientName,
             defendant: 'خصم افتراضي'
-          });
+          } as any);
         }
         
         // Refresh stores

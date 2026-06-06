@@ -67,7 +67,7 @@ export async function fetchCases(): Promise<Case[]> {
   try {
     const { data, error } = await supabase
       .from(CASES_TABLE)
-      .select("*, lawyer:profiles(full_name), documents(title, created_at)")
+      .select("*, lawyer:profiles(full_name), documents(name, created_at)")
       .eq("org_id", orgId)
       .is("deleted_at", null)
       .order("created_at", { ascending: false })
@@ -139,7 +139,7 @@ export async function deleteCase(caseId: string): Promise<void> {
   const orgId = requireOrgId();
   const { error } = await supabase
     .from(CASES_TABLE)
-    .update({ deleted_at: new Date().toISOString() })
+    .update({ deleted_at: new Date().toISOString() } as any)
     .eq("id", caseId)
     .eq("org_id", orgId);
   if (error) throw error;

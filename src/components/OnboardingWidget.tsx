@@ -37,11 +37,11 @@ export function OnboardingWidget() {
     try {
       const { data } = await supabase
         .from('organizations')
-        .select('address, bar_association_number')
+        .select('address, bar_number')
         .eq('id', orgId)
         .single();
       
-      setHasProfile(!!(data?.address || data?.bar_association_number));
+      setHasProfile(!!(data?.address || data?.bar_number));
     } finally {
       setLoading(false);
     }

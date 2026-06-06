@@ -71,7 +71,7 @@ export default defineConfig(({mode}) => {
           ]
         }
       }),
-      visualizer({ 
+      !isProd && visualizer({ 
         filename: 'bundle-stats.html', 
         gzipSize: true, 
         brotliSize: true 

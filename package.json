@@ -34,7 +34,8 @@
     "deps:check": "npm run deps:audit && npm run deps:licenses",
     "deps:full": "npm run deps:audit && npm run deps:licenses && npm run deps:sbom",
     "slo:test": "vitest run src/monitoring/__tests__/",
-    "deploy:gate": "node scripts/deployment-gate.mjs"
+    "deploy:gate": "node scripts/deployment-gate.mjs",
+    "migrations:check": "node scripts/check-migrations.mjs"
   },
   "lint-staged": {
     "src/**/*.{ts,tsx}": [

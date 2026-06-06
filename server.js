@@ -198,6 +198,49 @@ app.use('/api/payment/plans', paymentRouter); // GET plans — عام
 app.use('/api/payment/status', paymentRouter); // GET status — عام
 app.use('/api/payment', authMiddleware, securityRequestLogger, paymentRouter); // /create — محمي
 
+// ── Supabase Auth Hook — Custom Arabic Email Delivery (Resend) ──
+app.post('/api/auth/email-hook', express.json(), async (req, res) => {
+    const { type, email, data } = req.body;
+
+    // Verify request authenticity
+    const hookSecret = process.env.SUPABASE_HOOK_SECRET;
+    if (hookSecret && req.headers['x-supabase-signature'] !== hookSecret) {
+        logger.warn({ type, email: email?.substring(0, 3) + '***' }, 'Auth Hook: Invalid signature');
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    try {
+        const { sendConfirmationEmail, sendPasswordResetEmail } = await import('./services/email-service.js');
+        const userName = data?.user_metadata?.full_name ?? data?.user_metadata?.name ?? 'المحامي الكريم';
+
+        if (type === 'signup' || type === 'email_change') {
+            const result = await sendConfirmationEmail(email, {
+                userName,
+                confirmationUrl: data?.confirmation_url,
+                officeName: data?.user_metadata?.office_name,
+            });
+            logger.info({ type, success: result.success }, 'Auth Hook: Confirmation email');
+            return res.json(result);
+        }
+
+        if (type === 'recovery') {
+            const result = await sendPasswordResetEmail(email, {
+                userName,
+                resetUrl: data?.recovery_url,
+                ipAddress: req.ip,
+            });
+            logger.info({ type, success: result.success }, 'Auth Hook: Password reset email');
+            return res.json(result);
+        }
+
+        // Unknown type — let Supabase handle it
+        res.json({ success: true, message: 'Unhandled type, skipped' });
+    } catch (err) {
+        logger.error({ err: err.message, type }, 'Auth Hook: Error');
+        res.status(500).json({ error: 'Email send failed' });
+    }
+});
+
 // --- Frontend Serving ---
 const distPath = path.join(__dirname, 'dist');
 if (fs.existsSync(distPath)) {

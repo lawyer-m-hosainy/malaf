@@ -13,52 +13,18 @@ console.log(
   "color: #d97706; font-size: 12px; font-weight: 600; font-family: 'Cairo', sans-serif;"
 );
 
-import {StrictMode, useEffect} from 'react';
+import {StrictMode} from 'react';
 import {createRoot} from 'react-dom/client';
-import {
-  useLocation,
-  useNavigationType,
-  createRoutesFromChildren,
-  matchRoutes,
-} from "react-router-dom";
-import * as Sentry from "@sentry/react";
 import { onCLS, onINP, onLCP, onTTFB, onFCP } from 'web-vitals';
 import App from './App.tsx';
 import './index.css';
 import { logEvent } from './observability/logger';
 import { initPerformanceObserver } from './monitoring/performance-observer';
+import { initSentry } from './lib/sentry';
 
-// ─── Sentry Initialization ─────────────────────────────────────
-Sentry.init({
-  dsn: import.meta.env.VITE_SENTRY_DSN,
-  environment: import.meta.env.MODE,
-  tracesSampleRate: 0.1,
-  profilesSampleRate: 0.05,
-  beforeSend(event: Sentry.ErrorEvent) {
-    // PII Filtering: لا ترسل بيانات الموكل الحساسة في تقارير الأخطاء
-    if (event.request?.data) {
-      const sensitiveFields = ['client_name', 'national_id', 'phone', 'case_details', 'password'];
-      sensitiveFields.forEach(key => {
-        if (event.request?.data && typeof event.request.data === 'object' && key in event.request.data) {
-          delete (event.request.data as Record<string, any>)[key];
-        }
-      });
-    }
-    return event;
-  },
-  integrations: [
-    Sentry.reactRouterV6BrowserTracingIntegration({
-      useEffect,
-      useLocation,
-      useNavigationType,
-      createRoutesFromChildren,
-      matchRoutes,
-    }),
-    Sentry.replayIntegration(),
-  ],
-  replaysSessionSampleRate: 0.1,
-  replaysOnErrorSampleRate: 1.0,
-});
+// ─── Sentry Initialization (must be first) ─────────────────────
+initSentry();
+
 
 // ─── Real User Monitoring (RUM) ───────────────────────────────
 function sendToAnalytics({ name, value, rating }: { name: string, value: number, rating: string }) {

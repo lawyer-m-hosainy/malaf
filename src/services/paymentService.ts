@@ -16,7 +16,7 @@ export async function fetchTrustAccounts(): Promise<TrustAccount[]> {
     const { data, error } = await supabase
       .from("trust_accounts")
       .select("*, clients(name)")
-      .eq("organization_id", orgId)
+      .eq("org_id", orgId)
       .limit(100);
     if (error) throw error;
     return (data || []).map((t: any) => ({
@@ -42,14 +42,14 @@ export async function fetchTrustTransactions(): Promise<TrustTransaction[]> {
     const { data, error } = await supabase
       .from("trust_transactions")
       .select("*, clients(name), cases(plaintiff, defendant)")
-      .eq("organization_id", orgId)
+      .eq("org_id", orgId)
       .order("transaction_date", { ascending: false });
 
     if (error) throw error;
 
     return (data || []).map((t: any) => ({
       id: t.id,
-      organization_id: t.organization_id,
+      org_id: t.org_id,
       clientId: t.client_id,
       clientName: t.clients?.name ?? "غير معروف",
       caseId: t.case_id ?? undefined,
@@ -80,7 +80,7 @@ export async function saveTrustTransaction(
   const orgId = requireOrgId();
   try {
     const { error } = await supabase.from("trust_transactions").insert({
-      organization_id: orgId,
+      org_id: orgId,
       client_id: tx.clientId,
       case_id: tx.caseId ?? null,
       transaction_type: tx.transactionType,
@@ -119,7 +119,7 @@ export async function fetchClientTrustBalance(
     let query = supabase
       .from("trust_transactions")
       .select("transaction_type, amount")
-      .eq("organization_id", orgId)
+      .eq("org_id", orgId)
       .eq("client_id", clientId);
 
     if (caseId) query = query.eq("case_id", caseId);
@@ -147,7 +147,7 @@ export async function fetchTrustPageStats(): Promise<TrustPageStats> {
     const { data, error } = await supabase
       .from("trust_transactions")
       .select("transaction_type, amount")
-      .eq("organization_id", orgId);
+      .eq("org_id", orgId);
 
     if (error) throw error;
 
@@ -200,14 +200,14 @@ export async function fetchPaymentPlans(): Promise<DBPaymentPlan[]> {
     const { data, error } = await supabase
       .from("payment_plans")
       .select("*, clients(name), cases(plaintiff, defendant), payment_installments(*)")
-      .eq("organization_id", orgId)
+      .eq("org_id", orgId)
       .order("created_at", { ascending: false });
 
     if (error) throw error;
 
     return (data || []).map((p: any) => ({
       id: p.id,
-      organization_id: p.organization_id,
+      org_id: p.org_id,
       caseId: p.case_id ?? undefined,
       caseName: p.cases ? `${p.cases.plaintiff} ضد ${p.cases.defendant}` : undefined,
       clientId: p.client_id,
@@ -220,7 +220,7 @@ export async function fetchPaymentPlans(): Promise<DBPaymentPlan[]> {
       installments: (p.payment_installments || []).map((i: any) => ({
         id: i.id,
         planId: i.plan_id,
-        organization_id: i.organization_id,
+        org_id: i.org_id,
         dueDate: i.due_date,
         amount: parseFloat(i.amount),
         paidDate: i.paid_date ?? undefined,
@@ -241,14 +241,14 @@ export async function fetchPaymentPlans(): Promise<DBPaymentPlan[]> {
  */
 export async function savePaymentPlan(
   plan: Omit<DBPaymentPlan, "id" | "createdAt" | "clientName" | "caseName" | "installments">,
-  installments: Omit<DBPaymentInstallment, "id" | "planId" | "organization_id">[]
+  installments: Omit<DBPaymentInstallment, "id" | "planId" | "org_id">[]
 ): Promise<void> {
   const orgId = requireOrgId();
   try {
     const { data: planData, error: planError } = await supabase
       .from("payment_plans")
       .insert({
-        organization_id: orgId,
+        org_id: orgId,
         case_id: plan.caseId ?? null,
         client_id: plan.clientId,
         total_amount: plan.totalAmount,
@@ -265,7 +265,7 @@ export async function savePaymentPlan(
     if (installments.length > 0) {
       const dbInstallments = installments.map(i => ({
         plan_id: planId,
-        organization_id: orgId,
+        org_id: orgId,
         due_date: i.dueDate,
         amount: i.amount,
         status: i.status || 'pending',
@@ -312,7 +312,7 @@ export async function recordInstallmentPayment(
       .from("payment_installments")
       .select("plan_id, amount, status")
       .eq("id", installmentId)
-      .eq("organization_id", orgId)
+      .eq("org_id", orgId)
       .single();
 
     if (fetchError) throw fetchError;
@@ -328,7 +328,7 @@ export async function recordInstallmentPayment(
         notes: notes ?? null,
       })
       .eq("id", installmentId)
-      .eq("organization_id", orgId);
+      .eq("org_id", orgId);
 
     if (instUpdateError) throw instUpdateError;
 
@@ -336,7 +336,7 @@ export async function recordInstallmentPayment(
       .from("payment_plans")
       .select("total_amount, paid_amount")
       .eq("id", instData.plan_id)
-      .eq("organization_id", orgId)
+      .eq("org_id", orgId)
       .single();
 
     if (planFetchError) throw planFetchError;
@@ -351,7 +351,7 @@ export async function recordInstallmentPayment(
         status: isCompleted ? 'completed' : 'active',
       })
       .eq("id", instData.plan_id)
-      .eq("organization_id", orgId);
+      .eq("org_id", orgId);
 
     if (planUpdateError) throw planUpdateError;
 

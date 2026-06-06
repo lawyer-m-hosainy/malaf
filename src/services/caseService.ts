@@ -13,7 +13,7 @@ function mapCaseToDB(c: any, orgId: string) {
   const getVal = (val: any, fallback = "") => val || fallback;
   
   const mapped: any = {
-    organization_id: orgId,
+    org_id: orgId,
     client_id: getVal(c.clientId, c.client_id),
     court: getVal(c.court, getVal(c.court_location)),
     type: getVal(c.type, getVal(c.court_category)),
@@ -67,8 +67,8 @@ export async function fetchCases(): Promise<Case[]> {
   try {
     const { data, error } = await supabase
       .from(CASES_TABLE)
-      .select("*, lawyer:profiles(name), documents(title, created_at)")
-      .eq("organization_id", orgId)
+      .select("*, lawyer:profiles(full_name), documents(title, created_at)")
+      .eq("org_id", orgId)
       .is("deleted_at", null)
       .order("created_at", { ascending: false })
       .limit(50);
@@ -141,7 +141,7 @@ export async function deleteCase(caseId: string): Promise<void> {
     .from(CASES_TABLE)
     .update({ deleted_at: new Date().toISOString() })
     .eq("id", caseId)
-    .eq("organization_id", orgId);
+    .eq("org_id", orgId);
   if (error) throw error;
   await logAuditAction("DELETE_SOFT", "cases", caseId, "حذف قضية (ناعم)");
 }
@@ -157,8 +157,8 @@ export async function fetchEnforcement(): Promise<any[]> {
   try {
     const { data, error } = await supabase
       .from("enforcement_cases")
-      .select("id, case_id, amount_claimed, amount_collected, status, created_at")
-      .eq("organization_id", orgId)
+      .select("id, case_id, debt_amount, collected_amount, status, created_at")
+      .eq("org_id", orgId)
       .limit(100);
     if (error) throw error;
     return data || [];
@@ -181,7 +181,7 @@ export async function deleteEnforcement(id: string): Promise<void> {
     .from("enforcement_cases")
     .delete()
     .eq("id", id)
-    .eq("organization_id", orgId);
+    .eq("org_id", orgId);
   if (error) throw error;
   await logAuditAction("DELETE", "enforcement_cases", id, "حذف ملف تنفيذ");
 }
@@ -220,7 +220,7 @@ export async function fetchSpecializedCases(table: string): Promise<any[]> {
     const { data, error } = await supabase
       .from(table)
       .select("id, organization_id, created_at")
-      .eq("organization_id", orgId)
+      .eq("org_id", orgId)
       .order("created_at", { ascending: false });
     if (error) throw error;
     return data || [];
@@ -240,7 +240,7 @@ export async function fetchELitigationCases(): Promise<any[]> {
     const { data, error } = await supabase
       .from("e_litigation_cases")
       .select("id, case_id, platform, status, reference_number, filing_date, notes, created_at")
-      .eq("organization_id", orgId)
+      .eq("org_id", orgId)
       .order("created_at", { ascending: false });
     if (error) throw error;
     return data || [];
@@ -277,6 +277,6 @@ export async function deleteELitigationCase(caseId: string): Promise<void> {
     .from("e_litigation_cases")
     .delete()
     .eq("case_id", caseId)
-    .eq("organization_id", orgId);
+    .eq("org_id", orgId);
   if (error) throw error;
 }

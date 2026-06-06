@@ -14,7 +14,7 @@ export async function fetchAuditLogs(): Promise<any[]> {
     const { data, error } = await supabase
       .from("audit_logs")
       .select("id, action, entity_type, entity_id, details, created_at, user_id")
-      .eq("organization_id", orgId)
+      .eq("org_id", orgId)
       .order("created_at", { ascending: false })
       .limit(100);
     if (error) throw error;
@@ -43,7 +43,7 @@ export async function fetchAuditLogs(): Promise<any[]> {
 function mapTaskToDB(task: any, orgId: string) {
   return {
     id: task.id,
-    organization_id: orgId,
+    org_id: orgId,
     title: task.title,
     description: task.description,
     status: task.status,
@@ -64,7 +64,7 @@ export async function fetchTasks(): Promise<any[]> {
     const { data, error } = await supabase
       .from("tasks")
       .select("id, case_id, assigned_to, title, description, due_date, status, priority, created_at")
-      .eq("organization_id", orgId)
+      .eq("org_id", orgId)
       .order("due_date")
       .limit(50);
     if (error) throw error;
@@ -106,7 +106,7 @@ export async function deleteTask(taskId: string): Promise<void> {
     .from("tasks")
     .delete()
     .eq("id", taskId)
-    .eq("organization_id", orgId);
+    .eq("org_id", orgId);
   if (error) throw error;
   await logAuditAction("DELETE", "tasks", taskId, "حذف مهمة");
 }
@@ -123,7 +123,7 @@ export async function fetchTeam(): Promise<any[]> {
     const { data, error } = await supabase
       .from("profiles")
       .select("id, full_name, role, email, created_at")
-      .eq("organization_id", orgId)
+      .eq("org_id", orgId)
       .limit(50);
     if (error) throw error;
     return data || [];
@@ -184,7 +184,7 @@ export async function fetchTimeEntries(): Promise<any[]> {
     const { data, error } = await supabase
       .from("time_entries")
       .select("id, case_id, lawyer_id, description, duration_minutes, billable, is_billed, date, created_at")
-      .eq("organization_id", orgId)
+      .eq("org_id", orgId)
       .order("created_at", { ascending: false });
     if (error) throw error;
     return data || [];
@@ -203,7 +203,7 @@ export async function saveTimeEntry(entry: any): Promise<void> {
   try {
     const { error } = await supabase
       .from("time_entries")
-      .upsert({ ...entry, organization_id: orgId });
+      .upsert({ ...entry, org_id: orgId });
     if (error) throw error;
   } catch (error) {
     console.error("خطأ في حفظ سجل الوقت:", error);
@@ -221,6 +221,6 @@ export async function deleteTimeEntryRecord(id: string): Promise<void> {
     .from("time_entries")
     .delete()
     .eq("id", id)
-    .eq("organization_id", orgId);
+    .eq("org_id", orgId);
   if (error) throw error;
 }

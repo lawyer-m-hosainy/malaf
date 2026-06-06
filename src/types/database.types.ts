@@ -558,45 +558,1095 @@ export interface AuditLog {
 }
 
 // ============================================================
-// نوع قاعدة البيانات الكاملة (لـ Supabase Client)
+// Supabase Database Type — مطلوب لـ createClient<Database>
 // ============================================================
 
-export interface Database {
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
+
+export type Database = {
   public: {
     Tables: {
-      organizations: { Row: Organization; Insert: Omit<Organization, 'id' | 'created_at' | 'updated_at'>; Update: Partial<Organization> };
-      profiles: { Row: Profile; Insert: Omit<Profile, 'created_at' | 'updated_at'>; Update: Partial<Profile> };
-      clients: { Row: Client; Insert: Omit<Client, 'id' | 'created_at' | 'updated_at'>; Update: Partial<Client> };
-      poa: { Row: POA; Insert: Omit<POA, 'id' | 'created_at' | 'updated_at'>; Update: Partial<POA> };
-      cases: { Row: Case; Insert: Omit<Case, 'id' | 'created_at' | 'updated_at'>; Update: Partial<Case> };
-      case_sessions: { Row: CaseSession; Insert: Omit<CaseSession, 'id' | 'created_at' | 'updated_at'>; Update: Partial<CaseSession> };
-      case_lawyers: { Row: CaseLawyer; Insert: Omit<CaseLawyer, 'id' | 'created_at'>; Update: Partial<CaseLawyer> };
-      documents: { Row: Document; Insert: Omit<Document, 'id' | 'created_at'>; Update: Partial<Document> };
-      invoices: { Row: Invoice; Insert: Omit<Invoice, 'id' | 'created_at' | 'updated_at'>; Update: Partial<Invoice> };
-      invoice_items: { Row: InvoiceItem; Insert: Omit<InvoiceItem, 'id' | 'created_at'>; Update: Partial<InvoiceItem> };
-      expenses: { Row: Expense; Insert: Omit<Expense, 'id' | 'created_at' | 'updated_at'>; Update: Partial<Expense> };
-      trust_accounts: { Row: TrustAccount; Insert: Omit<TrustAccount, 'id' | 'created_at' | 'updated_at'>; Update: Partial<TrustAccount> };
-      trust_transactions: { Row: TrustTransaction; Insert: Omit<TrustTransaction, 'id' | 'created_at'>; Update: Partial<TrustTransaction> };
-      payment_plans: { Row: PaymentPlan; Insert: Omit<PaymentPlan, 'id' | 'created_at' | 'updated_at'>; Update: Partial<PaymentPlan> };
-      payment_installments: { Row: PaymentInstallment; Insert: Omit<PaymentInstallment, 'id' | 'created_at' | 'updated_at'>; Update: Partial<PaymentInstallment> };
-      collections: { Row: Collection; Insert: Omit<Collection, 'id' | 'created_at'>; Update: Partial<Collection> };
-      tasks: { Row: Task; Insert: Omit<Task, 'id' | 'created_at' | 'updated_at'>; Update: Partial<Task> };
-      time_entries: { Row: TimeEntry; Insert: Omit<TimeEntry, 'id' | 'created_at' | 'updated_at'>; Update: Partial<TimeEntry> };
-      contracts: { Row: Contract; Insert: Omit<Contract, 'id' | 'created_at' | 'updated_at'>; Update: Partial<Contract> };
-      contract_reviews: { Row: ContractReview; Insert: Omit<ContractReview, 'id' | 'created_at'>; Update: Partial<ContractReview> };
-      ip_assets: { Row: IPAsset; Insert: Omit<IPAsset, 'id' | 'created_at' | 'updated_at'>; Update: Partial<IPAsset> };
-      ip_operations: { Row: IPOperation; Insert: Omit<IPOperation, 'id' | 'created_at' | 'updated_at'>; Update: Partial<IPOperation> };
-      enforcement_cases: { Row: EnforcementCase; Insert: Omit<EnforcementCase, 'id' | 'created_at' | 'updated_at'>; Update: Partial<EnforcementCase> };
-      calendar_events: { Row: CalendarEvent; Insert: Omit<CalendarEvent, 'id' | 'created_at' | 'updated_at'>; Update: Partial<CalendarEvent> };
-      audit_logs: { Row: AuditLog; Insert: Omit<AuditLog, 'id' | 'created_at'>; Update: never };
-      eta_invoices: { Row: ETAInvoice; Insert: Omit<ETAInvoice, 'id' | 'created_at' | 'updated_at'>; Update: Partial<ETAInvoice> };
-      expert_missions: { Row: ExpertMission; Insert: Omit<ExpertMission, 'id' | 'created_at' | 'updated_at'>; Update: Partial<ExpertMission> };
+      organizations: {
+        Row: {
+          id: string;
+          name: string;
+          slug: string | null;
+          plan: string;
+          logo_url: string | null;
+          phone: string | null;
+          email: string | null;
+          address: string | null;
+          tax_id: string | null;
+          bar_number: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          slug?: string | null;
+          plan?: string;
+          logo_url?: string | null;
+          phone?: string | null;
+          email?: string | null;
+          address?: string | null;
+          tax_id?: string | null;
+          bar_number?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['organizations']['Insert']>;
+      };
+      profiles: {
+        Row: {
+          id: string;
+          org_id: string | null;
+          organization_id: string | null;
+          full_name: string | null;
+          role: string;
+          email: string | null;
+          phone: string | null;
+          avatar_url: string | null;
+          bar_number: string | null;
+          linked_client_id: string | null;
+          is_active: boolean;
+          onboarding_completed: boolean | null;
+          bar_association_number: string | null;
+          address: string | null;
+          last_login_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          org_id?: string | null;
+          organization_id?: string | null;
+          full_name?: string | null;
+          role?: string;
+          email?: string | null;
+          phone?: string | null;
+          avatar_url?: string | null;
+          bar_number?: string | null;
+          linked_client_id?: string | null;
+          is_active?: boolean;
+          onboarding_completed?: boolean | null;
+          bar_association_number?: string | null;
+          address?: string | null;
+          last_login_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['profiles']['Insert']>;
+      };
+      clients: {
+        Row: {
+          id: string;
+          org_id: string;
+          organization_id: string | null;
+          type: string;
+          name: string;
+          national_id: string | null;
+          company_reg_number: string | null;
+          tax_id: string | null;
+          address: string | null;
+          phone: string | null;
+          email: string | null;
+          nationality: string | null;
+          date_of_birth: string | null;
+          notes: string | null;
+          tags: string[] | null;
+          is_active: boolean;
+          portal_access: boolean;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          org_id: string;
+          organization_id?: string | null;
+          type: string;
+          name: string;
+          national_id?: string | null;
+          company_reg_number?: string | null;
+          tax_id?: string | null;
+          address?: string | null;
+          phone?: string | null;
+          email?: string | null;
+          nationality?: string | null;
+          date_of_birth?: string | null;
+          notes?: string | null;
+          tags?: string[] | null;
+          is_active?: boolean;
+          portal_access?: boolean;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          deleted_at?: string | null;
+        };
+        Update: Partial<Database['public']['Tables']['clients']['Insert']>;
+      };
+      cases: {
+        Row: {
+          id: string;
+          org_id: string | null;
+          organization_id: string | null;
+          case_number: string | null;
+          first_instance_number: string | null;
+          title: string;
+          type: string;
+          status: string;
+          priority: string | null;
+          client_id: string | null;
+          court: string | null;
+          judge: string | null;
+          opponent: string | null;
+          opponent_lawyer: string | null;
+          description: string | null;
+          notes: string | null;
+          filing_date: string | null;
+          next_session: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          org_id?: string | null;
+          organization_id?: string | null;
+          case_number?: string | null;
+          first_instance_number?: string | null;
+          title: string;
+          type: string;
+          status?: string;
+          priority?: string | null;
+          client_id?: string | null;
+          court?: string | null;
+          judge?: string | null;
+          opponent?: string | null;
+          opponent_lawyer?: string | null;
+          description?: string | null;
+          notes?: string | null;
+          filing_date?: string | null;
+          next_session?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          deleted_at?: string | null;
+        };
+        Update: Partial<Database['public']['Tables']['cases']['Insert']>;
+      };
+      case_sessions: {
+        Row: {
+          id: string;
+          org_id: string | null;
+          organization_id: string | null;
+          case_id: string;
+          date: string;
+          time: string | null;
+          court: string | null;
+          circuit: string | null;
+          notes: string | null;
+          outcome: string | null;
+          next_session: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          org_id?: string | null;
+          organization_id?: string | null;
+          case_id: string;
+          date: string;
+          time?: string | null;
+          court?: string | null;
+          circuit?: string | null;
+          notes?: string | null;
+          outcome?: string | null;
+          next_session?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['case_sessions']['Insert']>;
+      };
+      invoices: {
+        Row: {
+          id: string;
+          org_id: string | null;
+          organization_id: string | null;
+          client_id: string | null;
+          case_id: string | null;
+          invoice_number: string | null;
+          amount: number;
+          vat_amount: number | null;
+          total: number;
+          status: string;
+          date: string | null;
+          due_date: string | null;
+          notes: string | null;
+          is_billed: boolean | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          org_id?: string | null;
+          organization_id?: string | null;
+          client_id?: string | null;
+          case_id?: string | null;
+          invoice_number?: string | null;
+          amount: number;
+          vat_amount?: number | null;
+          total: number;
+          status?: string;
+          date?: string | null;
+          due_date?: string | null;
+          notes?: string | null;
+          is_billed?: boolean | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['invoices']['Insert']>;
+      };
+      invoice_items: {
+        Row: {
+          id: string;
+          invoice_id: string;
+          description: string;
+          quantity: number;
+          unit_price: number;
+          amount: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          invoice_id: string;
+          description: string;
+          quantity?: number;
+          unit_price: number;
+          amount: number;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['invoice_items']['Insert']>;
+      };
+      expenses: {
+        Row: {
+          id: string;
+          org_id: string | null;
+          organization_id: string | null;
+          case_id: string | null;
+          client_id: string | null;
+          amount: number;
+          category: string | null;
+          description: string | null;
+          status: string | null;
+          date: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          org_id?: string | null;
+          organization_id?: string | null;
+          case_id?: string | null;
+          client_id?: string | null;
+          amount: number;
+          category?: string | null;
+          description?: string | null;
+          status?: string | null;
+          date?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['expenses']['Insert']>;
+      };
+      trust_accounts: {
+        Row: {
+          id: string;
+          org_id: string | null;
+          organization_id: string | null;
+          client_id: string | null;
+          case_id: string | null;
+          balance: number;
+          currency: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          org_id?: string | null;
+          organization_id?: string | null;
+          client_id?: string | null;
+          case_id?: string | null;
+          balance?: number;
+          currency?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['trust_accounts']['Insert']>;
+      };
+      trust_transactions: {
+        Row: {
+          id: string;
+          trust_account_id: string | null;
+          org_id: string | null;
+          organization_id: string | null;
+          amount: number;
+          transaction_type: string;
+          description: string | null;
+          reference: string | null;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          trust_account_id?: string | null;
+          org_id?: string | null;
+          organization_id?: string | null;
+          amount: number;
+          transaction_type: string;
+          description?: string | null;
+          reference?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['trust_transactions']['Insert']>;
+      };
+      tasks: {
+        Row: {
+          id: string;
+          org_id: string | null;
+          organization_id: string | null;
+          case_id: string | null;
+          title: string;
+          description: string | null;
+          status: string;
+          priority: string | null;
+          due_date: string | null;
+          assigned_to: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          org_id?: string | null;
+          organization_id?: string | null;
+          case_id?: string | null;
+          title: string;
+          description?: string | null;
+          status?: string;
+          priority?: string | null;
+          due_date?: string | null;
+          assigned_to?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['tasks']['Insert']>;
+      };
+      documents: {
+        Row: {
+          id: string;
+          org_id: string | null;
+          organization_id: string | null;
+          case_id: string | null;
+          client_id: string | null;
+          name: string;
+          file_url: string | null;
+          file_type: string | null;
+          file_size: number | null;
+          description: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          org_id?: string | null;
+          organization_id?: string | null;
+          case_id?: string | null;
+          client_id?: string | null;
+          name: string;
+          file_url?: string | null;
+          file_type?: string | null;
+          file_size?: number | null;
+          description?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['documents']['Insert']>;
+      };
+      poa: {
+        Row: {
+          id: string;
+          org_id: string | null;
+          organization_id: string | null;
+          client_id: string | null;
+          poa_number: string | null;
+          type: string | null;
+          start_date: string | null;
+          end_date: string | null;
+          notes: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          org_id?: string | null;
+          organization_id?: string | null;
+          client_id?: string | null;
+          poa_number?: string | null;
+          type?: string | null;
+          start_date?: string | null;
+          end_date?: string | null;
+          notes?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['poa']['Insert']>;
+      };
+      calendar_events: {
+        Row: {
+          id: string;
+          org_id: string | null;
+          organization_id: string | null;
+          case_id: string | null;
+          title: string;
+          description: string | null;
+          start_time: string;
+          end_time: string | null;
+          event_type: string | null;
+          location: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          org_id?: string | null;
+          organization_id?: string | null;
+          case_id?: string | null;
+          title: string;
+          description?: string | null;
+          start_time: string;
+          end_time?: string | null;
+          event_type?: string | null;
+          location?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['calendar_events']['Insert']>;
+      };
+      payment_plans: {
+        Row: {
+          id: string;
+          org_id: string | null;
+          organization_id: string | null;
+          client_id: string | null;
+          case_id: string | null;
+          total_amount: number;
+          paid_amount: number;
+          status: string;
+          notes: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          org_id?: string | null;
+          organization_id?: string | null;
+          client_id?: string | null;
+          case_id?: string | null;
+          total_amount: number;
+          paid_amount?: number;
+          status?: string;
+          notes?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['payment_plans']['Insert']>;
+      };
+      payment_installments: {
+        Row: {
+          id: string;
+          plan_id: string;
+          due_date: string;
+          amount: number;
+          paid_amount: number | null;
+          paid_date: string | null;
+          status: string;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          plan_id: string;
+          due_date: string;
+          amount: number;
+          paid_amount?: number | null;
+          paid_date?: string | null;
+          status?: string;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['payment_installments']['Insert']>;
+      };
+      audit_logs: {
+        Row: {
+          id: string;
+          org_id: string | null;
+          organization_id: string | null;
+          user_id: string | null;
+          action: string;
+          table_name: string | null;
+          record_id: string | null;
+          old_values: Json | null;
+          new_values: Json | null;
+          ip_address: string | null;
+          user_agent: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          org_id?: string | null;
+          organization_id?: string | null;
+          user_id?: string | null;
+          action: string;
+          table_name?: string | null;
+          record_id?: string | null;
+          old_values?: Json | null;
+          new_values?: Json | null;
+          ip_address?: string | null;
+          user_agent?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['audit_logs']['Insert']>;
+      };
+      time_entries: {
+        Row: {
+          id: string;
+          org_id: string | null;
+          organization_id: string | null;
+          case_id: string | null;
+          user_id: string | null;
+          duration_minutes: number;
+          description: string | null;
+          billable: boolean;
+          date: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          org_id?: string | null;
+          organization_id?: string | null;
+          case_id?: string | null;
+          user_id?: string | null;
+          duration_minutes: number;
+          description?: string | null;
+          billable?: boolean;
+          date?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['time_entries']['Insert']>;
+      };
+      contracts: {
+        Row: {
+          id: string;
+          org_id: string | null;
+          organization_id: string | null;
+          client_id: string | null;
+          title: string;
+          type: string | null;
+          status: string;
+          start_date: string | null;
+          end_date: string | null;
+          value: number | null;
+          description: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          org_id?: string | null;
+          organization_id?: string | null;
+          client_id?: string | null;
+          title: string;
+          type?: string | null;
+          status?: string;
+          start_date?: string | null;
+          end_date?: string | null;
+          value?: number | null;
+          description?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['contracts']['Insert']>;
+      };
+      enforcement_cases: {
+        Row: {
+          id: string;
+          org_id: string | null;
+          organization_id: string | null;
+          case_id: string | null;
+          client_id: string | null;
+          enforcement_number: string | null;
+          status: string;
+          amount: number | null;
+          notes: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          org_id?: string | null;
+          organization_id?: string | null;
+          case_id?: string | null;
+          client_id?: string | null;
+          enforcement_number?: string | null;
+          status?: string;
+          amount?: number | null;
+          notes?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['enforcement_cases']['Insert']>;
+      };
+      conflict_checks: {
+        Row: {
+          id: string;
+          org_id: string | null;
+          organization_id: string | null;
+          client_name: string;
+          opponent_name: string | null;
+          result: string | null;
+          has_conflict: boolean | null;
+          details: Json | null;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          org_id?: string | null;
+          organization_id?: string | null;
+          client_name: string;
+          opponent_name?: string | null;
+          result?: string | null;
+          has_conflict?: boolean | null;
+          details?: Json | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['conflict_checks']['Insert']>;
+      };
+      ip_assets: {
+        Row: {
+          id: string;
+          org_id: string | null;
+          organization_id: string | null;
+          client_id: string | null;
+          name: string;
+          type: string;
+          status: string;
+          registration_number: string | null;
+          filing_date: string | null;
+          expiry_date: string | null;
+          description: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          org_id?: string | null;
+          organization_id?: string | null;
+          client_id?: string | null;
+          name: string;
+          type: string;
+          status?: string;
+          registration_number?: string | null;
+          filing_date?: string | null;
+          expiry_date?: string | null;
+          description?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['ip_assets']['Insert']>;
+      };
+      eta_invoices: {
+        Row: {
+          id: string;
+          org_id: string | null;
+          organization_id: string | null;
+          invoice_id: string | null;
+          eta_uuid: string | null;
+          status: string;
+          submission_date: string | null;
+          response_data: Json | null;
+          is_billed: boolean | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          org_id?: string | null;
+          organization_id?: string | null;
+          invoice_id?: string | null;
+          eta_uuid?: string | null;
+          status?: string;
+          submission_date?: string | null;
+          response_data?: Json | null;
+          is_billed?: boolean | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['eta_invoices']['Insert']>;
+      };
+      subscriptions: {
+        Row: {
+          id: string;
+          organization_id: string | null;
+          org_id: string | null;
+          plan: string;
+          status: string;
+          trial_ends_at: string | null;
+          current_period_end: string | null;
+          current_period_start: string | null;
+          cancel_at_period_end: boolean | null;
+          auto_renew: boolean | null;
+          cancelled_at: string | null;
+          max_cases: number | null;
+          max_users: number | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id?: string | null;
+          org_id?: string | null;
+          plan?: string;
+          status?: string;
+          trial_ends_at?: string | null;
+          current_period_end?: string | null;
+          current_period_start?: string | null;
+          cancel_at_period_end?: boolean | null;
+          auto_renew?: boolean | null;
+          cancelled_at?: string | null;
+          max_cases?: number | null;
+          max_users?: number | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['subscriptions']['Insert']>;
+      };
+      push_subscriptions: {
+        Row: {
+          id: string;
+          user_id: string;
+          organization_id: string | null;
+          endpoint: string;
+          p256dh: string | null;
+          auth: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          organization_id?: string | null;
+          endpoint: string;
+          p256dh?: string | null;
+          auth?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['push_subscriptions']['Insert']>;
+      };
+      team_invitations: {
+        Row: {
+          id: string;
+          organization_id: string | null;
+          org_id: string | null;
+          email: string;
+          role: string;
+          token: string | null;
+          status: string;
+          invited_by: string | null;
+          expires_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id?: string | null;
+          org_id?: string | null;
+          email: string;
+          role?: string;
+          token?: string | null;
+          status?: string;
+          invited_by?: string | null;
+          expires_at?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['team_invitations']['Insert']>;
+      };
+      sessions: {
+        Row: {
+          id: string;
+          user_id: string | null;
+          organization_id: string | null;
+          created_at: string;
+          expires_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string | null;
+          organization_id?: string | null;
+          created_at?: string;
+          expires_at?: string | null;
+        };
+        Update: Partial<Database['public']['Tables']['sessions']['Insert']>;
+      };
+      payments: {
+        Row: {
+          id: string;
+          organization_id: string | null;
+          invoice_id: string | null;
+          amount: number;
+          method: string | null;
+          status: string;
+          reference: string | null;
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id?: string | null;
+          invoice_id?: string | null;
+          amount: number;
+          method?: string | null;
+          status?: string;
+          reference?: string | null;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['payments']['Insert']>;
+      };
+      payment_transactions: {
+        Row: {
+          id: string;
+          organization_id: string | null;
+          amount: number;
+          transaction_type: string;
+          status: string | null;
+          reference: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id?: string | null;
+          amount: number;
+          transaction_type: string;
+          status?: string | null;
+          reference?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['payment_transactions']['Insert']>;
+      };
+      manual_payment_requests: {
+        Row: {
+          id: string;
+          organization_id: string | null;
+          amount: number;
+          status: string;
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id?: string | null;
+          amount: number;
+          status?: string;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['manual_payment_requests']['Insert']>;
+      };
+      plan_limits: {
+        Row: {
+          id: string;
+          plan: string;
+          max_cases: number | null;
+          max_users: number | null;
+          max_storage_gb: number | null;
+          features: Json | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          plan: string;
+          max_cases?: number | null;
+          max_users?: number | null;
+          max_storage_gb?: number | null;
+          features?: Json | null;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['plan_limits']['Insert']>;
+      };
+      import_batches: {
+        Row: {
+          id: string;
+          organization_id: string | null;
+          status: string;
+          imported_records: Json | null;
+          imported_ids: Json | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id?: string | null;
+          status?: string;
+          imported_records?: Json | null;
+          imported_ids?: Json | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['import_batches']['Insert']>;
+      };
+      slo_metrics: {
+        Row: {
+          id: string;
+          organization_id: string | null;
+          metric_name: string;
+          value: number;
+          last_value: number | null;
+          recorded_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id?: string | null;
+          metric_name: string;
+          value: number;
+          last_value?: number | null;
+          recorded_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['slo_metrics']['Insert']>;
+      };
+      slo_incidents: {
+        Row: {
+          id: string;
+          organization_id: string | null;
+          type: string;
+          description: string | null;
+          severity: string | null;
+          started_at: string;
+          resolved_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id?: string | null;
+          type: string;
+          description?: string | null;
+          severity?: string | null;
+          started_at: string;
+          resolved_at?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['slo_incidents']['Insert']>;
+      };
+      sequence_numbers: {
+        Row: {
+          id: string;
+          organization_id: string | null;
+          type: string;
+          last_value: number;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id?: string | null;
+          type: string;
+          last_value?: number;
+          updated_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['sequence_numbers']['Insert']>;
+      };
+      chat_rooms: {
+        Row: {
+          id: string;
+          room_id: string | null;
+          organization_id: string | null;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          room_id?: string | null;
+          organization_id?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['chat_rooms']['Insert']>;
+      };
+      chat_messages: {
+        Row: {
+          id: string;
+          room_id: string | null;
+          sender_id: string | null;
+          content: string;
+          full_name: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          room_id?: string | null;
+          sender_id?: string | null;
+          content: string;
+          full_name?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['chat_messages']['Insert']>;
+      };
+    };
+    Views: {
+      [_ in never]: never;
     };
     Functions: {
-      get_user_org_id: { Args: Record<never, never>; Returns: string };
-      is_super_admin: { Args: Record<never, never>; Returns: boolean };
-      has_role: { Args: { required_role: string }; Returns: boolean };
-      calculate_trust_balance: { Args: { account_id: string }; Returns: number };
+      get_user_org_id: {
+        Args: Record<PropertyKey, never>;
+        Returns: string;
+      };
+      get_user_role: {
+        Args: Record<PropertyKey, never>;
+        Returns: string;
+      };
+    };
+    Enums: {
+      [_ in never]: never;
     };
   };
-}
+};

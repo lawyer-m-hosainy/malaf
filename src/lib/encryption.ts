@@ -82,3 +82,18 @@ export async function batchDecrypt(dataArray: (string | null | undefined)[]): Pr
     dataArray.map(item => item ? decrypt(item) : "")
   );
 }
+
+// ============================================================
+// Aliases + Cache Management — مطلوبة من أجزاء متعددة في الكود
+// ============================================================
+
+/** تشفير حقل واحد — alias لـ encrypt */
+export const encryptField = encrypt;
+
+/** فك تشفير حقل واحد — alias لـ decrypt */
+export const decryptField = decrypt;
+
+/** مسح cache التشفير عند تسجيل الخروج */
+export function clearDecryptCache(): void {
+  _cachedKey = null;
+}

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Building2, FileText, Users, CheckCircle2, ArrowLeft, ArrowRight, Plus, X, Sparkles, Loader2, Mail, Lock, Phone } from "lucide-react";
+import { Building2, FileText, Users, CheckCircle2, ArrowLeft, ArrowRight, Plus, X, Sparkles, Loader2, Phone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { PLANS, PlanTier } from "@/modules/subscriptions/subscriptionService";
@@ -19,8 +19,6 @@ import { useAuthStore } from "@/store/useAuthStore";
 interface OnboardingData {
   officeName: string;
   adminName: string;
-  email: string;
-  password: string;
   phone: string;
   selectedPlan: PlanTier;
   teamEmails: string[];
@@ -39,8 +37,6 @@ export default function OnboardingFlow() {
   const [data, setData] = useState<OnboardingData>({
     officeName: "",
     adminName: "",
-    email: "",
-    password: "",
     phone: "",
     selectedPlan: "basic",
     teamEmails: [],
@@ -49,12 +45,12 @@ export default function OnboardingFlow() {
   const navigate = useNavigate();
   const { user: authUser } = useAuth();
 
+  // ═══ المستخدم مسجّل دخوله دائماً (ProtectedRoute يضمن ذلك) ═══
   useEffect(() => {
     if (!authUser) return;
     setData((prev) => ({
       ...prev,
-      adminName: prev.adminName || (authUser.user_metadata?.full_name as string) || "",
-      email: prev.email || authUser.email || "",
+      adminName: prev.adminName || (authUser.user_metadata?.full_name as string) || authUser.email?.split("@")[0] || "",
       officeName: prev.officeName || (authUser.user_metadata?.full_name as string) || "",
     }));
   }, [authUser]);
@@ -63,10 +59,6 @@ export default function OnboardingFlow() {
     if (step === 1) {
       if (!data.officeName.trim()) { toast.error("يرجى إدخال اسم المكتب"); return; }
       if (!data.adminName.trim()) { toast.error("يرجى إدخال اسم المسؤول"); return; }
-      if (!authUser) {
-        if (!data.email.includes("@")) { toast.error("يرجى إدخال بريد إلكتروني صحيح"); return; }
-        if (data.password.length < 8) { toast.error("كلمة المرور يجب أن تكون 8 أحرف على الأقل"); return; }
-      }
     }
     if (step < 4) setStep(step + 1);
   };
@@ -89,52 +81,7 @@ export default function OnboardingFlow() {
   const handleComplete = async () => {
     setLoading(true);
     try {
-      // ═══ مسار 1: إنشاء حساب جديد إن لم يكن مسجلاً ═══
-      if (!authUser) {
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-          email: data.email,
-          password: data.password,
-          options: {
-            data: {
-              full_name: data.adminName,
-              role: 'مدير مكتب',
-            },
-            emailRedirectTo: `${window.location.origin}/dashboard`,
-          },
-        });
-
-        if (authError) {
-          if (authError.message.includes('already registered')) {
-            toast.error("هذا البريد الإلكتروني مسجل بالفعل. يرجى تسجيل الدخول.");
-          } else {
-            toast.error(`خطأ في التسجيل: ${authError.message}`);
-          }
-          setLoading(false);
-          return;
-        }
-
-        if (!authData.user) {
-          toast.error("حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.");
-          setLoading(false);
-          return;
-        }
-
-        if (authData.user.identities?.length === 0) {
-          toast.info("يرجى تفعيل حسابك عبر رابط التأكيد المرسل لبريدك.");
-          navigate('/login');
-          setLoading(false);
-          return;
-        }
-
-        if (!authData.session) {
-          toast.success("تم إنشاء مكتبك بنجاح! 🎉 يرجى تفعيل حسابك عبر البريد الإلكتروني.");
-          setStep(4);
-          setLoading(false);
-          return;
-        }
-      }
-
-      // ═══ مسار 2: إنشاء/ربط المكتب (موحّد) ═══
+      // المستخدم مسجّل دائماً (ProtectedRoute يحمي هذه الصفحة)
       const sessionUser = authUser || (await supabase.auth.getUser()).data.user;
       if (!sessionUser) {
         toast.error("يرجى تسجيل الدخول أولاً.");
@@ -154,7 +101,7 @@ export default function OnboardingFlow() {
         const isRls = /row-level security|policy|permission denied|42501/i.test(detail);
         toast.error(
           isRls
-            ? "تعذر إنشاء المكتب: صلاحيات قاعدة البيانات. شغّل ملف supabase/migrations/003_fix_auth_trigger.sql في Supabase."
+            ? "تعذر إنشاء المكتب: صلاحيات قاعدة البيانات. شغّل ملف supabase/migrations/029_complete_database_fix.sql في Supabase SQL Editor."
             : detail
               ? `فشل في إنشاء المكتب: ${detail}`
               : "فشل في إنشاء المكتب. تأكد من تسجيل الدخول ثم أعد المحاولة."
@@ -163,7 +110,7 @@ export default function OnboardingFlow() {
         return;
       }
 
-      // تحديث اسم المكتب والباقة (onboarding_completed اختياري إن وُجد العمود)
+      // تحديث اسم المكتب والباقة
       const orgUpdate: Record<string, unknown> = {
         name: data.officeName,
         plan: data.selectedPlan === 'basic' ? 'free' : data.selectedPlan,
@@ -180,7 +127,7 @@ export default function OnboardingFlow() {
       useAuthStore.getState().setCurrentUser({
         id: sessionUser.id,
         name: data.adminName || sessionUser.user_metadata?.full_name || "المستخدم",
-        email: data.email || sessionUser.email || "",
+        email: sessionUser.email || "",
         role: "مدير مكتب",
         orgId,
       });
@@ -206,7 +153,7 @@ export default function OnboardingFlow() {
         {/* Logo */}
         <div className="text-center mb-6">
           <h2 className="text-3xl font-black bg-gradient-to-l from-primary-600 to-primary-500 bg-clip-text text-transparent">مَلَف</h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">إنشاء حساب مكتب جديد</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">إعداد مكتبك — {authUser?.email}</p>
         </div>
 
         {/* Stepper */}
@@ -237,7 +184,7 @@ export default function OnboardingFlow() {
           </CardHeader>
           <CardContent className="p-8">
             <AnimatePresence mode="wait">
-              {/* Step 1: Office + Admin Info */}
+              {/* Step 1: Office + Admin Info (بدون بريد وكلمة مرور — المستخدم مسجل فعلاً) */}
               {step === 1 && (
                 <motion.div key="s1" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} className="space-y-5">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -257,27 +204,11 @@ export default function OnboardingFlow() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-navy-900 dark:text-white font-bold flex items-center gap-2">
-                      <Mail size={14} className="text-primary-500" />
-                      البريد الإلكتروني *
+                    <Label htmlFor="phone" className="text-navy-900 dark:text-white font-bold flex items-center gap-2">
+                      <Phone size={14} className="text-primary-500" />
+                      رقم الهاتف (اختياري)
                     </Label>
-                    <Input id="email" type="email" value={data.email} onChange={(e) => setData({ ...data, email: e.target.value })} placeholder="admin@lawfirm.com" className="dark:bg-white/5" dir="ltr" />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div className="space-y-2">
-                      <Label htmlFor="password" className="text-navy-900 dark:text-white font-bold flex items-center gap-2">
-                        <Lock size={14} className="text-primary-500" />
-                        كلمة المرور *
-                      </Label>
-                      <Input id="password" type="password" value={data.password} onChange={(e) => setData({ ...data, password: e.target.value })} placeholder="8 أحرف على الأقل" className="dark:bg-white/5" dir="ltr" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="phone" className="text-navy-900 dark:text-white font-bold flex items-center gap-2">
-                        <Phone size={14} className="text-primary-500" />
-                        رقم الهاتف (اختياري)
-                      </Label>
-                      <Input id="phone" value={data.phone} onChange={(e) => setData({ ...data, phone: e.target.value })} placeholder="01234567890" className="dark:bg-white/5" dir="ltr" />
-                    </div>
+                    <Input id="phone" value={data.phone} onChange={(e) => setData({ ...data, phone: e.target.value })} placeholder="01234567890" className="dark:bg-white/5" dir="ltr" />
                   </div>
                   <p className="text-[10px] text-slate-400 flex items-center gap-1">
                     <CheckCircle2 size={10} className="text-green-500" />
@@ -383,13 +314,10 @@ export default function OnboardingFlow() {
                       <p className="text-[10px] text-slate-400">حد القضايا</p>
                     </div>
                   </div>
-                  <div className="space-y-3">
-                    <p className="text-xs text-slate-400">📧 تم إرسال رابط تفعيل الحساب إلى: <span className="font-bold text-navy-900 dark:text-white" dir="ltr">{data.email}</span></p>
-                    <Button onClick={() => navigate('/login')} className="bg-primary-500 hover:bg-primary-600 text-white gap-2 px-8">
-                      <Sparkles size={16} />
-                      تسجيل الدخول
-                    </Button>
-                  </div>
+                  <Button onClick={() => navigate('/dashboard')} className="bg-primary-500 hover:bg-primary-600 text-white gap-2 px-8">
+                    <Sparkles size={16} />
+                    الذهاب للوحة التحكم
+                  </Button>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -416,7 +344,7 @@ export default function OnboardingFlow() {
         </Card>
 
         <p className="text-center text-xs text-slate-400 mt-4">
-          لديك حساب بالفعل؟{' '}
+          تسجيل الدخول بحساب مختلف؟{' '}
           <button onClick={() => navigate('/login')} className="text-primary-600 font-bold hover:underline">تسجيل الدخول</button>
         </p>
       </motion.div>

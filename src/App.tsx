@@ -107,7 +107,7 @@ export default function App() {
                   <Route path="/terms" element={<Terms />} />
                   <Route path="/privacy" element={<Privacy />} />
                   <Route path="/login" element={<Login />} />
-                  <Route path="/onboarding" element={<OnboardingFlow />} />
+                  <Route path="/onboarding" element={<ProtectedRoute><OnboardingFlow /></ProtectedRoute>} />
                   <Route path="/client-portal" element={<ClientPortal />} />
                   
                   {/* Super Admin Dashboard (مخفية) */}

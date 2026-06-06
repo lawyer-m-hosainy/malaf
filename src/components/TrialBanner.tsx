@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Clock, X, Zap, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,11 +8,11 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { useNavigate } from "react-router-dom";
 
 /**
- * Ø¨Ø§Ù†Ø± Ø§Ù„ØªÙ†Ø¨ÙŠÙ‡ Ù„Ù„ÙØªØ±Ø© Ø§Ù„ØªØ¬Ø±ÙŠØ¨ÙŠØ© ÙˆØ§Ù†ØªÙ‡Ø§Ø¡ Ø§Ù„Ø§Ø´ØªØ±Ø§Ùƒ
- * ÙŠØ¸Ù‡Ø± ÙÙŠ Ø§Ù„Ø¯Ø§Ø´Ø¨ÙˆØ±Ø¯ ÙÙ‚Ø· Ø¹Ù†Ø¯Ù…Ø§:
- * - Ø§Ù„Ù…ÙƒØªØ¨ ÙÙŠ ÙØªØ±Ø© ØªØ¬Ø±ÙŠØ¨ÙŠØ© (trial)
- * - Ø¨Ù‚ÙŠ Ø£Ù‚Ù„ Ù…Ù† 7 Ø£ÙŠØ§Ù… Ø¹Ù„Ù‰ Ø§Ù†ØªÙ‡Ø§Ø¡ Ø§Ù„Ø§Ø´ØªØ±Ø§Ùƒ
- * - Ø§Ù„Ø§Ø´ØªØ±Ø§Ùƒ Ù…Ù†ØªÙ‡ÙŠ Ø¨Ø§Ù„ÙØ¹Ù„
+ * بانر التنبيه للفترة التجريبية وانتهاء الاشتراك
+ * يظهر في الداشبورد فقط عندما:
+ * - المكتب في فترة تجريبية (trial)
+ * - بقي أقل من 7 أيام على انتهاء الاشتراك
+ * - الاشتراك منتهي بالفعل
  */
 export function TrialBanner() {
   const orgId = useAuthStore(state => state.currentUser?.orgId);
@@ -64,7 +64,7 @@ export function TrialBanner() {
         }
       }
     } catch {
-      // Silently fail â€” not critical
+      // Silently fail
     }
   }
 
@@ -78,28 +78,28 @@ export function TrialBanner() {
       icon: Clock,
       iconColor: status.daysLeft <= 3 ? "text-red-500" : "text-blue-500",
       title: status.daysLeft <= 0
-        ? "â° Ø§Ù†ØªÙ‡Øª Ø§Ù„ÙØªØ±Ø© Ø§Ù„ØªØ¬Ø±ÙŠØ¨ÙŠØ©!"
-        : `â³ Ù…ØªØ¨Ù‚ÙŠ ${status.daysLeft} ÙŠÙˆÙ… Ù…Ù† Ø§Ù„ÙØªØ±Ø© Ø§Ù„ØªØ¬Ø±ÙŠØ¨ÙŠØ©`,
+        ? "⏳ انتهت الفترة التجريبية!"
+        : `⏳ متبقي ${status.daysLeft} يوم من الفترة التجريبية`,
       subtitle: status.daysLeft <= 3
-        ? "Ø§Ø´ØªØ±Ùƒ Ø§Ù„Ø¢Ù† Ù‚Ø¨Ù„ ÙÙ‚Ø¯Ø§Ù† Ø§Ù„ÙˆØµÙˆÙ„ Ù„Ø¨ÙŠØ§Ù†Ø§ØªÙƒ."
-        : "Ø§Ø³ØªÙ…ØªØ¹ Ø¨ÙƒÙ„ Ø§Ù„Ù…ÙŠØ²Ø§Øª Ù…Ø¬Ø§Ù†Ø§Ù‹. Ø§Ø´ØªØ±Ùƒ Ù‚Ø¨Ù„ Ø§Ù„Ø§Ù†ØªÙ‡Ø§Ø¡.",
-      cta: "Ø§Ø®ØªØ± Ø¨Ø§Ù‚ØªÙƒ",
+        ? "اشترك الآن قبل فقدان الوصول لبياناتك."
+        : "استمتع بكل الميزات مجاناً. اشترك قبل الانتهاء.",
+      cta: "اختر باقتك",
     },
     expiring: {
       bg: "bg-gradient-to-l from-amber-500/10 to-amber-600/5 border-amber-200 dark:border-amber-800/30",
       icon: AlertTriangle,
       iconColor: "text-amber-500",
-      title: `âš ï¸ Ø§Ø´ØªØ±Ø§ÙƒÙƒ ÙŠÙ†ØªÙ‡ÙŠ Ø®Ù„Ø§Ù„ ${status.daysLeft} Ø£ÙŠØ§Ù…`,
-      subtitle: "Ø¬Ø¯Ù‘Ø¯ Ø§Ø´ØªØ±Ø§ÙƒÙƒ Ù„Ø¶Ù…Ø§Ù† Ø§Ø³ØªÙ…Ø±Ø§Ø± Ø¹Ù…Ù„Ùƒ Ø¨Ø¯ÙˆÙ† Ø§Ù†Ù‚Ø·Ø§Ø¹.",
-      cta: "ØªØ¬Ø¯ÙŠØ¯ Ø§Ù„Ø§Ø´ØªØ±Ø§Ùƒ",
+      title: `⚠️ اشتراكك ينتهي خلال ${status.daysLeft} أيام`,
+      subtitle: "جدّد اشتراكك لضمان استمرار عملك بدون انقطاع.",
+      cta: "تجديد الاشتراك",
     },
     expired: {
       bg: "bg-gradient-to-l from-red-500/10 to-red-600/5 border-red-200 dark:border-red-800/30",
       icon: AlertTriangle,
       iconColor: "text-red-500",
-      title: "ðŸš« Ø§Ø´ØªØ±Ø§ÙƒÙƒ Ù…Ù†ØªÙ‡ÙŠ â€” Ø§Ù„ÙˆØ¶Ø¹ Ø§Ù„Ø­Ø§Ù„ÙŠ: Ù‚Ø±Ø§Ø¡Ø© ÙÙ‚Ø·",
-      subtitle: "Ù„Ù† ØªØ³ØªØ·ÙŠØ¹ Ø¥Ø¶Ø§ÙØ© Ø£Ùˆ ØªØ¹Ø¯ÙŠÙ„ Ø¨ÙŠØ§Ù†Ø§Øª. Ø¬Ø¯Ù‘Ø¯ Ø§Ù„Ø¢Ù† Ù„Ø§Ø³ØªØ¹Ø§Ø¯Ø© Ø§Ù„ÙˆØµÙˆÙ„ Ø§Ù„ÙƒØ§Ù…Ù„.",
-      cta: "Ø¬Ø¯Ù‘Ø¯ Ø§Ù„Ø¢Ù†",
+      title: "🚫 اشتراكك منتهي — الوضع الحالي: قراءة فقط",
+      subtitle: "لن تستطيع إضافة أو تعديل بيانات. جدّد الآن لاستعادة الوصول الكامل.",
+      cta: "جدّد الآن",
     },
   };
 
@@ -134,7 +134,7 @@ export function TrialBanner() {
             <button
               onClick={() => setDismissed(true)}
               className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
-              aria-label="Ø¥ØºÙ„Ø§Ù‚"
+              aria-label="إغلاق"
             >
               <X className="w-4 h-4" />
             </button>

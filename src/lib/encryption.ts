@@ -3,7 +3,13 @@
  * يستخدم Web Crypto API متوفرًا في المتصفح
  */
 
-const RAW_KEY = "malaf-default-fallback-key-2024-prod";
+const RAW_KEY = import.meta.env.VITE_ENCRYPTION_KEY as string;
+if (!RAW_KEY || RAW_KEY.length < 32) {
+  throw new Error(
+    "[Malaf Security] VITE_ENCRYPTION_KEY is missing or too short. " +
+    "Set it in your .env.local file. Minimum 32 characters required."
+  );
+}
 const SALT = "malaf-salt-v1";
 const ITERATIONS = 100000;
 

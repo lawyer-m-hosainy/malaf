@@ -201,3 +201,72 @@ export function buildPasswordResetEmail(data: PasswordResetData): string {
 </html>
   `.trim();
 }
+
+export interface SessionReminderData {
+  lawyerName: string;
+  sessionDate: string;
+  sessionTime: string;
+  courtName: string;
+  caseNumber: string;
+  caseName: string;
+  caseUrl: string;
+}
+
+export function buildSessionReminderEmail(data: SessionReminderData): string {
+  const currentYear = new Date().getFullYear();
+  return `
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تذكير بجلسة قادمة — مَلَف</title>
+  ${emailStyles}
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">⚖️ مَلَف<span>.</span>pro</div>
+      <p style="color: rgba(255,255,255,0.8); margin-top: 8px; font-size: 14px;">
+        المنصة القانونية المتكاملة للمحامين المصريين
+      </p>
+    </div>
+    <div class="content">
+      <div class="greeting">أهلاً أ. ${data.lawyerName}،</div>
+      <p class="body-text">
+        هذا تذكير بأن لديك جلسة قضائية قادمة <strong>غداً</strong>. يرجى مراجعة التفاصيل أدناه لضمان جاهزيتك.
+      </p>
+      
+      <div style="background: #f8f8fc; padding: 20px; border-radius: 8px; margin: 24px 0; border: 1px solid #e8e8f0;">
+        <h3 style="margin-top: 0; color: #1a3a5c; font-size: 16px;">📌 تفاصيل الجلسة:</h3>
+        <ul style="list-style: none; padding: 0; margin: 0; color: #4a4a6a; font-size: 15px; line-height: 2;">
+          <li><strong>المحكمة:</strong> ${data.courtName}</li>
+          <li><strong>التاريخ:</strong> ${data.sessionDate}</li>
+          <li><strong>الوقت:</strong> ${data.sessionTime}</li>
+          <li><strong>القضية:</strong> ${data.caseName}</li>
+          <li><strong>رقم القضية:</strong> ${data.caseNumber}</li>
+        </ul>
+      </div>
+
+      <div style="text-align: center; margin: 32px 0;">
+        <a href="${data.caseUrl}" class="cta-button">
+          📂 عرض تفاصيل القضية
+        </a>
+      </div>
+      
+      <div class="warning-box">
+        <strong>⚠️ تحذير السرية:</strong> هذا البريد يحتوي على بيانات قانونية خاصة. 
+        لا تقم بمشاركة هذا البريد مع أي أطراف غير مصرح لها.
+      </div>
+    </div>
+    <div class="footer">
+      <p>منصة مَلَف — حقوق النشر © ${currentYear} | جميع الحقوق محفوظة</p>
+      <p style="margin-top: 8px;">
+        هذا البريد مُرسَل تلقائياً، الرجاء عدم الرد عليه.
+      </p>
+    </div>
+  </div>
+</body>
+</html>
+  `.trim();
+}

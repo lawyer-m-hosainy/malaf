@@ -1,4 +1,5 @@
 # ⚖️ مَلَف (Malaf) - المذكرة الشارحة للمنصة القانونية المتكاملة
+[![CI/CD](https://github.com/lawyer-m-hosainy/malaf/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/lawyer-m-hosainy/malaf/actions/workflows/ci-cd.yml)
 
 **مَلَف (Malaf)** هو نظام إيكولوجي رقمي متكامل (SaaS) مصمم لرقمنة العمل القانوني في جمهورية مصر العربية. يتجاوز كونه مجرد برنامج لإدارة القضايا، ليصبح "نظام تشغيل قانوني" يدمج بين الأتمتة الإجرائية، الذكاء الاصطناعي، والامتثال الضريبي والقانوني الكامل.
 

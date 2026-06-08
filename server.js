@@ -131,6 +131,14 @@ app.use((req, res, next) => {
     next();
 });
 
+// ✅ Quick Win: Additional Security Headers
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
+
 // CORS Configuration
 const allowedOrigins = process.env.NODE_ENV === 'production' 
     ? [process.env.PRODUCTION_URL || 'https://malaf.pro', 'https://malaf.pro', 'https://www.malaf.pro', 'https://malaf-platform.onrender.com'] 
@@ -239,6 +247,69 @@ app.post('/api/auth/email-hook', express.json(), async (req, res) => {
     } catch (err) {
         logger.error({ err: err.message, type }, 'Auth Hook: Error');
         res.status(500).json({ error: 'Email send failed' });
+    }
+});
+
+// ── Notifications Routes ──
+app.post('/api/notifications/session-reminder', authMiddleware, async (req, res, next) => {
+    try {
+        const { sessionId } = req.body;
+        if (!sessionId) return res.status(400).json({ error: 'sessionId required' });
+
+        const { supabaseAdmin } = await import('./lib/supabase-admin.js');
+        
+        // Fetch session and relations
+        const { data: session, error } = await supabaseAdmin
+            .from('sessions')
+            .select('*, case:cases(name, number), user:users!sessions_user_id_fkey(email, raw_user_meta_data)')
+            .eq('id', sessionId)
+            .single();
+
+        if (error || !session) return res.status(404).json({ error: 'Session not found' });
+
+        // Rate limiting check
+        const { data: existingLog } = await supabaseAdmin
+            .from('notification_logs')
+            .select('id, sent_at')
+            .eq('type', 'session_reminder')
+            .eq('reference_id', sessionId)
+            .order('sent_at', { ascending: false })
+            .limit(1);
+
+        if (existingLog && existingLog.length > 0) {
+            const lastSent = new Date(existingLog[0].sent_at);
+            const hoursSince = (new Date() - lastSent) / (1000 * 60 * 60);
+            if (hoursSince < 24) {
+                return res.status(429).json({ error: 'Reminder already sent recently' });
+            }
+        }
+
+        const { sendSessionReminderEmail } = await import('./services/email-service.js');
+        const userName = session.user?.raw_user_meta_data?.full_name || session.user?.raw_user_meta_data?.name || 'أستاذ';
+        
+        const result = await sendSessionReminderEmail(session.user?.email, {
+            lawyerName: userName,
+            sessionDate: new Date(session.date).toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
+            sessionTime: session.time || 'غير محدد',
+            courtName: session.court_name || 'غير محدد',
+            caseNumber: session.case?.number || 'غير محدد',
+            caseName: session.case?.name || 'غير محدد',
+            caseUrl: \`\${process.env.PRODUCTION_URL || 'http://localhost:5173'}/cases/\${session.case_id}\`
+        });
+
+        if (result.success) {
+            await supabaseAdmin.from('notification_logs').insert({
+                user_id: session.user_id,
+                type: 'session_reminder',
+                reference_id: sessionId,
+                channel: 'email'
+            });
+            return res.json({ success: true });
+        } else {
+            return res.status(500).json({ error: result.error });
+        }
+    } catch (err) {
+        next(err);
     }
 });
 

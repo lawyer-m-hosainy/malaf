@@ -63,8 +63,34 @@ const pwaOptions: Partial<VitePWAOptions> = {
     ]
   }
 };
-};
 
+const getBuildOptions = (isProd: boolean) => ({
+  rollupOptions: {
+    output: {
+      assetFileNames: (assetInfo: any) => {
+        if (assetInfo.name?.endsWith('.css')) return 'assets/index.css';
+        return 'assets/[name]-[hash][extname]';
+      },
+      manualChunks: getManualChunks
+    },
+    treeshake: {
+      moduleSideEffects: false,
+      propertyReadSideEffects: false,
+    },
+  },
+  minify: 'esbuild' as const,
+  target: 'es2020',
+  chunkSizeWarningLimit: 500,
+  assetsInlineLimit: 4096,
+  cssCodeSplit: true,
+  ...(isProd && {
+    esbuild: {
+      drop: ['debugger'] as any,
+      legalComments: 'none' as const,
+    },
+  }),
+  sourcemap: isProd ? 'hidden' as const : true,
+});
 const optimizeDepsOptions = {
   include: [
     'react',
@@ -102,39 +128,7 @@ export default defineConfig(({mode}) => {
         '@': path.resolve(__dirname, './src'),
       },
     },
-    build: {
-      rollupOptions: {
-        output: {
-          assetFileNames: (assetInfo) => {
-            if (assetInfo.name?.endsWith('.css')) {
-              return 'assets/index.css';
-            }
-            return 'assets/[name]-[hash][extname]';
-          },
-          manualChunks: getManualChunks
-        },
-        // R8-FIX: Tree-shaking optimization
-        treeshake: {
-          moduleSideEffects: false,      // Assume no side effects unless marked
-          propertyReadSideEffects: false, // Dead property reads can be removed
-        },
-      },
-      // R8-FIX: Production optimizations
-      minify: 'esbuild',
-      target: 'es2020',
-      chunkSizeWarningLimit: 500,
-      assetsInlineLimit: 4096,
-      // R8-FIX: CSS code splitting for better caching
-      cssCodeSplit: true,
-      // R8-FIX: Reduce console noise in production
-      ...(isProd && {
-        esbuild: {
-          drop: ['debugger'],           // Remove debugger statements
-          legalComments: 'none',        // Remove legal comments
-        },
-      }),
-      sourcemap: process.env.NODE_ENV === 'production' ? 'hidden' : true,
-    },
+    build: getBuildOptions(isProd),
     // R8-FIX: Dependency pre-bundling optimization
     optimizeDeps: optimizeDepsOptions,
   };

@@ -96,12 +96,39 @@ export default defineConfig(({mode}) => {
             }
             return 'assets/[name]-[hash][extname]';
           },
-          manualChunks: {
-            vendor: ['react', 'react-dom'],
-            motion: ['motion'],
-            ui: ['lucide-react'],
-            supabase: ['@supabase/supabase-js'],
-            charts: ['recharts'],
+          manualChunks: (id) => {
+            // Core React — يُحمَّل أولاً دائماً
+            if (id.includes('node_modules/react/') ||
+                id.includes('node_modules/react-dom/')) return 'react-core';
+            
+            // React Router — يُحمَّل مع الـ core
+            if (id.includes('node_modules/react-router')) return 'router';
+            
+            // Zustand + React Query — state management
+            if (id.includes('node_modules/zustand') ||
+                id.includes('node_modules/@tanstack')) return 'state';
+            
+            // shadcn/ui + Radix — UI components
+            if (id.includes('node_modules/@radix-ui') ||
+                id.includes('components/ui/')) return 'ui-components';
+            
+            // Framer Motion — animations (كبير، يُحمَّل lazy)
+            if (id.includes('node_modules/framer-motion') ||
+                id.includes('node_modules/motion')) return 'animations';
+            
+            // Recharts + D3 — charts (يُحمَّل فقط في صفحات المال)
+            if (id.includes('node_modules/recharts') ||
+                id.includes('node_modules/d3')) return 'charts';
+            
+            // Supabase client
+            if (id.includes('node_modules/@supabase')) return 'supabase';
+            
+            // AI SDKs — كبيرة، تُحمَّل فقط في صفحة الـ AI
+            if (id.includes('node_modules/@google/generative-ai') ||
+                id.includes('node_modules/groq-sdk')) return 'ai-sdk';
+            
+            // باقي node_modules
+            if (id.includes('node_modules/')) return 'vendor';
           }
         },
         // R8-FIX: Tree-shaking optimization
@@ -111,9 +138,10 @@ export default defineConfig(({mode}) => {
         },
       },
       // R8-FIX: Production optimizations
-      minify: isProd ? 'esbuild' : false,
+      minify: 'esbuild',
       target: 'es2020',
-      chunkSizeWarningLimit: 800,
+      chunkSizeWarningLimit: 500,
+      assetsInlineLimit: 4096,
       // R8-FIX: CSS code splitting for better caching
       cssCodeSplit: true,
       // R8-FIX: Reduce console noise in production
@@ -123,7 +151,7 @@ export default defineConfig(({mode}) => {
           legalComments: 'none',        // Remove legal comments
         },
       }),
-      sourcemap: true,
+      sourcemap: process.env.NODE_ENV === 'production' ? 'hidden' : true,
     },
     // R8-FIX: Dependency pre-bundling optimization
     optimizeDeps: {

@@ -294,7 +294,7 @@ app.post('/api/notifications/session-reminder', authMiddleware, async (req, res,
             courtName: session.court_name || 'غير محدد',
             caseNumber: session.case?.number || 'غير محدد',
             caseName: session.case?.name || 'غير محدد',
-            caseUrl: \`\${process.env.PRODUCTION_URL || 'http://localhost:5173'}/cases/\${session.case_id}\`
+            caseUrl: `${process.env.PRODUCTION_URL || 'http://localhost:5173'}/cases/${session.case_id}`
         });
 
         if (result.success) {

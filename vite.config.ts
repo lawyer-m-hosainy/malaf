@@ -1,28 +1,8 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import {defineConfig, loadEnv} from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import { VitePWA, VitePWAOptions } from 'vite-plugin-pwa';
-import { visualizer } from 'rollup-plugin-visualizer';
-import { sentryVitePlugin } from "@sentry/vite-plugin";
-
-const chunkRules = [
-  { match: ['node_modules/react/', 'node_modules/react-dom/'], name: 'react-core' },
-  { match: ['node_modules/react-router'], name: 'router' },
-  { match: ['node_modules/zustand', 'node_modules/@tanstack'], name: 'state' },
-  { match: ['node_modules/@radix-ui', 'components/ui/'], name: 'ui-components' },
-  { match: ['node_modules/framer-motion', 'node_modules/motion'], name: 'animations' },
-  { match: ['node_modules/recharts', 'node_modules/d3'], name: 'charts' },
-  { match: ['node_modules/@supabase'], name: 'supabase' },
-  { match: ['node_modules/@google/generative-ai', 'node_modules/groq-sdk'], name: 'ai-sdk' },
-  { match: ['node_modules/'], name: 'vendor' }
-];
-
-const getManualChunks = (id: string) => {
-  for (const rule of chunkRules) {
-    if (rule.match.some(m => id.includes(m))) return rule.name;
-  }
-};
 
 const pwaOptions: Partial<VitePWAOptions> = {
   registerType: 'autoUpdate',
@@ -64,72 +44,58 @@ const pwaOptions: Partial<VitePWAOptions> = {
   }
 };
 
-const getBuildOptions = (isProd: boolean) => ({
-  rollupOptions: {
-    output: {
-      assetFileNames: (assetInfo: any) => {
-        if (assetInfo.name?.endsWith('.css')) return 'assets/index.css';
-        return 'assets/[name]-[hash][extname]';
-      },
-      manualChunks: getManualChunks
-    },
-    treeshake: {
-      moduleSideEffects: false,
-      propertyReadSideEffects: false,
-    },
-  },
-  minify: 'esbuild' as const,
-  target: 'es2020',
-  chunkSizeWarningLimit: 500,
-  assetsInlineLimit: 4096,
-  cssCodeSplit: true,
-  ...(isProd && {
-    esbuild: {
-      drop: ['debugger'] as any,
-      legalComments: 'none' as const,
-    },
-  }),
-  sourcemap: isProd ? 'hidden' as const : true,
-});
-const optimizeDepsOptions = {
-  include: [
-    'react',
-    'react-dom',
-    'react-router-dom',
-    'zustand',
-    '@supabase/supabase-js',
-    'date-fns',
-    'lucide-react',
-    'zod',
-  ],
-};
-
-export default defineConfig(({mode}) => {
+export default defineConfig(({ mode }) => {
   loadEnv(mode, '.', '');
-  const isProd = mode === 'production';
   return {
     plugins: [
-      react(), 
+      react(),
       tailwindcss(),
       VitePWA(pwaOptions),
-      !isProd && visualizer({ 
-        filename: 'bundle-stats.html', 
-        gzipSize: true, 
-        brotliSize: true 
-      }),
-      isProd && sentryVitePlugin({
-        org: "malaf-pro",
-        project: "malaf-frontend",
-        authToken: process.env.SENTRY_AUTH_TOKEN,
-      }),
     ],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
       },
     },
-    build: getBuildOptions(isProd),
-    // R8-FIX: Dependency pre-bundling optimization
-    optimizeDeps: optimizeDepsOptions,
+    build: {
+      rollupOptions: {
+        output: {
+          assetFileNames: (assetInfo: any) => {
+            if (assetInfo.name?.endsWith('.css')) return 'assets/index.css';
+            return 'assets/[name]-[hash][extname]';
+          },
+          manualChunks(id) {
+            // React لازم يكون أول حاجة
+            if (id.includes('node_modules/react/') ||
+              id.includes('node_modules/react-dom/')) {
+              return 'react-core';
+            }
+            if (id.includes('node_modules/react-router')) return 'router';
+            if (id.includes('node_modules/@supabase')) return 'supabase';
+            if (id.includes('node_modules/zustand') ||
+              id.includes('node_modules/@tanstack')) return 'state';
+            // charts بعد react مش قبله
+            if (id.includes('node_modules/recharts') ||
+              id.includes('node_modules/d3')) return 'charts';
+            if (id.includes('node_modules/framer-motion') ||
+              id.includes('node_modules/motion')) return 'animations';
+            if (id.includes('node_modules/@radix-ui')) return 'ui-components';
+          }
+        },
+      },
+      minify: 'esbuild' as const,
+      target: 'es2020',
+      chunkSizeWarningLimit: 1000,
+      sourcemap: false,
+    },
+    optimizeDeps: {
+      include: [
+        'react',
+        'react-dom',
+        'react-router-dom',
+        'zustand',
+        '@supabase/supabase-js',
+      ],
+    },
   };
-});
+}); 

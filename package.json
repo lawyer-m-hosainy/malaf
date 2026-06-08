@@ -3,7 +3,8 @@
   "private": true,
   "version": "0.0.0",
   "engines": {
-    "node": ">=18"
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
   },
   "type": "module",
   "scripts": {
@@ -15,7 +16,10 @@
     "prestart": "node -e \"const r=['SUPABASE_URL','SUPABASE_ANON_KEY','SUPABASE_JWT_SECRET'];const m=r.filter(k=>!process.env[k]);if(m.length){console.error('❌ Missing env vars:',m.join(', '));process.exit(1)}console.log('✅ All required env vars present')\"",
     "preview": "vite preview",
     "clean": "rm -rf dist",
-    "lint": "tsc --noEmit",
+    "lint": "eslint src --ext .ts,.tsx --max-warnings 0",
+    "type-check": "tsc --noEmit",
+    "test:ci": "vitest run --reporter=verbose --coverage",
+    "build:analyze": "vite build --mode analyze",
     "demo:seed": "tsx scripts/demo-seed.ts",
     "demo:reset": "tsx scripts/demo-reset.ts",
     "test": "vitest run",

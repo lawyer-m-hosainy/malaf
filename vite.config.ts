@@ -2,7 +2,7 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import {defineConfig, loadEnv} from 'vite';
-import { VitePWA } from 'vite-plugin-pwa';
+import { VitePWA, VitePWAOptions } from 'vite-plugin-pwa';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { sentryVitePlugin } from "@sentry/vite-plugin";
 
@@ -24,9 +24,9 @@ const getManualChunks = (id: string) => {
   }
 };
 
-const pwaOptions = {
-  registerType: 'autoUpdate' as const,
-  injectRegister: 'script' as const,
+const pwaOptions: Partial<VitePWAOptions> = {
+  registerType: 'autoUpdate',
+  injectRegister: 'script',
   workbox: {
     navigateFallbackDenylist: [/^\/sw-push\.js$/],
     globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
@@ -62,6 +62,20 @@ const pwaOptions = {
       { src: '/pwa-512x512.png', sizes: '512x512', type: 'image/png' }
     ]
   }
+};
+};
+
+const optimizeDepsOptions = {
+  include: [
+    'react',
+    'react-dom',
+    'react-router-dom',
+    'zustand',
+    '@supabase/supabase-js',
+    'date-fns',
+    'lucide-react',
+    'zod',
+  ],
 };
 
 export default defineConfig(({mode}) => {
@@ -122,17 +136,6 @@ export default defineConfig(({mode}) => {
       sourcemap: process.env.NODE_ENV === 'production' ? 'hidden' : true,
     },
     // R8-FIX: Dependency pre-bundling optimization
-    optimizeDeps: {
-      include: [
-        'react',
-        'react-dom',
-        'react-router-dom',
-        'zustand',
-        '@supabase/supabase-js',
-        'date-fns',
-        'lucide-react',
-        'zod',
-      ],
-    },
+    optimizeDeps: optimizeDepsOptions,
   };
 });

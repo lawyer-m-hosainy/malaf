@@ -28,6 +28,7 @@ import { initSubscriptionCron } from './services/subscription/subscriptionCron.j
 
 // Import Middlewares
 import { authMiddleware } from './middleware/auth.js';
+import { errorHandler } from './middleware/errorHandler.js';
 
 // ═══════════════════════════════════════════════════════
 // R9-FIX: NODE_ENV detection + environment validation
@@ -254,22 +255,7 @@ if (fs.existsSync(distPath)) {
 }
 
 // --- Global Error Handler ---
-app.use((err, req, res, next) => {
-    logger.error({ 
-        msg: err.message, 
-        stack: err.stack,
-        path: req.path,
-        method: req.method 
-    }, 'Unhandled Error');
-
-    const status = err.status || 500;
-    res.status(status).json({
-        success: false,
-        error: process.env.NODE_ENV === 'production' 
-            ? 'حدث خطأ داخلي في الخادم، تم تسجيل المشكلة للمراجعة.' 
-            : err.message
-    });
-});
+app.use(errorHandler);
 
 
 // Start Server

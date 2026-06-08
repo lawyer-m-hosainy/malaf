@@ -14,7 +14,7 @@ RUN npm ci
 COPY . .
 
 # Build the frontend and any necessary scripts
-RUN npm run build:all
+RUN npm run build
 
 # Production stage
 FROM node:20-alpine AS runtime
@@ -33,13 +33,16 @@ COPY --from=builder /app/dist ./dist
 
 # Copy backend files and directories
 COPY --from=builder /app/server.js ./server.js
-COPY --from=builder /app/routes ./routes
-COPY --from=builder /app/services ./services
-COPY --from=builder /app/middleware ./middleware
-COPY --from=builder /app/lib ./lib
+COPY --from=builder /app/routes ./routes || true
+COPY --from=builder /app/services ./services || true
+COPY --from=builder /app/middleware ./middleware || true
+COPY --from=builder /app/lib ./lib || true
 
 # Expose the application port
-EXPOSE 3000
+EXPOSE 3005
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3005/api/health', r => process.exit(r.statusCode === 200 ? 0 : 1))"
 
 # Run the server
 CMD ["node", "server.js"]

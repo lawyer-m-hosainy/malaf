@@ -48,7 +48,7 @@ const CATEGORY_COLORS: Record<string, { color: string; bgClass: string }> = {
 
 const MemoizedBarChart = React.memo(({ data }: { data: any[] }) => (
   <Suspense fallback={<div className="h-[250px] w-full flex items-center justify-center"><Loader2 className="animate-spin text-primary-500" /></div>}>
-    <ResponsiveContainer width="99%" height={250}>
+    <ResponsiveContainer width="100%" height={250}>
       <BarChart data={data}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
         <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b'}} />
@@ -61,11 +61,14 @@ const MemoizedBarChart = React.memo(({ data }: { data: any[] }) => (
       </BarChart>
     </ResponsiveContainer>
   </Suspense>
-));
+), (prevProps, nextProps) => {
+  // مقارنة عميقة للبيانات لمنع إعادة عرض غير ضروري
+  return JSON.stringify(prevProps.data) === JSON.stringify(nextProps.data);
+});
 
 const MemoizedPieChart = React.memo(({ data }: { data: any[] }) => (
   <Suspense fallback={<div className="h-[250px] w-full flex items-center justify-center"><Loader2 className="animate-spin text-primary-500" /></div>}>
-    <ResponsiveContainer width="99%" height={250}>
+    <ResponsiveContainer width="100%" height={250}>
       <PieChart>
         <Pie
           data={data}
@@ -82,7 +85,10 @@ const MemoizedPieChart = React.memo(({ data }: { data: any[] }) => (
       </PieChart>
     </ResponsiveContainer>
   </Suspense>
-));
+), (prevProps, nextProps) => {
+  // مقارنة عميقة للبيانات لمنع إعادة عرض غير ضروري
+  return JSON.stringify(prevProps.data) === JSON.stringify(nextProps.data);
+});
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -97,11 +103,16 @@ export default function Dashboard() {
   const refreshTasks = useTeamStore((state) => state.fetchTasks);
 
   // BUG-011: Sync data on mount if counts are 0 to ensure stats are accurate
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
+  
   useEffect(() => {
-    if (cases.length === 0) refreshCases();
-    if (clients.length === 0) refreshClients();
-    if (tasks.length === 0) refreshTasks();
-  }, [cases.length, clients.length, tasks.length]);
+    if (!initialLoadDone) {
+      if (cases.length === 0) refreshCases();
+      if (clients.length === 0) refreshClients();
+      if (tasks.length === 0) refreshTasks();
+      setInitialLoadDone(true);
+    }
+  }, [initialLoadDone, cases.length, clients.length, tasks.length, refreshCases, refreshClients, refreshTasks]);
   
   const [isDrafting, setIsDrafting] = useState(false);
   const [draftResult, setDraftResult] = useState("");

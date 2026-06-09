@@ -60,8 +60,9 @@ export const useInvoicesStore = create<InvoicesState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       // Auto-calculate VAT
-      const vat = calculateVAT(invoiceData.base);
-      const total = invoiceData.base + vat;
+      const discount = (invoiceData as any).discount || 0;
+      const vat = calculateVAT(invoiceData.base, discount);
+      const total = (invoiceData.base - discount) + vat;
       
       const newInvoice: Invoice = {
         ...invoiceData,

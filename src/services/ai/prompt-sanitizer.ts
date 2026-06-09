@@ -38,6 +38,12 @@ const INJECTION_PATTERNS: RegExp[] = [
   /\\n\\n(human|assistant)\s*:/i,
   /<\|system\|>/i,
   /\[system\]/i,
+
+  // --- SSRF & Internal IP Targeting ---
+  /(https?|ftp|file):\/\/(localhost|127\.0\.0\.1|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}|169\.254\.169\.254)/i,
+  
+  // --- Markdown Image Injection (often used for tracking or SSRF) ---
+  /!\[.*?\]\((https?|ftp|file):\/\/.*?\)/i,
 ];
 
 /**
@@ -78,10 +84,6 @@ export function sanitizePrompt(input: string): string {
       pattern.lastIndex = 0;
     }
   }
-
-  // الإصلاح: بيانات DB مثل أسماء الموكلين يجب أن تكون سطراً واحداً
-  // أي شيء بعد السطر الأول يعتبر محاولة حقن مشبوهة ويتم حذفه
-  cleaned = cleaned.split('\n')[0];
 
   // نظّف الـ PII
   cleaned = cleaned

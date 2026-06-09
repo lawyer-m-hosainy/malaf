@@ -41,14 +41,15 @@ vi.mock('@/lib/supabase', () => {
     supabase: {
       functions: {
         invoke: vi.fn(async (name, options) => {
-          if (name !== 'encrypt-decrypt') {
+          if (name !== 'encrypt-data') {
             return { data: null, error: new Error('Unknown function') };
           }
-          const { action, data, batch } = options.body;
-          if (action === 'encrypt') {
+          const { action, data, batch, operation } = options.body;
+          const op = operation || action;
+          if (op === 'encrypt') {
             return { data: { result: encryptData(data) }, error: null };
           }
-          if (action === 'decrypt') {
+          if (op === 'decrypt') {
             if (batch) {
               return { data: { results: batch.map(decryptData) }, error: null };
             }
@@ -99,12 +100,12 @@ describe('Malaf Critical Functions', () => {
 
     it('should handle empty, null, or undefined values gracefully (Edge Case)', async () => {
       expect(await encryptField('')).toBe('');
-      expect(await encryptField(null as any)).toBe('');
-      expect(await encryptField(undefined)).toBe('');
+      expect(await encryptField(null as any)).toBe(null);
+      expect(await encryptField(undefined)).toBe(undefined);
 
       expect(await decryptField('')).toBe('');
-      expect(await decryptField(null as any)).toBe('');
-      expect(await decryptField(undefined)).toBe('');
+      expect(await decryptField(null as any)).toBe(null);
+      expect(await decryptField(undefined)).toBe(undefined);
     });
 
     it('should return original text or fail gracefully when decrypting invalid/corrupted ciphertext (Failure Case)', async () => {

@@ -32,6 +32,11 @@ export async function decryptViaEdge(data: string, iv?: string, tag?: string): P
   try {
     if (!data) return data;
     
+    const cacheKey = `${data}:${iv || ''}:${tag || ''}`;
+    if (decryptCache.has(cacheKey)) {
+      return decryptCache.get(cacheKey)!.value;
+    }
+    
     const { data: resultData, error } = await supabase.functions.invoke('encrypt-data', {
       body: { data, operation: 'decrypt', iv, tag }
     });
@@ -44,7 +49,15 @@ export async function decryptViaEdge(data: string, iv?: string, tag?: string): P
       throw new Error(resultData.error);
     }
 
-    return resultData.result;
+    const result = resultData.result;
+    
+    // Cache the decrypted result with TTL
+    const timeoutId = setTimeout(() => {
+      decryptCache.delete(cacheKey);
+    }, CACHE_TTL_MS);
+    decryptCache.set(cacheKey, { value: result, timeout: timeoutId });
+
+    return result;
   } catch (e) {
     console.error("[Malaf Security] Edge Decryption failed:", e);
     // Return original string if decryption fails (fallback for old unencrypted data)
@@ -67,7 +80,10 @@ export async function batchDecrypt(dataArray: (string | null | undefined)[]): Pr
   );
 }
 
+const CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes
+const decryptCache = new Map<string, { value: string, timeout: ReturnType<typeof setTimeout> }>();
+
 export function clearDecryptCache(): void {
-  // لا حاجة لـ cache محلي بعد الآن لأن التشفير يتم على السيرفر
-  // تم الإبقاء على الدالة لتوافق الواجهة فقط
+  decryptCache.forEach((entry) => clearTimeout(entry.timeout));
+  decryptCache.clear();
 }

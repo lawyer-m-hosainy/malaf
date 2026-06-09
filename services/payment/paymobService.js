@@ -184,6 +184,112 @@ export async function createPaymentLink(orgId, planKey, billingCycle, buyerInfo 
 }
 
 /**
+ * إنشاء رابط دفع لفاتورة موكل
+ * @param {string} orgId - معرف المكتب
+ * @param {string} invoiceId - معرف الفاتورة
+ * @param {number} amount - مبلغ الفاتورة
+ * @param {object} buyerInfo - { name, email, phone }
+ */
+export async function createInvoicePaymentLink(orgId, invoiceId, amount, buyerInfo = {}) {
+  try {
+    if (amount <= 0) {
+      return { success: false, error: 'المبلغ غير صالح' };
+    }
+
+    // تسجيل المعاملة
+    const { data: tx, error: txError } = await supabase
+      .from('payment_transactions')
+      .insert({
+        organization_id: orgId, // Using organization_id as it maps to org_id in DB
+        transaction_type: 'invoice_payment',
+        gateway: 'paymob',
+        amount,
+        currency: 'EGP',
+        status: 'pending',
+        payer_phone: buyerInfo.phone || null,
+        payer_name: buyerInfo.name || null,
+        metadata: { type: 'invoice', invoice_id: invoiceId },
+      })
+      .select('id')
+      .single();
+
+    if (txError) {
+      logger.error({ err: txError.message }, 'Payment link creation error');
+      return { success: false, error: 'فشل في تسجيل المعاملة' };
+    }
+
+    if (!isPaymobConfigured()) {
+      return {
+        success: true,
+        paymentUrl: `https://malaf.pro/payment/stub?tx=${tx.id}&amount=${amount}&invoiceId=${invoiceId}`,
+        transactionId: tx.id,
+        stub: true,
+        message: 'Paymob غير مُعد بعد.',
+      };
+    }
+
+    const authToken = await getPaymobAuthToken();
+    if (!authToken) return { success: false, error: 'فشل الاتصال بالبوابة' };
+
+    const orderResp = await fetch(`${PAYMOB_BASE_URL}/ecommerce/orders`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        auth_token: authToken,
+        delivery_needed: false,
+        amount_cents: amount * 100,
+        currency: 'EGP',
+        merchant_order_id: tx.id,
+        items: [{
+          name: `سداد فاتورة رقم ${invoiceId}`,
+          amount_cents: amount * 100,
+          quantity: 1,
+        }],
+      }),
+    });
+    const orderData = await orderResp.json();
+
+    const paymentKeyResp = await fetch(`${PAYMOB_BASE_URL}/acceptance/payment_keys`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        auth_token: authToken,
+        amount_cents: amount * 100,
+        expiration: 3600,
+        order_id: orderData.id,
+        billing_data: {
+          first_name: buyerInfo.name?.split(' ')[0] || 'مستخدم',
+          last_name: buyerInfo.name?.split(' ').slice(1).join(' ') || 'ملف',
+          email: buyerInfo.email || 'user@malaf.app',
+          phone_number: buyerInfo.phone || '+201000000000',
+          apartment: 'N/A', street: 'N/A', building: 'N/A',
+          floor: 'N/A', city: 'Cairo', state: 'Cairo',
+          country: 'EG', postal_code: '11511',
+          shipping_method: 'N/A',
+        },
+        currency: 'EGP',
+        integration_id: parseInt(PAYMOB_INTEGRATION_ID_CARD),
+      }),
+    });
+    const paymentKeyData = await paymentKeyResp.json();
+
+    await supabase
+      .from('payment_transactions')
+      .update({ gateway_transaction_id: String(orderData.id) })
+      .eq('id', tx.id);
+
+    return {
+      success: true,
+      paymentUrl: `https://accept.paymob.com/api/acceptance/iframes/${PAYMOB_IFRAME_ID}?payment_token=${paymentKeyData.token}`,
+      transactionId: tx.id,
+    };
+  } catch (err) {
+    logger.error({ err: err.message }, 'Invoice link error');
+    return { success: false, error: 'حدث خطأ' };
+  }
+}
+
+/**
  * التحقق من صحة Paymob Webhook (HMAC)
  */
 export function verifyPaymobHmac(requestBody, receivedHmac) {
@@ -234,64 +340,136 @@ export async function handleSuccessfulPayment(transactionData) {
   try {
     const merchantOrderId = transactionData.order?.merchant_order_id || transactionData.merchant_order_id;
 
-    // 1. تحديث المعاملة
-    const { data: tx } = await supabase
+    // 1. Fetch and Update Transaction
+    const { data: tx, error: fetchErr } = await supabase
+      .from('payment_transactions')
+      .select('*')
+      .eq('id', merchantOrderId)
+      .single();
+
+    if (fetchErr || !tx) {
+      logger.error({ merchantOrderId }, 'Transaction not found');
+      return { success: false, error: 'المعاملة غير موجودة' };
+    }
+
+    await supabase
       .from('payment_transactions')
       .update({
         status: 'success',
         gateway_transaction_id: String(transactionData.id),
         payment_method: transactionData.source_data?.type || 'card',
       })
-      .eq('id', merchantOrderId)
-      .select('*')
-      .single();
+      .eq('id', tx.id);
 
-    if (!tx) {
-      logger.error({ merchantOrderId }, 'Transaction not found');
-      return { success: false, error: 'المعاملة غير موجودة' };
-    }
+    const metadata = tx.metadata || {};
+    const orgId = tx.organization_id || tx.org_id;
 
-    const { plan_key, billing_cycle } = tx.metadata || {};
+    if (metadata.type === 'invoice') {
+      // ════════════════════════════════════════════════════════
+      // RECONCILIATION FOR INVOICES (الفواتير والتسوية)
+      // ════════════════════════════════════════════════════════
+      const invoiceId = metadata.invoice_id;
+      
+      // أ. تحديث الفاتورة إلى مدفوعة
+      await supabase
+        .from('invoices')
+        .update({ status: 'مدفوعة' })
+        .eq('id', invoiceId);
 
-    // 2. حساب تاريخ الانتهاء
-    const now = new Date();
-    const periodEnd = new Date(now);
-    if (billing_cycle === 'yearly') {
-      periodEnd.setFullYear(periodEnd.getFullYear() + 1);
+      // ب. إنشاء قيد محاسبي مزدوج (Double-Entry Reconciliation)
+      // رسوم Paymob للبطاقات = 2.75% + 3 جنيهات
+      const amount = Number(tx.amount);
+      const gatewayFees = Number((amount * 0.0275 + 3).toFixed(2));
+      const netAmount = Number((amount - gatewayFees).toFixed(2));
+
+      // جلب معرفات الحسابات المحاسبية
+      const { data: accounts } = await supabase.from('accounts').select('id, name').eq('org_id', orgId);
+      const cashAcct = accounts?.find(a => a.name === 'Cash/Bank')?.id;
+      const feesAcct = accounts?.find(a => a.name === 'Bank Fees Expense' || a.name === 'مصروفات بنكية')?.id;
+      const revenueAcct = accounts?.find(a => a.name === 'Accounts Receivable' || a.name === 'إيرادات أتعاب')?.id;
+
+      if (cashAcct && revenueAcct) {
+        const { data: entry } = await supabase.from('journal_entries').insert({
+          org_id: orgId,
+          description: `سداد فاتورة رقم ${invoiceId} عبر Paymob`,
+          reference: String(transactionData.id),
+          transaction_date: new Date().toISOString().split('T')[0],
+          created_by: 'system',
+        }).select('id').single();
+
+        if (entry) {
+          const lines = [
+            { entry_id: entry.id, account_id: cashAcct, type: 'debit', amount: netAmount },
+            { entry_id: entry.id, account_id: revenueAcct, type: 'credit', amount: amount },
+          ];
+          if (feesAcct) {
+            lines.push({ entry_id: entry.id, account_id: feesAcct, type: 'debit', amount: gatewayFees });
+          }
+          await supabase.from('journal_lines').insert(lines);
+        }
+      }
+
+      // ج. رفع الفاتورة الإلكترونية لـ ETA إذا كانت المنظومة مفعلة
+      const { data: invoiceData } = await supabase.from('invoices').select('*').eq('id', invoiceId).single();
+      if (invoiceData && invoiceData.is_eta_required) {
+        // نضع الفاتورة في طابور الـ ETA (سيقوم الـ ETA Client بالتعامل معها)
+        await supabase.from('eta_invoices').insert({
+          org_id: orgId,
+          invoice_id: invoiceId,
+          status: 'pending_submission',
+        });
+      }
+
+      return {
+        success: true,
+        orgId: orgId,
+        invoiceId,
+        amount: tx.amount,
+        netAmount,
+      };
+
     } else {
-      periodEnd.setMonth(periodEnd.getMonth() + 1);
-    }
+      // ════════════════════════════════════════════════════════
+      // SUBSCRIPTIONS (الاشتراكات)
+      // ════════════════════════════════════════════════════════
+      const plan_key = metadata.plan_key;
+      const billing_cycle = metadata.billing_cycle;
 
-    // 3. إضافة/تحديث الاشتراك
-    const { error: subError } = await supabase
-      .from('subscriptions')
-      .upsert({
-        org_id: tx.org_id,
+      const now = new Date();
+      const periodEnd = new Date(now);
+      if (billing_cycle === 'yearly') {
+        periodEnd.setFullYear(periodEnd.getFullYear() + 1);
+      } else {
+        periodEnd.setMonth(periodEnd.getMonth() + 1);
+      }
+
+      const { error: subError } = await supabase
+        .from('subscriptions')
+        .upsert({
+          org_id: orgId,
+          plan: plan_key,
+          status: 'active',
+          billing_cycle: billing_cycle || 'monthly',
+          current_period_end: periodEnd.toISOString(),
+          auto_renew: true,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'org_id' });
+
+      if (subError) logger.error({ err: subError.message }, 'Subscription upsert error');
+
+      await supabase
+        .from('organizations')
+        .update({ plan: plan_key, updated_at: new Date().toISOString() })
+        .eq('id', orgId);
+
+      return {
+        success: true,
+        orgId: orgId,
         plan: plan_key,
-        status: 'active',
-        billing_cycle: billing_cycle || 'monthly',
-        current_period_end: periodEnd.toISOString(),
-        auto_renew: true,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'org_id' });
-
-    if (subError) {
-      logger.error({ err: subError.message }, 'Subscription upsert error');
+        expiresAt: periodEnd.toISOString(),
+        amount: tx.amount,
+      };
     }
-
-    // 4. تحديث المكتب
-    await supabase
-      .from('organizations')
-      .update({ plan: plan_key, updated_at: new Date().toISOString() })
-      .eq('id', tx.org_id);
-
-    return {
-      success: true,
-      orgId: tx.org_id,
-      plan: plan_key,
-      expiresAt: periodEnd.toISOString(),
-      amount: tx.amount,
-    };
   } catch (err) {
     logger.error({ err: err.message }, 'Payment processing error');
     return { success: false, error: 'فشل في معالجة الدفع' };

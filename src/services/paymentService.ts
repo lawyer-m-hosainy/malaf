@@ -40,29 +40,26 @@ export async function fetchTrustTransactions(): Promise<TrustTransaction[]> {
   const orgId = requireOrgId();
   try {
     const { data, error } = await supabase
-      .from("trust_transactions")
-      .select("*, clients(name), cases(plaintiff, defendant)")
-      .eq("org_id", orgId)
-      .order("transaction_date", { ascending: false });
+      .from("journal_lines")
+      .select("id, amount, type, created_at, account:accounts(name), entry:journal_entries(*)")
+      .not("trust_account_id", "is", null);
 
     if (error) throw error;
 
-    return (data || []).map((t: any) => ({
-      id: t.id,
-      org_id: t.org_id,
-      clientId: t.client_id,
-      clientName: t.clients?.name ?? "غير معروف",
-      caseId: t.case_id ?? undefined,
-      caseName: t.cases
-        ? `${t.cases.plaintiff} ضد ${t.cases.defendant}`
-        : undefined,
-      transactionType: t.transaction_type as TrustTransactionType,
-      amount: parseFloat(t.amount),
-      description: t.description ?? undefined,
-      receiptNumber: t.receipt_number ?? undefined,
-      transactionDate: t.transaction_date,
-      createdBy: t.created_by ?? undefined,
-      createdAt: t.created_at,
+    return (data || []).filter((l: any) => l.account?.name === 'Client Trust Liability').map((l: any) => ({
+      id: l.entry.id,
+      org_id: l.entry.org_id,
+      clientId: l.trust_account_id,
+      clientName: "موكل (محملة من القيد)",
+      caseId: undefined,
+      caseName: undefined,
+      transactionType: l.type === 'credit' ? 'deposit' : 'withdrawal',
+      amount: parseFloat(l.amount),
+      description: l.entry.description ?? undefined,
+      receiptNumber: l.entry.reference ?? undefined,
+      transactionDate: l.entry.transaction_date,
+      createdBy: l.entry.created_by ?? undefined,
+      createdAt: l.entry.created_at,
     }));
   } catch (error) {
     console.error("خطأ في جلب حركات الأمانات:", error);
@@ -79,33 +76,50 @@ export async function saveTrustTransaction(
 ): Promise<void> {
   const orgId = requireOrgId();
   try {
-    const { error } = await supabase.from("trust_transactions").insert({
-      org_id: orgId,
-      client_id: tx.clientId,
-      case_id: tx.caseId ?? null,
-      transaction_type: tx.transactionType,
-      amount: tx.amount,
-      description: tx.description ?? null,
-      receipt_number: tx.receiptNumber ?? null,
-      transaction_date: tx.transactionDate,
-    });
+    const { data: accounts } = await supabase.from('accounts').select('id, name').eq('org_id', orgId).in('name', ['Cash/Bank', 'Client Trust Liability']);
+    const cashAcct = accounts?.find(a => a.name === 'Cash/Bank')?.id;
+    const trustAcct = accounts?.find(a => a.name === 'Client Trust Liability')?.id;
 
-    if (error) throw error;
+    if (!cashAcct || !trustAcct) throw new Error("حسابات القيود غير مهيأة.");
+
+    const userResp = await supabase.auth.getUser();
+    const { data: entry, error: entryError } = await supabase.from("journal_entries").insert({
+      org_id: orgId,
+      description: tx.description ?? "حركة أمانة",
+      reference: tx.receiptNumber ?? null,
+      transaction_date: tx.transactionDate,
+      created_by: userResp.data.user?.id
+    }).select('id').single();
+
+    if (entryError) throw entryError;
+
+    const lines = tx.transactionType === 'deposit' 
+      ? [
+          { entry_id: entry.id, account_id: cashAcct, trust_account_id: tx.clientId, type: 'debit', amount: tx.amount },
+          { entry_id: entry.id, account_id: trustAcct, trust_account_id: tx.clientId, type: 'credit', amount: tx.amount }
+        ]
+      : [
+          { entry_id: entry.id, account_id: trustAcct, trust_account_id: tx.clientId, type: 'debit', amount: tx.amount },
+          { entry_id: entry.id, account_id: cashAcct, trust_account_id: tx.clientId, type: 'credit', amount: tx.amount }
+        ];
+
+    const { error: linesError } = await supabase.from("journal_lines").insert(lines);
+    if (linesError) throw linesError;
 
     await logAuditAction(
       tx.transactionType === "deposit" ? "TRUST_DEPOSIT" : "TRUST_WITHDRAWAL",
-      "trust_transactions",
+      "journal_entries",
       tx.clientId,
       `عملية ${tx.transactionType === "deposit" ? "إيداع" : "صرف"} بقيمة ${tx.amount} ج.م`
     );
   } catch (error) {
-    console.error("خطأ في تسجيل حركة الأمة:", error);
+    console.error("خطأ في تسجيل حركة الأمانة:", error);
     throw error;
   }
 }
 
 /**
- * حساب رصيد الأمانة لموكل محدد (مع إمكانية الفلترة بقضية)
+ * حساب رصيد الأمانة لموكل محدد
  * @param clientId - معرف الموكل
  * @param caseId - (اختياري) معرف القضية
  * @returns {Promise<number>} صافي الرصيد
@@ -116,21 +130,19 @@ export async function fetchClientTrustBalance(
 ): Promise<number> {
   const orgId = requireOrgId();
   try {
-    let query = supabase
-      .from("trust_transactions")
-      .select("transaction_type, amount")
-      .eq("org_id", orgId)
-      .eq("client_id", clientId);
+    const { data, error } = await supabase
+      .from("journal_lines")
+      .select("type, amount, account:accounts(name)")
+      .eq("trust_account_id", clientId);
 
-    if (caseId) query = query.eq("case_id", caseId);
-
-    const { data, error } = await query;
     if (error) throw error;
 
-    return (data || []).reduce((bal, row) => {
-      const amt = parseFloat(row.amount);
-      return row.transaction_type === "deposit" ? bal + amt : bal - amt;
-    }, 0);
+    return (data || [])
+      .filter((l: any) => l.account?.name === 'Client Trust Liability')
+      .reduce((bal, row) => {
+        const amt = parseFloat(row.amount);
+        return row.type === "credit" ? bal + amt : bal - amt;
+      }, 0);
   } catch (error) {
     console.error("خطأ في حساب رصيد الأمانة:", error);
     return 0;
@@ -145,22 +157,24 @@ export async function fetchTrustPageStats(): Promise<TrustPageStats> {
   const orgId = requireOrgId();
   try {
     const { data, error } = await supabase
-      .from("trust_transactions")
-      .select("transaction_type, amount")
-      .eq("org_id", orgId);
+      .from("journal_lines")
+      .select("type, amount, account:accounts(name), entry:journal_entries!inner(org_id)")
+      .eq("entry.org_id", orgId);
 
     if (error) throw error;
 
-    const stats = (data || []).reduce(
-      (acc, row) => {
-        const amt = parseFloat(row.amount);
-        if (row.transaction_type === "deposit") acc.totalDeposits += amt;
-        else acc.totalWithdrawals += amt;
-        acc.transactionCount++;
-        return acc;
-      },
-      { totalDeposits: 0, totalWithdrawals: 0, transactionCount: 0 }
-    );
+    const stats = (data || [])
+      .filter((l: any) => l.account?.name === 'Client Trust Liability')
+      .reduce(
+        (acc, row) => {
+          const amt = parseFloat(row.amount);
+          if (row.type === "credit") acc.totalDeposits += amt;
+          else acc.totalWithdrawals += amt;
+          acc.transactionCount++;
+          return acc;
+        },
+        { totalDeposits: 0, totalWithdrawals: 0, transactionCount: 0 }
+      );
 
     return {
       ...stats,
@@ -174,15 +188,15 @@ export async function fetchTrustPageStats(): Promise<TrustPageStats> {
 
 /**
  * حذف حركة أمانة نهائياً
- * @param id - معرف الحركة
+ * @param id - معرف الحركة (entry_id)
  */
 export async function deleteTrustTransaction(id: string): Promise<void> {
   const orgId = requireOrgId();
   const { error } = await supabase
-    .from("trust_transactions")
+    .from("journal_entries")
     .delete()
     .eq("id", id)
-    .eq("organization_id", orgId);
+    .eq("org_id", orgId);
   if (error) throw error;
 }
 

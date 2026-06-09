@@ -1306,6 +1306,8 @@ export type Database = {
           status: string;
           submission_date: string | null;
           response_data: Json | null;
+          eta_payload_snapshot: Json | null;
+          eta_response_snapshot: Json | null;
           is_billed: boolean | null;
           created_at: string;
           updated_at: string;
@@ -1319,6 +1321,8 @@ export type Database = {
           status?: string;
           submission_date?: string | null;
           response_data?: Json | null;
+          eta_payload_snapshot?: Json | null;
+          eta_response_snapshot?: Json | null;
           is_billed?: boolean | null;
           created_at?: string;
           updated_at?: string;
@@ -1460,6 +1464,13 @@ export type Database = {
           transaction_type: string;
           status: string | null;
           reference: string | null;
+          gateway: string | null;
+          currency: string | null;
+          payer_phone: string | null;
+          payer_name: string | null;
+          metadata: Json | null;
+          gateway_transaction_id: string | null;
+          payment_method: string | null;
           created_at: string;
         };
         Insert: {
@@ -1469,6 +1480,13 @@ export type Database = {
           transaction_type: string;
           status?: string | null;
           reference?: string | null;
+          gateway?: string | null;
+          currency?: string | null;
+          payer_phone?: string | null;
+          payer_name?: string | null;
+          metadata?: Json | null;
+          gateway_transaction_id?: string | null;
+          payment_method?: string | null;
           created_at?: string;
         };
         Update: Partial<Database['public']['Tables']['payment_transactions']['Insert']>;
@@ -1630,6 +1648,21 @@ export type Database = {
           created_at?: string;
         };
         Update: Partial<Database['public']['Tables']['chat_messages']['Insert']>;
+      };
+      accounts: {
+        Row: { id: string; org_id: string; name: string; type: string; balance: number; created_at: string; updated_at: string; };
+        Insert: { id?: string; org_id: string; name: string; type: string; balance?: number; created_at?: string; updated_at?: string; };
+        Update: Partial<Database['public']['Tables']['accounts']['Insert']>;
+      };
+      journal_entries: {
+        Row: { id: string; org_id: string; description: string; reference: string | null; transaction_date: string; document_id: string | null; created_by: string; created_at: string; };
+        Insert: { id?: string; org_id: string; description: string; reference?: string | null; transaction_date: string; document_id?: string | null; created_by: string; created_at?: string; };
+        Update: Partial<Database['public']['Tables']['journal_entries']['Insert']>;
+      };
+      journal_lines: {
+        Row: { id: string; entry_id: string; account_id: string; trust_account_id: string | null; type: string; amount: number; created_at: string; };
+        Insert: { id?: string; entry_id: string; account_id: string; trust_account_id?: string | null; type: string; amount: number; created_at?: string; };
+        Update: Partial<Database['public']['Tables']['journal_lines']['Insert']>;
       };
     };
     Views: {
